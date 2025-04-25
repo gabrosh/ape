@@ -11,7 +11,7 @@ For the best experience on Windows Ape should be run in Windows Terminal.
 
 On Linux, you will probably have to remap all key bindings with Ctrl modifier to something else as Linux console practically doesn't support key bindings with Ctrl modifier.
 
-You can get a single Ape executable file accompanied by the basic configuration files and the help file by publishing the Ape project in Deployment mode Self-contained - for example, in Visual Studio. 
+You can get a single Ape executable file accompanied by the basic configuration files and the help file by publishing the Ape project in Deployment mode "Self-contained" with File publish options "Produce single file" and "Trim unused code", for example, in Visual Studio. 
 
 Press F1 in Normal mode or run :help command (or :h) for help. To get back into Normal mode from whereever you are, press Esc.
 
