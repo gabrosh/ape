@@ -1,0 +1,90 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <GenerateProgramFile>false</GenerateProgramFile>
+    <IsTestProject>true</IsTestProject>
+    <Platforms>x64</Platforms>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <NoWarn>0988</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <NoWarn>0988</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <SatelliteResourceLanguages>en-US</SatelliteResourceLanguages>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="Data\scrolling.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Compile Include="TestUtils.fs" />
+    <Compile Include="UtilsTest\BinarySearchTest.fs" />
+    <Compile Include="UtilsTest\ConsoleKeysTest.fs" />
+    <Compile Include="UtilsTest\CommandArgsTest.fs" />
+    <Compile Include="UtilsTest\KeyStringsTest.fs" />
+    <Compile Include="HelpersTest\PromptHistoryTest.fs" />
+    <Compile Include="HelpersTest\CompletionUtilsTest.fs" />
+    <Compile Include="HelpersTest\CommandCompletionTest.fs" />
+    <Compile Include="HelpersTest\IdentCompletionsTextAreaTest.fs" />
+    <Compile Include="HelpersTest\IdentCompletionsPromptTest.fs" />
+    <Compile Include="TextRangesTest\ApplyInsertToPosTest.fs" />
+    <Compile Include="TextRangesTest\ApplyDeleteToPosTest.fs" />
+    <Compile Include="TextRangesTest\TextRangesModifierTest.fs" />
+    <Compile Include="TextRangesTest\TextRangesTest.fs" />
+    <Compile Include="TextRangesTest\SelectionsTest.fs" />
+    <Compile Include="TextRangesTest\PositionClassifierTest.fs" />
+    <Compile Include="CommonTest\SettingsTest.fs" />
+    <Compile Include="CommonTest\KeyMappingsTest.fs" />
+    <Compile Include="RegexUtilsTest\SimpleRegexTest.fs" />
+    <Compile Include="RegexUtilsTest\SingleLineRegexTest.fs" />
+    <Compile Include="RegexUtilsTest\MultiLineRegexTest.fs" />
+    <Compile Include="TextAreaPerformersTest\CommonTest.fs" />
+    <Compile Include="TextAreaPerformersTest\NoWrapLinesTest.fs" />
+    <Compile Include="TextAreaPerformersTest\WrapLinesTest.fs" />
+    <Compile Include="TextAreaPerformersTest\WrapLinesAtWordTest.fs" />
+    <Compile Include="TextAreaPerformersTest\WrapLinesOnFileTest.fs" />
+    <Compile Include="TextAreaPerformersTest\ModifyingByCharTest.fs" />
+    <Compile Include="TextAreaPerformersTest\ModifyingYankTest.fs" />
+    <Compile Include="TextAreaPerformersTest\ModifyingDeleteTest.fs" />
+    <Compile Include="TextAreaPerformersTest\ModifyingPasteBeforeNormalTest.fs" />
+    <Compile Include="TextAreaPerformersTest\ModifyingPasteBeforeInsertTest.fs" />
+    <Compile Include="TextAreaPerformersTest\ModifyingPasteAfterTest.fs" />
+    <Compile Include="TextAreaPerformersTest\ModifyingOthersTest.fs" />
+    <Compile Include="TextAreaPerformersTest\TextRangesTest.fs" />
+    <Compile Include="TextAreaPerformersTest\SelectionsTests.fs" />
+    <Compile Include="MultipleSelectionsTest\ModifyingTest.fs" />
+    <Compile Include="MultipleSelectionsTest\ModifyingAtEofTest.fs" />
+    <Compile Include="PromptPerformersTest\CommonTest.fs" />
+    <Compile Include="PromptPerformersTest\NoWrapLineTest.fs" />
+    <Compile Include="PromptPerformersTest\ModifyingByCharTest.fs" />
+    <Compile Include="PromptPerformersTest\ModifyingYankTest.fs" />
+    <Compile Include="PromptPerformersTest\ModifyingDeleteTest.fs" />
+    <Compile Include="PromptPerformersTest\ModifyingPasteBeforeNormalTest.fs" />
+    <Compile Include="PromptPerformersTest\ModifyingPasteBeforeInsertTest.fs" />
+    <Compile Include="PromptPerformersTest\ModifyingPasteAfterTest.fs" />
+    <Compile Include="PromptPerformersTest\ModifyingOthersTest.fs" />
+    <Compile Include="PromptPerformersTest\TextRangesTest.fs" />
+    <Compile Include="PromptPerformersTest\SelectionsTests.fs" />
+    <Compile Include="DummyFile.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.5.0" />
+    <PackageReference Include="NUnit" Version="3.13.3" />
+    <PackageReference Include="NUnit3TestAdapter" Version="4.4.2" />
+    <PackageReference Include="NUnit.Analyzers" Version="3.6.1" />
+    <PackageReference Include="coverlet.collector" Version="3.2.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Ape\Ape.fsproj" />
+  </ItemGroup>
+
+</Project>

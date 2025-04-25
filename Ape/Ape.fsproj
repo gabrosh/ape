@@ -1,0 +1,137 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net9.0</TargetFramework>
+    <Platforms>x64</Platforms>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <NoWarn>0009</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <NoWarn>0009</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <SatelliteResourceLanguages>en-US</SatelliteResourceLanguages>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="Utils\Utils.fs" />
+    <Compile Include="Utils\BinarySearch.fs" />
+    <Compile Include="Utils\ConsoleInterop_Common.fs" />
+    <Compile Include="Utils\ConsoleInterop_Linux.fs" />
+    <Compile Include="Utils\ConsoleInterop_Windows.fs" />
+    <Compile Include="Utils\ConsoleInterop_Specific.fs" />
+    <Compile Include="Utils\FileUtils.fs" />
+    <Compile Include="Utils\Colors.fs" />
+    <Compile Include="Utils\ConsoleKeys.fs" />
+    <Compile Include="Utils\ConsoleInputSource.fs" />
+    <Compile Include="Utils\KeysStrings.fs" />
+    <Compile Include="Utils\CommandArgs.fs" />
+    <Compile Include="Utils\Parsing.fs" />
+    <Compile Include="Utils\TestMines.fs" />
+    <Compile Include="DataTypes\DataTypes.fs" />
+    <Compile Include="DataTypes\WrappedRef.fs" />
+    <Compile Include="Registers\Register.fs" />
+    <Compile Include="Registers\Registers.fs" />
+    <Compile Include="TextRanges\Position.fs" />
+    <Compile Include="TextRanges\TextRangesModifier.fs" />
+    <Compile Include="TextRanges\TextRange.fs" />
+    <Compile Include="TextRanges\TextRanges.fs" />
+    <Compile Include="TextRanges\Selection.fs" />
+    <Compile Include="TextRanges\Selections.fs" />
+    <Compile Include="TextRanges\SelectionsRegisters.fs" />
+    <Compile Include="TextRanges\PositionClassifier.fs" />
+    <Compile Include="Common\Commands.fs" />
+    <Compile Include="Common\UserMessages.fs" />
+    <Compile Include="Common\Settings.fs" />
+    <Compile Include="Common\Context.fs" />
+    <Compile Include="Common\CharCategories.fs" />
+    <Compile Include="Common\KeyMappings.fs" />
+    <Compile Include="Common\Common.fs" />
+    <Compile Include="RegexUtils\RegexUtils.fs" />
+    <Compile Include="RegexUtils\SimpleRegex.fs" />
+    <Compile Include="RegexUtils\SingleLineRegex.fs" />
+    <Compile Include="RegexUtils\MultiLineRegex.fs" />
+    <Compile Include="RegexUtils\MatchRanges.fs" />
+    <Compile Include="Helpers\LinesAccessor.fs" />
+    <Compile Include="Helpers\WantedColumns.fs" />
+    <Compile Include="Helpers\UndoProvider.fs" />
+    <Compile Include="Helpers\PromptHistory.fs" />
+    <Compile Include="Helpers\CompletionUtils.fs" />
+    <Compile Include="Helpers\CompletionItems.fs" />
+    <Compile Include="Helpers\KeysRecorder.fs" />
+    <Compile Include="Performers\CommonPeformer.fs" />
+    <Compile Include="Performers\NoWrapLinesBuilder.fs" />
+    <Compile Include="Performers\NoWrapLinesRenderer.fs" />
+    <Compile Include="Performers\NoWrapLinesPerformer.fs" />
+    <Compile Include="Performers\WrapLinesBuilder.fs" />
+    <Compile Include="Performers\WrapLinesRenderer.fs" />
+    <Compile Include="Performers\WrapLinesPerformer.fs" />
+    <Compile Include="Performers\ModifyingAuxiliary.fs" />
+    <Compile Include="Performers\ModifyingPeformer.fs" />
+    <Compile Include="Performers\TextRangesPerformer.fs" />
+    <Compile Include="Performers\SelectionsPerformer.fs" />
+    <Compile Include="Performers\UndoRedoPerformer.fs" />
+    <Compile Include="TextArea\TextAreaDispatcher.fs" />
+    <Compile Include="TextArea\TextAreaRenderer.fs" />
+    <Compile Include="TextArea\TextAreaDelegator.fs" />
+    <Compile Include="TextArea\TextAreaBasic.fs" />
+    <Compile Include="TextArea\TextAreaModifying.fs" />
+    <Compile Include="TextArea\TextAreaTextRanges.fs" />
+    <Compile Include="TextArea\TextAreaSelections.fs" />
+    <Compile Include="TextArea\TextAreaUndoRedo.fs" />
+    <Compile Include="TextArea\TextAreaBuffer.fs" />
+    <Compile Include="TextArea\BuffersRegistry.fs" />
+    <Compile Include="TextArea\TextArea.fs" />
+    <Compile Include="Prompt\PromptDispatcher.fs" />
+    <Compile Include="Prompt\PromptRenderer.fs" />
+    <Compile Include="Prompt\PromptDelegator.fs" />
+    <Compile Include="Prompt\PromptBasic.fs" />
+    <Compile Include="Prompt\PromptModifying.fs" />
+    <Compile Include="Prompt\PromptTextRanges.fs" />
+    <Compile Include="Prompt\PromptSelections.fs" />
+    <Compile Include="Prompt\PromptUndoRedo.fs" />
+    <Compile Include="Prompt\PromptBuffer.fs" />
+    <Compile Include="Prompt\PromptStatus.fs" />
+    <Compile Include="Prompt\Prompt.fs" />
+    <Compile Include="Execution\ExecutionCommon.fs" />
+    <Compile Include="Execution\ExecutionBasic.fs" />
+    <Compile Include="Execution\ExecutionSettings.fs" />
+    <Compile Include="Execution\ExecutionKeyMappings.fs" />
+    <Compile Include="Execution\ExecutionRegisters.fs" />
+    <Compile Include="Completion\CompletionCommon.fs" />
+    <Compile Include="Completion\CompletionBasic.fs" />
+    <Compile Include="Completion\CompletionSettings.fs" />
+    <Compile Include="Completion\CompletionKeyMappings.fs" />
+    <Compile Include="Completion\CompletionRegisters.fs" />
+    <Compile Include="Application\StatusArea.fs" />
+    <Compile Include="Application\UndoRedo.fs" />
+    <Compile Include="Application\CommandsList.fs" />
+    <Compile Include="Application\CommandExecution.fs" />
+    <Compile Include="Application\CommandCompletion.fs" />
+    <Compile Include="Application\IdentCompletion.fs" />
+    <Compile Include="Application\PromptExecution.fs" />
+    <Compile Include="Application\KeyDispatching.fs" />
+    <Compile Include="Application\ConsoleRenderer.fs" />
+    <Compile Include="Application\AppOptions.fs" />
+    <Compile Include="Application\Program.fs" />
+    <Content Include="help.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Include="default.cfg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="extended.cfg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="TextCopy" Version="6.2.1" />
+  </ItemGroup>
+
+</Project>

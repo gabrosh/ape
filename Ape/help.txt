@@ -1,0 +1,408 @@
+Ape 0.10 - modal text editor
+
+
+Text area and Prompt area commands ---------------------------------------------
+
+p = applicable also in prompt modes
+s = works also with Shift modifier
+r = works also with register prefix
+
+The default register is ", the operating system's clipboard register is '.
+
+For commands that store selections into register, uppercase register name causes
+the selections to be appended to the register slots. For commands that load content
+from register, uppercase register name causes each of the register slots to give
+the same content - the contents of all register slots joined together.
+
+Symbol registers are treated as uppercase when prefixed with " instead of '.
+
+For system's clipboard register ', after every command that stores selections into
+register, all register slots - joined together using new line character - are copied
+to the clipboard, and before every command that loads content from register, the
+clipboard is copied to the first register slot.
+
+Keys recording is toggled by <c-q>, recorded keys are stored in register . .
+
+In Search, Select, Keep and Discard prompts, .NET regular expressions are used.
+Multiline regular expressions specified by (?m) option are supported with a reasonable
+limit as to the count of lines held in the processing buffer.
+In Search, named groups (?<name>...) and (?'name'...) are colored by distinct colors
+according to the first character of group's name.
+
+
+Normal mode - enter Insert mode:
+
+p    i               start inserting before selection
+p    a               start inserting after selection
+p    I               start inserting at start of line
+p    A               start inserting at end of line
+p r  c               yank, delete and start inserting
+p    <a-c>           delete and start inserting
+
+
+Insert mode:
+
+     <esc>           leave Insert mode
+
+p    <left>          cursor left
+p    <right>         cursor right
+     <up>            cursor hard up
+     <down>          cursor hard down
+     <c-up>          cursor soft up
+     <c-down>        cursor soft down
+     <pgup>          scroll page up
+     <pgdown>        scroll page down
+
+p    <c-left>        cursor left at word start
+p    <c-right>       cursor right at word start
+
+p    <home>          cursor hard line start
+p    <end>           cursor hard line end
+p    <c-home>        cursor soft file start
+p    <c-end>         cursor soft file end
+
+p    <c-z>           cursor to the pair character in (), [], {}, <>
+
+     <ret>           insert new line with automatic indentation
+     <c-ret>         insert new line without automatic indentation
+p    <del>           delete character
+p    <bsp>           delete previous character
+
+p    <c-r>{regName}  paste register {regName} before cursor
+p    <c-R>{regName}  paste uppercase register {regName} before cursor
+
+     <c-n>           switch to next completion
+     <c-p>           switch to previous completion
+
+Normal mode prefixes:
+
+     {count}         repeating count (positive decimal number)
+p    '{regName}      lowercase or uppercase register name
+                     (any printable character, can be uppercase)
+p    "{regName}      uppercase register name
+                     (any printable character, can be uppercase)
+
+
+Normal mode - repeatable:
+
+ps   <left>          cursor left
+ps   <right>         cursor right
+ s   <up>            cursor hard up
+ s   <down>          cursor hard down
+ s   <c-up>          cursor soft up
+ s   <c-down>        cursor soft down
+ s   <pgup>          scroll page up
+ s   <pgdown>        scroll page down
+
+ps   <c-left>        cursor left at word start
+ps   <c-right>       cursor right at word start
+
+ps   h               cursor left
+ps   l               cursor right
+ s   k               cursor hard up
+ s   j               cursor hard down
+ s   <c-k>           cursor soft up
+ s   <c-j>           cursor soft down
+ s   <a-k>           scroll page up
+ s   <a-j>           scroll page down
+
+ps   w               cursor right before word start
+ps   <a-w>           cursor left after word end
+ps   b               cursor right at word start
+ps   <a-b>           cursor left at word start
+ps   e               cursor right at word end
+ps   <a-e>           cursor left at word end
+
+ s   f{char}         cursor right to {char}
+ s   t{char}         cursor right until {char}
+ s   <a-f>{char}     cursor left to {char}
+ s   <a-t>{char}     cursor left until {char}
+
+ s   n               cursor to next match
+ s   <a-n>           cursor to previous match
+
+p r  d               yank and delete
+p    <a-d>           delete
+p r  P               paste before
+p r  p               paste after
+p    <gt>            indent
+p    <lt>            unindent
+
+     C               copy the last selection down
+     <a-C>           copy the first selection up
+     <a-,>           remove main selection
+     (               rotate current selection up
+     )               rotate current selection down
+
+p    u               undo
+p    U               undo fast
+p    <a-u>           redo
+p    <a-U>           redo fast
+
+
+Normal mode - non-repeatable:
+
+ps   <home>          cursor hard line start
+ps   <end>           cursor hard line end
+ s   <c-home>        cursor soft file start
+ s   <c-end>         cursor soft file end
+
+ps   <a-h>           cursor hard line start
+ps   <a-l>           cursor hard line end
+ps   <c-h>           cursor soft line start
+ps   <c-l>           cursor soft line end
+
+ps   <c-z>           cursor to the pair character in (), [], {}, <>
+
+p    <a-!>           assert non-white space character
+p    <a-$>           clear displayed info message
+
+p r  y               yank
+p r  R               replace
+     ^               align selections
+
+     r{char}         fill with {char}
+
+p    ~               to uppercase
+p    <a-~>           invert case
+     @               tabs to spaces
+     <a-@>           spaces to tabs
+p    <c-x>           regex escape
+
+p    %               select whole buffer
+     <a-%>           invert selections
+     $               split selection on line starts
+     _               merge contiguous selections
+p    x               expand selection to full lines
+     <a-x>           trim selection to full lines
+p    ;               reduce selection to cursor
+p    <a-:>           forward selection's direction
+p    <a-;>           flip selection's direction
+     ,               keep only main selection
+     &               remove less indented selections
+     <a-&>           remove more indented selections
+  r  <a-m>           store selections
+  r  m               load selections
+  r  <c-m>           remove stored selections
+
+
+Normal mode - multiplying selection:
+
+     +               multiply selection by count of slots in register "
+     '{regName}+     multiply selection by count of slots in register {regName}
+     {count}+        multiply selection by {count}
+
+
+Normal mode - named undo:
+
+     '{name}<c-u>    add {name} to the list of current undo state's names
+     '{name}u        undo to the state with {name} in the list of its names
+     '{name}<a-u>    redo to the state with {name} in the list of its names
+
+
+Normal mode - goto and view commands:
+
+ s   {num}g          cursor hard to line number {num}
+
+ s   gg              cursor soft file start
+ s   ge              cursor soft file end
+ps   gl              cursor before end of line
+ps   g<a-l>          cursor at end of line
+
+     vv              center vertically
+     vh              center horizontally
+
+
+Normal mode - enter Prompt Normal mode:
+
+     :               enter "command" prompt
+
+     /               enter "search forward" prompt
+     <a-/>           enter "search backward" prompt
+     ?               enter "search forward and select" prompt
+     <a-?>           enter "search backward and select" prompt
+
+     s               enter "select within selections" prompt
+
+     S               enter "keep selections" prompt
+     <a-S>           enter "discard selections" prompt
+
+
+Prompt area commands -----------------------------------------------------------
+
+Prompt Normal and Prompt Insert mode:
+
+     <ret>           execute prompt
+                     if line is non-empty, it is stored into history
+                     for search: if line is empty and it's not a history line,
+                       current matchings are cleared
+
+     <s-ret>         execute prompt
+                     if line is non-empty, current history line is updated
+                     if line is empty, current history line is deleted
+                     for search: if line is empty and it's not a history line,
+                       re-search is performed
+
+     <esc>           leave prompt
+                     if line is non-empty, it is stored into history
+
+     <s-esc>         leave prompt
+                     if line is non-empty, current history line is updated
+                     if line is empty, current history line is deleted
+
+     <up>            go to previous history line
+     <down>          go to next history line
+
+
+Prompt Insert mode:
+
+     <a-r>           enter Prompt Normal mode
+
+     <c-n>, <tab>    switch to next completion
+     <c-p>, <s-tab>  switch to previous completion
+
+
+Commands -----------------------------------------------------------------------
+
+command        abbr.  arguments
+
+help           h                                 open help.txt file from the application's directory
+execCfg        c      cfgName                    execute configuration file
+                                                 (.cfg extension is added to cfgName automatically)
+quit           q                                 quit the application
+quit!          q!                                quit the application, suppressing warnings
+                                                 (no change since last write)
+write          w      [filePath]                 write current buffer's content
+write!         w!     [filePath]                 write current buffer's content, suppressing warnings
+                                                 (no change since last write, file already opened)
+writeQuit      wq                                write all changed files and quit the application
+edit           e      [[strictEncoding] encoding] filePath
+                                                 open file for editing
+edit!          e!     [[strictEncoding] encoding] filePath
+                                                 open file for editing, suppressing warnings
+                                                 (directory not found, file not found)
+view           v      [[strictEncoding] encoding] filePath
+                                                 open file for viewing
+reload         r                                 reload file
+reload!        r!                                reload file, suppressing warnings
+                                                 (no write since last change)
+bufferDelete   bd                                delete buffer
+bufferDelete!  bd!                               delete buffer, suppressing warnings
+                                                 (no write since last change)
+bufferNext     bn                                switch to the next buffer
+bufferPrev     bp                                switch to the previous buffer
+set            s      [scope] name value         set setting's value (default scope is "buffer")
+unset          us     [scope] name               unset setting's value (default scope is "buffer")
+get            g      name                       display setting's value in all scopes
+map            m      [[scope] mode] key keySeq  map key to given sequence of keys
+                                                 (default scope is "buffer", default mode is "normal")
+unmap          um     [[scope] mode] key         unmap key
+                                                 (default scope is "buffer", default mode is "normal")
+reg                   regName line               set register regName to given line
+unreg                 regName                    unset register regName
+
+
+Command arguments --------------------------------------------------------------
+
+Command arguments are separated by space character.
+
+If you need to include space character in an argument, enclose the argument into
+a pair of ". In such argument, \ serves as an escape character. \" represents ",
+\\ represents \ and \t represents tab character. Other pairs are not supported.
+
+If you want to include space character in an argument without the need to escape all
+occurences of \, enclose the argument into a pair of " prefixed by @. In such argument,
+" can be represented by "".
+
+Examples: "Hello, \"world\"!"
+          @"Hello, ""world""!"
+
+
+Settings -----------------------------------------------------------------------
+
+Scopes: global buffer
+
+settings         abbr.  default  valid values
+
+colorScheme      cs     light    light dark      color scheme
+encoding         enc    utf-8    .NET encodings  file encoding
+strictEncoding   se     true     false true      raise an error on invalid bytes read from file
+fileFormat       ff     dos      dos unix mac    format of new line separator used for writing to a file
+newLineAtEof     nae    true     false true      append a new line separator at EOF when writing to a file
+                                                 (doesn't apply for a single empty line)
+readOnly         ro     false    false true      file opened as read-only (viewing mode)
+maxSavedUndos    msu    25       1 to ...        maximum count of retained saved undos
+reSearchMatching rsm    true     false true      re-search for matchings after the buffer's content change
+recursionLimit   rl     1000     1 to ...        recursion limit for a sequence of keys from key mapping
+wrapLines        wl     false    false true      wrap lines when displaying them
+wrapAtWord       waw    true     false true      wrap lines at word when displaying them
+showLineNumbers  sln    false    false true      show line numbers on the left side of the text area
+tabStop          ts     4        1 to 99         count of spaces in a single tab stop
+tabBySpaces      tbs    true     false true      tab and indent by space characters
+scrollOffset     so     3        0 to 99         count of characters always displayed near the main cursor
+cursorBeforeEol  cbe    false    false true      put cursor at EOL instead of the last line character
+                                                 (applies to some of "cursor movement" commands)
+
+
+Key mappings -------------------------------------------------------------------
+
+Scopes: global buffer
+Modes:  normal insert promptNormal promptInsert
+
+Key specifications: key, <key> or <modifier-key>
+
+Valid modifiers: s c a ca sc sa sca (shift ctrl alt ctrl-alt...)
+
+Special keys:
+
+bsp     backspace
+tab     tab
+ret     enter
+esc     escape
+sp      space bar
+pgup    page up
+pgdown  page down
+end     end
+home    home
+left    left arrow
+up      up arrow
+right   right arrow
+down    down arrow
+ins     insert
+del     delete
+
+f1-f12  F1-F12
+
+dq      "
+lt      <
+gt      >
+
+Examples: x, <x>, <c-x>, <del>, <c-del>
+
+In map and unmap commands, key can be a single key or a "key prefix and key" pair.
+Key prefix can be one of <c-b>, <c-e>, <c-B>, <c-E>, <sc-b>, <sc-e>.
+
+Examples: a, <c-b>a, <c-B>a, <sc-b>a.
+
+
+Commands valid also in configuration files -------------------------------------
+
+execCfg set unset map unmap reg unreg
+
+
+Application's command line options ---------------------------------------------
+
+-c   cfgName         after start-up, execute given configuration file
+                     (.cfg extension is added to cfgName automatically)
+-enc encoding        use given encoding when opening a file
+                     (default is utf-8)
+-se  strictEncoding  raise an error on invalid bytes read from file
+                     (default is true)
+-v   filePath        open file for viewing
+-e   filePath        open file for editing
+     filePath        open file for editing
+
+Examples: ape.exe -c mycfg -se false -enc utf-8 a.txt
+		  ape.exe -v a.txt
+
+Default configuration file executed after start-up is "default.cfg".

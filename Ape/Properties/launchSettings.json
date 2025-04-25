@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Ape": {
+      "commandName": "Project",
+      "commandLineArgs": "test.txt"
+    }
+  }
+}

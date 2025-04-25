@@ -1,0 +1,427 @@
+﻿module TextAreaBuffer
+
+open System
+open System.Collections.Immutable
+
+open Commands.InCommands
+open Common
+open Context
+open DataTypes
+open Position
+open Selection
+open Selections
+open SelectionsRegisters
+open TextAreaDelegator
+open TextRangesModifier
+open UndoProvider
+open UserMessages
+open WrappedRef
+
+let private getBufferState
+    (lines:         Lines option)
+    (selections:    Selections)
+    (selsRegisters: SelectionsRegisters)
+    (wantedColumns: Helpers.WantedColumns)
+    displayPos
+  =
+    let lines = lines |> Option.map ImmutableArray.CreateRange
+
+    {
+        names            = []
+        wasSaved         = false
+        lines            = lines
+        selections       = selections.GetImmutable ()
+        mainIndex        = selections.MainIndex
+        selsRegisters    = selsRegisters.GetAllImmutable ()
+        displayPos       = displayPos
+        pendingWCActions = wantedColumns.GetPendingWCActions ()
+    }
+
+[<Sealed>]
+type TextAreaBuffer (
+    myContextRef:   IWrappedRef<MainContext>,
+    myUserMessages: UserMessages,
+    myRegisters:    Registers.Registers,
+    inFilePath:     string
+) =
+    let mutable myContext = myContextRef.Value
+    let handleContextChanged () = myContext <- myContextRef.Value
+    let myContextChangedDisposable =
+        myContextRef.Subscribe handleContextChanged
+
+    let myBasicState = {
+        displayPos = DisplayPos_Zero; prevCommand = None
+    }
+
+    // fields affected by Undo/Redo
+    let myLines           = Lines [Chars.Empty]
+    let mySelectionsArray = ResizeArray<Selection> [Selection_Zero]
+    let mySelections      = Selections mySelectionsArray
+    let mySelsModifier    = TextRangesModifier mySelectionsArray
+    let mySelsRegisters   = SelectionsRegisters ()
+    let myWantedColumns   = Helpers.WantedColumns mySelections
+
+    // LoadFile/WriteFile mechanism
+    let mutable myIsBufferChanged = false
+
+    // reporting a need for Undo registration
+    let mutable myHasUndoToRegister      = false
+    let mutable myHasUndoLinesToRegister = false
+
+    let myMatchRanges = MatchRanges.MatchRanges (
+        myUserMessages, myLines
+    )
+    let myUndoProvider = UndoProvider (
+        // the same code as in GetInitialUndoState, which can't be called here
+        getBufferState (Some myLines) mySelections mySelsRegisters
+            myWantedColumns myBasicState.displayPos
+    )
+    let myDispatcher = new TextAreaDispatcher.TextAreaDispatcher (
+        myContextRef,
+        myUserMessages, myLines, myRegisters, mySelections, mySelsRegisters,
+        myWantedColumns, myMatchRanges, myUndoProvider
+    )
+    let myRenderer = TextAreaRenderer.TextAreaRenderer (
+        myLines, mySelections, myMatchRanges, myDispatcher
+    )
+
+    // delegators
+
+    let myBasicDelegator = TextAreaDelegator.TextAreaBasic (
+        myBasicState,
+        mySelections,
+        myWantedColumns, myMatchRanges, myDispatcher
+    )
+    let myModifyingDelegator = TextAreaDelegator.TextAreaModifying (
+        myBasicState,
+        myLines, myRegisters,
+        mySelections, mySelsModifier, mySelsRegisters,
+        myWantedColumns, myDispatcher
+    )
+    let myTextRangesDelegator = TextAreaDelegator.TextAreaTextRanges (
+        myBasicState,
+        mySelections, mySelsModifier, mySelsRegisters,
+        myWantedColumns, myDispatcher
+    )
+    let mySelectionsDelegator = TextAreaDelegator.TextAreaSelections (
+        myBasicState,
+        myWantedColumns, myDispatcher
+    )
+    let myUndoRedoDelegator = TextAreaDelegator.TextAreaUndoRedo (
+        myBasicState,
+        myDispatcher
+    )
+
+    // public properties
+
+    member val FilePath = inFilePath
+        with get, set
+
+    member _.IsReadOnly             = myContext.readOnly
+    member _.IsBufferChanged        = myIsBufferChanged
+    member _.HasUndoToRegister      = myHasUndoToRegister
+    member _.HasUndoLinesToRegister = myHasUndoLinesToRegister
+
+    // only for testing purposes
+    member _.Lines      = myLines
+    member _.Selections = mySelections
+    member _.Main       = mySelections.Main
+
+    // private properties
+
+    member private _.DisplayPos
+        with get ()    = myBasicState.displayPos
+        and  set value = myBasicState.displayPos  <- value
+
+    member private _.PrevCommand
+        with get ()    = myBasicState.prevCommand
+        and  set value = myBasicState.prevCommand <- value
+
+    // commands
+
+    member this.PerformCommand isNormalMode isExtending command count =
+        if this.IsReadOnly && isWriteCommand command then
+            myUserMessages.RegisterMessage ERROR_FILE_OPENED_AS_READ_ONLY
+        else
+            this.PerformCommandAux isNormalMode isExtending command count
+
+    member private this.PerformCommandAux isNormalMode isExtending command count =
+
+        match command with
+        | CommonCommand (CursorToNextMatch _)    ->
+            myBasicDelegator.PerformMatchCommand    isExtending command count true
+        | CommonCommand (CursorToPrevMatch _)    ->
+            myBasicDelegator.PerformMatchCommand    isExtending command count false
+        | CommonCommand _                        ->
+            myBasicDelegator.PerformOnAllSelections isExtending command count
+
+        | WrapLinesDepCommand ScrollPageUp
+        | WrapLinesDepCommand ScrollPageDown     ->
+            myBasicDelegator.PerformOnMainSelection isExtending command count
+        | WrapLinesDepCommand CenterVertically
+        | WrapLinesDepCommand CenterHorizontally
+        | WrapLinesDepCommand AdaptDisplayPos    ->
+            myBasicDelegator.PerformViewCommand     isExtending command count
+        | WrapLinesDepCommand _                  ->
+            myBasicDelegator.PerformOnAllSelections isExtending command count
+
+        | ModifyingCommand    x ->
+            let isLinesModified = ref false
+
+            myModifyingDelegator.PerformModifyingCommand isNormalMode x count isLinesModified
+
+            if isLinesModified.Value then
+                this.ReSearchOrClearMatching()
+                myIsBufferChanged        <- true
+                myHasUndoLinesToRegister <- true
+
+        | TextRangesCommand   x ->
+            let isLinesModified = ref false
+
+            myTextRangesDelegator.PerformTextRangesCommand x count isLinesModified
+
+            if isLinesModified.Value then
+                this.ReSearchOrClearMatching()
+                myIsBufferChanged        <- true
+                myHasUndoLinesToRegister <- true
+
+        | SelectionsCommand   x ->
+            mySelectionsDelegator.PerformSelectionsCommand x count
+
+        | UndoRedoCommand     x ->
+            let isLinesApplied = ref false
+
+            myUndoRedoDelegator.PerformUndoRedoCommand x count isLinesApplied
+
+            if isLinesApplied.Value then
+                this.ReSearchOrClearMatching()
+                myIsBufferChanged <- not (
+                    myUndoProvider.IsCurrentStateSaved
+                )
+
+        mySelections.Sort ()
+
+        myHasUndoToRegister <- myHasUndoToRegister ||
+            match command with
+            | WrapLinesDepCommand AdaptDisplayPos
+            | UndoRedoCommand     _               -> false
+            | _                                   -> true
+
+        myDispatcher.ApplyChangedLinesCountIfNeeded ()
+
+        let first, last = mySelections.GetSelectionsSpan ()
+        myDispatcher.DisplayRenderer.TrimLinesCacheIfNeeded
+            first.line last.line
+
+    // rendering
+
+    member this.GetDisplayRows () =
+        myRenderer.GetDisplayRows this.DisplayPos
+
+    member _.GetCursorPosForStatusArea () =
+        myRenderer.GetCursorPosForStatusArea ()
+
+    // search matching
+
+    member this.SearchMatching regex =
+        let isSameRegex = (myMatchRanges.LastRegex = Some regex)
+
+        myMatchRanges.Search regex
+
+        // The next performed command will be CursorTo...Match.
+        match this.PrevCommand with
+        | Some (CommonCommand (CursorToNextMatch _))
+        | Some (CommonCommand (CursorToPrevMatch _)) ->
+            if not isSameRegex then
+                // Perform it with isFirstCall = true also in this case.
+                this.PrevCommand <- None
+        | _ ->
+            ()
+
+    member _.ReSearchMatching () =
+        myMatchRanges.ReSearch ()
+
+    member _.ClearMatching () =
+        myMatchRanges.Clear ()
+
+    member private _.ReSearchOrClearMatching() =
+        if myContext.reSearchMatching then
+            if not myMatchRanges.WasCleared then
+                myMatchRanges.ReSearch ()
+        else
+            myMatchRanges.Clear ()
+
+    // Undo/Redo
+
+    member this.RegisterUndo isStateVolatile =
+        let withLines = myHasUndoLinesToRegister
+
+        myUndoProvider.RegisterState (this.GetUndoState withLines) isStateVolatile
+
+        myHasUndoToRegister      <- false
+        myHasUndoLinesToRegister <- false
+
+    member _.ClearIsLastUndoVolatile () =
+        myUndoProvider.ClearIsLastStateVolatile ()
+
+    member this.UndoCorruptedState () =
+        myDispatcher.UndoRedoPerformer.UndoCorruptedState ()
+
+        this.ClearMatching()
+
+        myHasUndoToRegister      <- false
+        myHasUndoLinesToRegister <- false
+
+        myDispatcher.ApplyChangedLinesCountIfNeeded ()
+
+        myDispatcher.DisplayRenderer.ResetLinesCache ()
+
+    member private this.ResetUndoState () =
+        myUndoProvider.Reset (this.GetInitialUndoState ())
+
+        myHasUndoToRegister      <- false
+        myHasUndoLinesToRegister <- false
+
+    member private this.GetInitialUndoState () =
+        // the same code as in myUndoProvider initialization
+        getBufferState (Some myLines) mySelections mySelsRegisters
+            myWantedColumns this.DisplayPos
+
+    member private this.GetUndoState withLines =
+        let lines =
+            if withLines then
+                Some myLines
+            else
+                None
+
+        getBufferState lines mySelections mySelsRegisters
+            myWantedColumns this.DisplayPos
+
+    // others
+
+    member this.LoadStrings (lines: string seq) =
+        myLines.Clear ()
+
+        try
+            this.LoadStringsAux lines myLines
+        finally
+            this.AssureNonZeroLinesCount ()
+            this.ResetState ()
+            this.ResetUndoState ()
+
+    member this.LoadFile encoding strictEncoding quite =
+        myLines.Clear ()
+
+        try
+            let result = this.LoadFileAux encoding strictEncoding quite
+            TestMines.checkMine (nameof this.LoadFile)
+            result
+        finally
+            this.AssureNonZeroLinesCount ()
+            this.ResetState ()
+            this.ResetUndoState ()
+
+    member this.ReloadFile encoding strictEncoding =
+        let cursor      = this.Main.Cursor
+        let displayLine = this.DisplayPos.line
+
+        myLines.Clear ()
+
+        try
+            let result = this.LoadFileAux encoding strictEncoding false
+            TestMines.checkMine (nameof this.ReloadFile)
+            result
+        finally
+            this.AssureNonZeroLinesCount ()
+            this.ResetStateAfterReload cursor displayLine
+            this.ResetUndoState ()
+
+    member this.WriteFile encoding fileFormat endWithNewLine =
+        FileUtils.writeFile this.FilePath encoding fileFormat endWithNewLine myLines
+
+        myUndoProvider.SetCurrentStateAsSaved myContext.maxSavedUndos
+
+        myIsBufferChanged <- false
+
+    // others - private
+
+    member private _.LoadStringsAux lines result =
+        for line in lines do
+            result.Add (stringToChars line)
+
+    member private this.LoadFileAux encoding strictEncoding quite =
+        try
+            FileUtils.readFile this.FilePath encoding strictEncoding myLines
+        with
+        | :? System.IO.DirectoryNotFoundException as ex ->
+            if not quite then
+                myUserMessages.RegisterMessage (
+                    UserMessages.makeWarningMessage ex.Message
+                )
+            (FileUtils.FileFormat.dos, true)
+        | :? System.IO.FileNotFoundException as ex ->
+            if not quite then
+                myUserMessages.RegisterMessage (
+                    UserMessages.makeInfoMessage ex.Message
+                )
+            (FileUtils.FileFormat.dos, true)
+
+    member private _.AssureNonZeroLinesCount () =
+        if myLines.Count = 0 then
+            myLines.Add Chars.Empty
+
+    // auxiliary
+
+    member private this.ResetState () =
+        mySelections.Clear ()
+        mySelections.Add Selection_Zero
+
+        mySelsRegisters.Clear ()
+
+        myMatchRanges.Clear ()
+
+        this.DisplayPos <- DisplayPos_Zero
+
+        myIsBufferChanged <- false
+
+        myDispatcher.DisplayRenderer.ResetLinesCache ()
+
+    member private this.ResetStateAfterReload cursor displayLine =
+        mySelections.Clear ()
+
+        let newCursor = this.GetValidCursorPos cursor
+
+        mySelections.Add {
+            Selection_Zero with first = newCursor; last = newCursor
+        }
+
+        mySelsRegisters.Clear ()
+
+        if myMatchRanges.GetMainGroupCount () <> 0 then
+            myMatchRanges.ReSearch ()
+
+        let newDisplayLine = this.GetValidDisplayLine displayLine
+
+        this.DisplayPos <- {
+            DisplayPos_Zero with line = newDisplayLine
+        }
+
+        myIsBufferChanged <- false
+
+        myDispatcher.DisplayRenderer.ResetLinesCache ()
+
+    member private _.GetValidCursorPos cursor =
+        let line  = min (myLines.Count - 1) cursor.line
+        let char_ = min myLines[line].Length cursor.char
+
+        { line = line; char = char_ }
+
+    member private _.GetValidDisplayLine displayLine =
+        min (myLines.Count - 1) displayLine
+
+    // IDisposable
+
+    interface IDisposable with
+        member _.Dispose () =
+            myContextChangedDisposable.Dispose ()
+            (myDispatcher :> IDisposable).Dispose ()
