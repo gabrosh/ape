@@ -1,4 +1,4 @@
-# ape
+# Ape
 Minimalistic modal text editor in F#
 
 The editor was strongly inspired by Vim and Kakoune text editors.
