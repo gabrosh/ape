@@ -90,6 +90,14 @@ type MatchRanges (
         if this.GetMainGroupCount () = 0 then
             myUserMessages.RegisterMessage WARNING_NO_MATCH_FOUND            
 
+    /// Re-searches for the regex used in the last call to Search.
+    member this.ReSearch () =
+        match myLastRegex with
+        | Some regex -> this.Search regex
+        | None       -> ()
+
+        myWasCleared <- false
+
     // virtual
 
     /// Searches the lines for given single-line regular expression.
@@ -125,17 +133,6 @@ type MatchRanges (
                 |> ignore
         mlr.FinishProcessing ()
 
-    /// Re-searches for the regex used in the last call to Search.
-    abstract member ReSearch:
-        unit -> unit
-
-    override this.ReSearch () =
-        match myLastRegex with
-        | Some regex -> this.Search regex
-        | None       -> ()
-
-        myWasCleared <- false
-
     /// Clears text ranges from the last call to Search.
     abstract member Clear:
         unit -> unit
@@ -153,4 +150,3 @@ type MatchRanges (
 
         member this.GetMainGroupCount ()   = this.GetMainGroupCount ()
         member this.GetAllFromMainGroup () = this.GetAllFromMainGroup ()
-        member this.ReSearch ()            = this.ReSearch ()

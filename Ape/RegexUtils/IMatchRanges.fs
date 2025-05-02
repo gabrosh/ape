@@ -15,6 +15,3 @@ type IMatchRanges =
     abstract member GetAllFromMainGroup:
         unit
      -> TextRanges
-
-    abstract member ReSearch:
-        unit -> unit
