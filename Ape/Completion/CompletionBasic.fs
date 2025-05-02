@@ -24,7 +24,7 @@ let complete_execCfg: CompleteFun list = [
 
 // write, write!
 
-let complete_writeAux_filePath _context (_argsMap: ArgsMap) (argInCompl: string) =
+let complete_writeAux_filePath _context (_argsMap: ArgsMap) (_argInCompl: string) =
     seq { ListOnly "#filePath" }
 
 let complete_writeAux: CompleteFun list = [
@@ -78,3 +78,12 @@ let complete_editView: CompleteFun list = [
 let complete_edit     = complete_editView
 let complete_editBang = complete_editView
 let complete_view     = complete_editView
+
+// extract
+
+let complete_extract_filePath _context (_argsMap: ArgsMap) (_argInCompl: string) =
+    seq { ListOnly "#filePath" }
+
+let complete_extract: CompleteFun list = [
+    complete_extract_filePath
+]

@@ -39,7 +39,7 @@ let mainContextRef = textArea.CurrentMainContextRef
 let prompt = new Prompt.Prompt (
     consoleContextRef, mainContextRef, userMessages, registers,
     CommandCompletion.getCompletions,
-    IdentCompletion.getCompletions true (fun () -> textArea.Lines)
+    IdentCompletion.getCompletions true (fun () -> textArea.LinesForCompletion)
 )
 let statusArea = new StatusArea.StatusArea (
     mainContextRef

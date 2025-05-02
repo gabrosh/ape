@@ -27,7 +27,7 @@ type CommonPerformer (
     myContextRef:   IWrappedRef<AreaContext>,
     myUserMessages: UserMessages,
     myLines:        Lines,
-    myMatchRanges:  MatchRanges.MatchRanges
+    myMatchRanges:  IMatchRanges.IMatchRanges
 ) =
     let mutable myContext = myContextRef.Value
     let handleContextChanged () = myContext <- myContextRef.Value
@@ -237,16 +237,19 @@ type CommonPerformer (
     // CursorNextMatch, CursorPrevMatch
 
     member private _.CursorToNextMatch isInitial =
-        if not isInitial && myMatchRanges.GetMainGroupCount () = 0 then
+        let toResearch = (
+            not isInitial && myMatchRanges.WasCleared
+        )
+
+        if toResearch then
             myMatchRanges.ReSearch ()
 
-        if myMatchRanges.GetMainGroupCount () = 0 then
-            myUserMessages.RegisterMessage WARNING_NO_MATCH_FOUND
-        else
+        if myMatchRanges.GetMainGroupCount () <> 0 then
             let compareFun = compareFirstTo { line = myLine; char = myChar }
 
-            let f = if myIsFirstCall then findFirstEqOrGtInSortedArray
-                                     else findFirstGreaterInSortedArray
+            let f = if isInitial || toResearch || myIsFirstCall
+                    then findFirstEqOrGtInSortedArray
+                    else findFirstGreaterInSortedArray
 
             let matchRanges = myMatchRanges.GetAllFromMainGroup ()
 
@@ -262,16 +265,19 @@ type CommonPerformer (
                 myUserMessages.RegisterMessage WARNING_SEARCH_HIT_BOTTOM_CONT_AT_TOP
 
     member private _.CursorToPrevMatch isInitial =
-        if not isInitial && myMatchRanges.GetMainGroupCount () = 0 then
+        let toResearch = (
+            not isInitial && myMatchRanges.WasCleared
+        )
+
+        if toResearch then
             myMatchRanges.ReSearch ()
 
-        if myMatchRanges.GetMainGroupCount () = 0 then
-            myUserMessages.RegisterMessage WARNING_NO_MATCH_FOUND
-        else
+        if myMatchRanges.GetMainGroupCount () <> 0 then
             let compareFun = compareFirstTo { line = myLine; char = myChar }
 
-            let f = if myIsFirstCall then findLastEqOrLtInSortedArray
-                                     else findLastLowerInSortedArray
+            let f = if isInitial || toResearch || myIsFirstCall 
+                    then findLastEqOrLtInSortedArray
+                    else findLastLowerInSortedArray
 
             let matchRanges = myMatchRanges.GetAllFromMainGroup ()
 

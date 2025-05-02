@@ -6,7 +6,7 @@ open PositionClassifier
 type TextAreaRenderer (
     myLines:       Lines,
     mySelections:  Selections.Selections,
-    myMatchRanges: MatchRanges.MatchRanges,
+    myMatchRanges: IMatchRanges.IMatchRanges,
     myDispatcher:  TextAreaDispatcher.TextAreaDispatcher
 ) =
     member private _.MainLine = mySelections.Main.Cursor.line

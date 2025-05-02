@@ -45,6 +45,7 @@
     <Compile Include="TextRanges\Selections.fs" />
     <Compile Include="TextRanges\SelectionsRegisters.fs" />
     <Compile Include="TextRanges\PositionClassifier.fs" />
+    <Compile Include="TextRanges\LineMatchClassifier.fs" />
     <Compile Include="Common\Commands.fs" />
     <Compile Include="Common\UserMessages.fs" />
     <Compile Include="Common\Settings.fs" />
@@ -56,7 +57,9 @@
     <Compile Include="RegexUtils\SimpleRegex.fs" />
     <Compile Include="RegexUtils\SingleLineRegex.fs" />
     <Compile Include="RegexUtils\MultiLineRegex.fs" />
+    <Compile Include="RegexUtils\IMatchRanges.fs" />
     <Compile Include="RegexUtils\MatchRanges.fs" />
+    <Compile Include="RegexUtils\MatchRangesExtract.fs" />
     <Compile Include="Helpers\LinesAccessor.fs" />
     <Compile Include="Helpers\WantedColumns.fs" />
     <Compile Include="Helpers\UndoProvider.fs" />
@@ -84,7 +87,9 @@
     <Compile Include="TextArea\TextAreaTextRanges.fs" />
     <Compile Include="TextArea\TextAreaSelections.fs" />
     <Compile Include="TextArea\TextAreaUndoRedo.fs" />
+    <Compile Include="TextArea\ITextAreaBuffer.fs" />
     <Compile Include="TextArea\TextAreaBuffer.fs" />
+    <Compile Include="TextArea\TextAreaBufferExtract.fs" />
     <Compile Include="TextArea\BuffersRegistry.fs" />
     <Compile Include="TextArea\TextArea.fs" />
     <Compile Include="Prompt\PromptDispatcher.fs" />

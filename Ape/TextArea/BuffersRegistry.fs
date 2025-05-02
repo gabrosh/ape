@@ -12,7 +12,7 @@ type private Item = {
     settings:       Settings.Settings
     keyMappings:    KeyMappings.KeyMappings
     mainContextRef: WrappedRef<MainContext>
-    buffer:         TextAreaBuffer.TextAreaBuffer
+    buffer:         ITextAreaBuffer.ITextAreaBuffer
 }
 
 let private getFullName filePath =
@@ -30,7 +30,7 @@ type BuffersRegistry (
     let mutable myCurrentIndex = -1
 
     do
-        this_.AddEmptyBuffer noFilePath
+        this_.AddTextAreaBuffer noFilePath
 
     member _.CurrentSettings       = myItems[myCurrentIndex].settings
     member _.CurrentKeyMappings    = myItems[myCurrentIndex].keyMappings
@@ -42,8 +42,8 @@ type BuffersRegistry (
         this.CurrentMainContextRef.Value <-
             makeMainContext myContextRef.Value this.CurrentSettings
 
-    /// Adds an empty buffer at the end of the registry and sets it as the current one.
-    member _.AddEmptyBuffer (filePath: string) =
+    /// Adds an empty TextAreaBuffer at the end of the registry and sets it as the current one.
+    member _.AddTextAreaBuffer (filePath: string) =
         let bufferSettings = Settings.makeBufferSettings myGlobalSettings
 
         let bufferKeyMappings = KeyMappings.makeBufferKeyMappings myGlobalKeyMappings
@@ -63,6 +63,27 @@ type BuffersRegistry (
             buffer         = buffer
         }
 
+    /// Adds an empty TextAreaBufferExtract at the end of the registry and sets it as the current one.
+    member _.AddTextAreaBufferExtract (parent: TextAreaBuffer.TextAreaBuffer) (fileName: string) =
+        let bufferSettings = Settings.makeBufferSettings myGlobalSettings
+
+        let bufferKeyMappings = KeyMappings.makeBufferKeyMappings myGlobalKeyMappings
+
+        let mainContextRef = WrappedRef (makeMainContext myContextRef.Value bufferSettings)
+
+        let buffer = new TextAreaBufferExtract.TextAreaBufferExtract (
+            parent, mainContextRef, myUserMessages, myRegisters, fileName
+        )
+
+        myCurrentIndex <- myItems.Count
+
+        myItems.Add {
+            settings       = bufferSettings
+            keyMappings    = bufferKeyMappings
+            mainContextRef = mainContextRef
+            buffer         = buffer
+        }
+
     /// Deletes the current buffer from the registry.
     /// Switches to the next buffer or the first one if the deleted buffer was the last.
     member this.DeleteBuffer () =
@@ -71,7 +92,7 @@ type BuffersRegistry (
         (buffer :> IDisposable).Dispose ()
 
         if myItems.Count = 0 then
-            this.AddEmptyBuffer noFilePath
+            this.AddTextAreaBuffer noFilePath
             myCurrentIndex <- 0
         elif myCurrentIndex = myItems.Count then
             myCurrentIndex <- 0

@@ -59,9 +59,8 @@ type PromptBuffer (
     let mutable myHasUndoToRegister      = false
     let mutable myHasUndoLinesToRegister = false
 
-    let myMatchRanges = MatchRanges.MatchRanges (
-        inUserMessages, myLines
-    )
+    let myMatchRanges = MatchRanges.MatchRanges (inUserMessages, myLines)
+
     let myUndoProvider = UndoProvider (
         // the same code as in GetInitialUndoState, which can't be called here
         getBufferState (Some myLines) mySelections mySelsRegisters
@@ -107,15 +106,15 @@ type PromptBuffer (
 
     // public properties
 
+    member _.Line = myLines[0]
+    member _.Main = mySelections.Main
+
     member _.HasUndoToRegister      = myHasUndoToRegister
     member _.HasUndoLinesToRegister = myHasUndoLinesToRegister
-
-    member _.Line = myLines[0]
 
     // only for testing purposes
     member _.Lines      = myLines
     member _.Selections = mySelections
-    member _.Main       = mySelections.Main
 
     // private properties
 

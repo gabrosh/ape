@@ -32,6 +32,9 @@ let ERROR_INVALID_REGISTER_NAME =
 let ERROR_EMPTY_REGISTER_VALUE =
     ErrorMessage   , "Empty register value: '{0}'"
 
+let ERROR_CANT_CREATE_EXTRACT_BUFFER =
+    ErrorMessage   , "Can't create extract buffer from extract buffer."
+
 let INFO_FILE_ALREADY_OPENED =
     InfoMessage    , "File already opened: '{0}'"
 let ERROR_FILE_OPENED_AS_READ_ONLY =

@@ -36,7 +36,7 @@ type TextAreaDispatcher (
     inSelections:    Selections.Selections,
     inSelsRegisters: SelectionsRegisters.SelectionsRegisters,
     inWantedColumns: Helpers.WantedColumns,
-    inMatchRanges:   MatchRanges.MatchRanges,
+    inMatchRanges:   IMatchRanges.IMatchRanges,
     inUndoProvider:  UndoProvider.UndoProvider
 ) =
     let myAreaContextRef = WrappedRef (

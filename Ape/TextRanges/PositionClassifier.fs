@@ -77,6 +77,7 @@ type PositionClassifier (
     /// it returns index of the match group, otherwise it returns -1. 
     /// Positions in subsequent calls to this method must not decrease.
     member this.IsInMatch position =
+        // groupIndex
         let mutable i = myMatchRanges.Length - 1
         
         while i >= 0 && not (this.IsInMatchGroup i position) do

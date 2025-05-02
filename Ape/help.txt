@@ -286,6 +286,8 @@ view           v      [[strictEncoding] encoding] filePath
 reload         r                                 reload file
 reload!        r!                                reload file, suppressing warnings
                                                  (no write since last change)
+extract        ex     [filePath]                 create new extract buffer from the current one
+                                                 (an extract buffer displays only lines with matchings)
 bufferDelete   bd                                delete buffer
 bufferDelete!  bd!                               delete buffer, suppressing warnings
                                                  (no write since last change)

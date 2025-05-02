@@ -164,6 +164,26 @@ let argsMapSpec_reloadBang = argsMapSpec_reloadAux
 let execute_reload     = command_reloadAux false
 let execute_reloadBang = command_reloadAux true
 
+// extract
+
+let argsMapSpec_extract = (0, [| "filePath" |])
+
+let execute_extract context (argsMap: ArgsMap) =
+    let filePath =
+        argsMap["filePath"] |> Option.defaultWith (
+            fun () -> context.textArea.FilePath + ".ex"
+        )
+
+    if context.textArea.HasBufferWithFilePath filePath then
+        context.textArea.ToBufferWithFilePath filePath
+        context.userMessages.RegisterMessage (
+            formatMessage INFO_FILE_ALREADY_OPENED filePath
+        )
+    else
+        context.textArea.Extract filePath
+
+    false
+
 // bufferDelete, bufferDelete!
 
 let argsMapSpec_bufferDeleteAux: ArgsMapSpec = (0, [| |])

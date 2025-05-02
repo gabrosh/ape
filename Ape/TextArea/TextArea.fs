@@ -11,6 +11,7 @@ open ConsoleKeys
 open Context
 open DataTypes
 open Settings
+open TextAreaBuffer
 open UserMessages
 open WrappedRef
 
@@ -78,8 +79,9 @@ type TextArea (
     member _.CurrentKeyMappings     = myBuffers.CurrentKeyMappings
     member _.CurrentMainContextRef  = myMainContextRef2 :> IWrappedRef<MainContext>
 
-    member _.Lines                  = myBuffer.Lines
     member _.FilePath               = myBuffer.FilePath
+    member _.Lines                  = myBuffer.Lines
+    member _.LinesForCompletion     = myBuffer.LinesForCompletion
     member _.IsReadOnly             = myBuffer.IsReadOnly
     member _.IsBufferChanged        = myBuffer.IsBufferChanged
     member _.HasUndoToRegister      = myBuffer.HasUndoToRegister
@@ -457,15 +459,7 @@ type TextArea (
     // regular expression matching
 
     member _.SearchMatching regex isForward isExtending =
-        myBuffer.SearchMatching regex
-
-        let command =
-            if isForward then
-                CommonCommand (CursorToNextMatch true)
-            else
-                CommonCommand (CursorToPrevMatch true)
-
-        myBuffer.PerformCommand true isExtending command 1
+        myBuffer.SearchMatching regex isForward isExtending
 
     member _.ReSearchMatching () =
         myBuffer.ReSearchMatching ()
@@ -488,7 +482,7 @@ type TextArea (
     // buffer operations
 
     member this.EditFile filePath encoding strictEncoding quite =
-        myBuffers.AddEmptyBuffer filePath
+        myBuffers.AddTextAreaBuffer filePath
 
         applyBufferSwitch ()
 
@@ -499,7 +493,7 @@ type TextArea (
         | Ok ()   -> this.LoadFileAux quite
 
     member this.ViewFile filePath encoding strictEncoding =
-        myBuffers.AddEmptyBuffer filePath
+        myBuffers.AddTextAreaBuffer filePath
 
         applyBufferSwitch ()
 
@@ -518,11 +512,26 @@ type TextArea (
         | Error e -> myUserMessages.RegisterMessage (makeErrorMessage e)
         | Ok ()   -> this.LoadFileAux false
 
+    member this.Extract fileName =
+        match myBuffers.CurrentBuffer with
+        :? TextAreaBuffer as parent ->
+            myBuffers.AddTextAreaBufferExtract parent fileName
+
+            applyBufferSwitch ()
+
+            this.SetBufferSettingsAux None None (Some "true")
+                |> ignore
+        | _ ->
+            myUserMessages.RegisterMessage ERROR_CANT_CREATE_EXTRACT_BUFFER
+
     member private this.LoadFileAux quite =
         let encoding       = getValueString this.CurrentSettings Name.encoding
         let strictEncoding = getValueBool   this.CurrentSettings Name.strictEncoding
 
-        let fileFormat, endsWithNewLine = myBuffer.LoadFile encoding strictEncoding quite
+        // It's definitely an instance of TextAreaBuffer.
+        let buffer = myBuffer :?> TextAreaBuffer
+
+        let fileFormat, endsWithNewLine = buffer.LoadFile encoding strictEncoding quite
         let newLineAtEof = if isSingleEmptyLine this.Lines then true else endsWithNewLine
 
         let fileFormat   = valueToString (FileFormat fileFormat)

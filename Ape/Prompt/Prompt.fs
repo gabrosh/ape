@@ -73,11 +73,6 @@ type Prompt (
 
     member _.IsCurrentFromHistory   = myHistory.IsCurrentFromHistory
 
-    // private properties
-
-    member private _.IsSingleSelection =
-        myBuffer.Selections.Count = 1
-
     // Insert
 
     member _.PK_Insert key =
@@ -292,20 +287,11 @@ type Prompt (
         match key with
         | Ctrl    InputKey.N
         | NoModif InputKey.Tab ->
-            if not this.IsSingleSelection then
-                invalidOp "Not a single selection"
-            else
-                this.GoToNextInCompletion ()
-
+            this.GoToNextInCompletion ()
             true
-
         | Ctrl    InputKey.P
         | Shift   InputKey.Tab ->
-            if not this.IsSingleSelection then
-                invalidOp "Not a single selection"
-            else
-                this.GoToPreviousInCompletion ()
-
+            this.GoToPreviousInCompletion ()
             true
 
         | _ -> false
@@ -389,7 +375,6 @@ type Prompt (
             this.GoToInCompletion completions (
                 fun () -> completions.GetNext ()
             )
-
         | None ->
             invalidOp ""
 

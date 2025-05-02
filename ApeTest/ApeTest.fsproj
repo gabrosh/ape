@@ -40,6 +40,7 @@
     <Compile Include="TextRangesTest\TextRangesTest.fs" />
     <Compile Include="TextRangesTest\SelectionsTest.fs" />
     <Compile Include="TextRangesTest\PositionClassifierTest.fs" />
+    <Compile Include="TextRangesTest\LineMatchClassifierTest.fs" />
     <Compile Include="CommonTest\SettingsTest.fs" />
     <Compile Include="CommonTest\KeyMappingsTest.fs" />
     <Compile Include="RegexUtilsTest\SimpleRegexTest.fs" />

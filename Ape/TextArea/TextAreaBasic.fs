@@ -8,7 +8,7 @@ type TextAreaBasic (
     inBasicState:    BasicState,
     mySelections:    Selections.Selections,
     myWantedColumns: Helpers.WantedColumns,
-    myMatchRanges:   MatchRanges.MatchRanges,
+    myMatchRanges:   IMatchRanges.IMatchRanges,
     myDispatcher:    TextAreaDispatcher.TextAreaDispatcher
 ) =
     inherit TextAreaDelegator (inBasicState)

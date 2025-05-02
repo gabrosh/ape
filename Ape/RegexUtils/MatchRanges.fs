@@ -1,8 +1,13 @@
 ﻿module MatchRanges
 
+open System.Collections.Generic
+
 open DataTypes
+open IMatchRanges
 open TextRanges
 open UserMessages
+
+type private Regex = System.Text.RegularExpressions.Regex
 
 /// MatchRanges holds results of searching for regex matches as a dictionary of
 /// TextRanges for the main group and, optionally, several named groups. It provides
@@ -11,14 +16,38 @@ open UserMessages
 
 type MatchRanges (
     myUserMessages: UserMessages,
-    myLines:        Lines
+    myLines:        Lines,
+    inLastRegex:    string option,
+    inWasCleared:   bool,
+    inTextRanges:   Dictionary<string, TextRanges>
 ) =
-    let mutable myLastRegex  = None
-    let mutable myWasCleared = false
-    let mutable myTextRanges = makeTextRangesGroups ()
+    let mutable myLastRegex  = inLastRegex
+    let mutable myWasCleared = inWasCleared
+    let mutable myTextRanges = inTextRanges
+
+    new (inUserMessages: UserMessages, inLines: Lines) =
+        MatchRanges(
+            inUserMessages, inLines, None, false, makeTextRangesGroups ()
+        )
+
+    // public properties
+
+    member _.SearchedLines = myLines
 
     member _.LastRegex  = myLastRegex
     member _.WasCleared = myWasCleared
+
+    // internal properties
+
+    member internal _.TextRanges
+        with get ()    = myTextRanges
+        and  set value = myTextRanges <- value
+
+    /// Creates an extract version of this instance using constructor constr.
+    member _.CreateExtract constr (linesExtract: Lines) =
+        constr (
+            myUserMessages, myLines, linesExtract, myLastRegex, myWasCleared, myTextRanges
+        )
 
     /// Returns count of text ranges in the main group.
     member _.GetMainGroupCount () =
@@ -27,6 +56,13 @@ type MatchRanges (
     /// Returns all text ranges from the main group.
     member _.GetAllFromMainGroup () =
         myTextRanges[mainGroupName]
+
+    /// Returns all text ranges from all groups.
+    member _.GetAllFromAllGroups () =
+        myTextRanges |> Seq.map (
+            fun item -> (RegexUtils.getColorIndex item.Key, item.Value)
+        )
+        |> Seq.toArray |> Array.sortBy fst
 
     /// Returns text ranges from all groups in interval <startLine, endLine>.
     member _.GetInIntervalFromAllGroups startLine endLine =
@@ -51,6 +87,9 @@ type MatchRanges (
         else
             this.SearchSingleLine regexObject
 
+        if this.GetMainGroupCount () = 0 then
+            myUserMessages.RegisterMessage WARNING_NO_MATCH_FOUND            
+
     /// Re-searches for the regex used in the last call to Search.
     member this.ReSearch () =
         match myLastRegex with
@@ -59,14 +98,14 @@ type MatchRanges (
 
         myWasCleared <- false
 
-    /// Clears text ranges from the last call to Search.
-    member _.Clear () =
-        myTextRanges <- makeTextRangesGroups ()
-        myWasCleared <- true
+    // virtual
 
-    // auxiliary
+    /// Searches the lines for given single-line regular expression.
+    abstract member SearchSingleLine:
+        regexObject: Regex
+     -> unit
 
-    member private _.SearchSingleLine regexObject =
+    override _.SearchSingleLine (regexObject: Regex) =
         myTextRanges <- makeTextRangesGroups ()
 
         let slr = SingleLineRegex.AddMatchesAsTextRanges regexObject
@@ -77,7 +116,12 @@ type MatchRanges (
                 |> ignore
         slr.FinishProcessing ()
 
-    member private _.SearchMultiLine regexObject =
+    /// Searches the lines for given multi-line regular expression.
+    abstract member SearchMultiLine:
+        regexObject: Regex
+     -> unit
+
+    override _.SearchMultiLine (regexObject: Regex) =
         myTextRanges <- makeTextRangesGroups ()
 
         let mlr = MultiLineRegex.AddMatchesAsTextRanges (
@@ -88,3 +132,24 @@ type MatchRanges (
             mlr.ProcessLine i 0 chars.Length true chars
                 |> ignore
         mlr.FinishProcessing ()
+
+    /// Clears text ranges from the last call to Search.
+    abstract member Clear:
+        unit -> unit
+
+    override _.Clear () =
+        myTextRanges <- makeTextRangesGroups ()
+        myWasCleared <- true
+
+    // IMatchRanges
+
+    interface IMatchRanges with
+
+        member this.WasCleared = this.WasCleared
+
+        member this.GetInIntervalFromAllGroups startLine endLine =
+            this.GetInIntervalFromAllGroups startLine endLine
+
+        member this.GetMainGroupCount ()   = this.GetMainGroupCount ()
+        member this.GetAllFromMainGroup () = this.GetAllFromMainGroup ()
+        member this.ReSearch ()            = this.ReSearch ()
