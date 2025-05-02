@@ -238,7 +238,7 @@ type CommonPerformer (
 
     member private _.CursorToNextMatch isInitial =
         let toResearch = (
-            not isInitial && myMatchRanges.WasCleared
+            not isInitial && myMatchRanges.GetMainGroupCount () = 0
         )
 
         if toResearch then
@@ -266,7 +266,7 @@ type CommonPerformer (
 
     member private _.CursorToPrevMatch isInitial =
         let toResearch = (
-            not isInitial && myMatchRanges.WasCleared
+            not isInitial && myMatchRanges.GetMainGroupCount () = 0
         )
 
         if toResearch then

@@ -1,4 +1,4 @@
-Ape 0.10 - modal text editor
+Ape 0.11 - modal text editor
 
 
 Text area and Prompt area commands ---------------------------------------------

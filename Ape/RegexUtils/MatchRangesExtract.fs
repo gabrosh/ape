@@ -111,8 +111,6 @@ type MatchRangesExtract (
 
     interface IMatchRanges with
 
-        member this.WasCleared = this.WasCleared
-
         member this.GetInIntervalFromAllGroups startLine endLine =
             this.GetInIntervalFromAllGroups startLine endLine
 

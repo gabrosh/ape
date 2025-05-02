@@ -267,9 +267,12 @@ type TextAreaBufferExtract (
     // others
 
     member this.ReloadFile encoding strictEncoding =
+        let cursor      = this.Main.Cursor
+        let displayLine = this.DisplayPos.line
+
         let result = myParent.ReloadFile encoding strictEncoding
 
-        this.ResetState ()
+        this.ResetStateAfterReload cursor displayLine
         this.ResetUndoState ()
 
         result
@@ -294,6 +297,39 @@ type TextAreaBufferExtract (
         myIsBufferChanged <- false
 
         myDispatcher.DisplayRenderer.ResetLinesCache ()
+
+    member private this.ResetStateAfterReload cursor displayLine =
+        mySelections.Clear ()
+
+        let newCursor = this.GetValidCursorPos cursor
+
+        mySelections.Add {
+            Selection_Zero with first = newCursor; last = newCursor
+        }
+
+        mySelsRegisters.Clear ()
+
+        if myMatchRanges.GetMainGroupCount () <> 0 then
+            myMatchRanges.ReSearch ()
+
+        let newDisplayLine = this.GetValidDisplayLine displayLine
+
+        this.DisplayPos <- {
+            DisplayPos_Zero with line = newDisplayLine
+        }
+
+        myIsBufferChanged <- false
+
+        myDispatcher.DisplayRenderer.ResetLinesCache ()
+
+    member private _.GetValidCursorPos cursor =
+        let line  = min (myLines.Count - 1) cursor.line
+        let char_ = min myLines[line].Length cursor.char
+
+        { line = line; char = char_ }
+
+    member private _.GetValidDisplayLine displayLine =
+        min (myLines.Count - 1) displayLine
 
     // ITextAreaBuffer
 

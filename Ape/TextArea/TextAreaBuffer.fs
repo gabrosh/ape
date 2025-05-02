@@ -231,7 +231,7 @@ type TextAreaBuffer (
     member this.SearchMatching regex isForward isExtending =
         let isInitial = (
                myMatchRanges.LastRegex <> Some regex
-            || myMatchRanges.WasCleared
+            || myMatchRanges.GetMainGroupCount () = 0
         )
 
         myMatchRanges.Search regex
