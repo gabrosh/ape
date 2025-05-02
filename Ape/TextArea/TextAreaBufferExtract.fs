@@ -140,6 +140,10 @@ type TextAreaBufferExtract (
         with get ()    = myBasicState.displayPos
         and  set value = myBasicState.displayPos  <- value
 
+    member private _.PrevCommand
+        with get ()    = myBasicState.prevCommand
+        and  set value = myBasicState.prevCommand <- value
+
     // commands
 
     member this.PerformCommand isNormalMode isExtending command count =
@@ -148,14 +152,22 @@ type TextAreaBufferExtract (
         else
             this.PerformCommandAux isNormalMode isExtending command count
 
-    member private _.PerformCommandAux isNormalMode isExtending command count =
+    member private this.PerformCommandAux isNormalMode isExtending command count =
 
         match command with
-        | CommonCommand (CursorToNextMatch _)    ->
-            myBasicDelegator.PerformMatchCommand    isExtending command count true
-        | CommonCommand (CursorToPrevMatch _)    ->
-            myBasicDelegator.PerformMatchCommand    isExtending command count false
-        | CommonCommand _                        ->
+        | CommonCommand (CursorToNextMatch isInitial) ->
+            let isInitial' = this.ReSearchIfNeeded isInitial
+            let command'   = CommonCommand (CursorToNextMatch isInitial')
+
+            myBasicDelegator.PerformMatchCommand isExtending command' count true
+
+        | CommonCommand (CursorToPrevMatch isInitial) ->
+            let isInitial' = this.ReSearchIfNeeded isInitial
+            let command'   = CommonCommand (CursorToPrevMatch isInitial')
+
+            myBasicDelegator.PerformMatchCommand isExtending command' count false
+
+        | CommonCommand _ ->
             myBasicDelegator.PerformOnAllSelections isExtending command count
 
         | WrapLinesDepCommand ScrollPageUp
@@ -211,22 +223,40 @@ type TextAreaBufferExtract (
     // search matching
 
     member this.SearchMatching regex _isForward _isExtending =
-        myMatchRanges.Search regex
-
-        this.ResetState ()
-        this.ResetUndoState ()
+        this.WrapMatchingAction (
+            fun () -> myMatchRanges.Search regex
+        )
 
     member this.ReSearchMatching () =
-        myMatchRanges.ReSearch ()
-
-        this.ResetState ()
-        this.ResetUndoState ()
+        this.WrapMatchingAction (
+            fun () -> myMatchRanges.ReSearch ()
+        )        
 
     member this.ClearMatching () =
-        myMatchRanges.Clear ()
+        this.WrapMatchingAction (
+            fun () -> myMatchRanges.Clear ()
+        )
 
-        this.ResetState ()
-        this.ResetUndoState ()
+    member private this.WrapMatchingAction action =
+        let wereMatchings = myMatchRanges.GetMainGroupCount () <> 0
+
+        action ()
+
+        let areMatchings = myMatchRanges.GetMainGroupCount () <> 0
+
+        if wereMatchings || areMatchings then
+            this.ResetState ()
+            this.ResetUndoState ()
+
+    member private this.ReSearchIfNeeded isInitial =
+        if isInitial then
+            true
+        else
+            if myMatchRanges.GetMainGroupCount () = 0 then
+                this.ReSearchMatching ()
+                true
+            else
+                false
 
     // Undo/Redo
 
@@ -294,6 +324,8 @@ type TextAreaBufferExtract (
 
         this.DisplayPos <- DisplayPos_Zero
 
+        this.PrevCommand <- None
+
         myIsBufferChanged <- false
 
         myDispatcher.DisplayRenderer.ResetLinesCache ()
@@ -317,6 +349,8 @@ type TextAreaBufferExtract (
         this.DisplayPos <- {
             DisplayPos_Zero with line = newDisplayLine
         }
+
+        this.PrevCommand <- None
 
         myIsBufferChanged <- false
 

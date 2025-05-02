@@ -237,17 +237,10 @@ type CommonPerformer (
     // CursorNextMatch, CursorPrevMatch
 
     member private _.CursorToNextMatch isInitial =
-        let toResearch = (
-            not isInitial && myMatchRanges.GetMainGroupCount () = 0
-        )
-
-        if toResearch then
-            myMatchRanges.ReSearch ()
-
         if myMatchRanges.GetMainGroupCount () <> 0 then
             let compareFun = compareFirstTo { line = myLine; char = myChar }
 
-            let f = if isInitial || toResearch || myIsFirstCall
+            let f = if isInitial || myIsFirstCall
                     then findFirstEqOrGtInSortedArray
                     else findFirstGreaterInSortedArray
 
@@ -265,17 +258,10 @@ type CommonPerformer (
                 myUserMessages.RegisterMessage WARNING_SEARCH_HIT_BOTTOM_CONT_AT_TOP
 
     member private _.CursorToPrevMatch isInitial =
-        let toResearch = (
-            not isInitial && myMatchRanges.GetMainGroupCount () = 0
-        )
-
-        if toResearch then
-            myMatchRanges.ReSearch ()
-
         if myMatchRanges.GetMainGroupCount () <> 0 then
             let compareFun = compareFirstTo { line = myLine; char = myChar }
 
-            let f = if isInitial || toResearch || myIsFirstCall 
+            let f = if isInitial || myIsFirstCall 
                     then findLastEqOrLtInSortedArray
                     else findLastLowerInSortedArray
 

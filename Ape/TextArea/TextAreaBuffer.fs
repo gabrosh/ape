@@ -150,11 +150,19 @@ type TextAreaBuffer (
     member private this.PerformCommandAux isNormalMode isExtending command count =
 
         match command with
-        | CommonCommand (CursorToNextMatch _)    ->
-            myBasicDelegator.PerformMatchCommand    isExtending command count true
-        | CommonCommand (CursorToPrevMatch _)    ->
-            myBasicDelegator.PerformMatchCommand    isExtending command count false
-        | CommonCommand _                        ->
+        | CommonCommand (CursorToNextMatch isInitial) ->
+            let isInitial' = this.ReSearchIfNeeded isInitial
+            let command' = CommonCommand (CursorToNextMatch isInitial')
+
+            myBasicDelegator.PerformMatchCommand isExtending command' count true
+
+        | CommonCommand (CursorToPrevMatch isInitial) ->
+            let isInitial' = this.ReSearchIfNeeded isInitial
+            let command' = CommonCommand (CursorToPrevMatch isInitial')
+
+            myBasicDelegator.PerformMatchCommand isExtending command' count false
+
+        | CommonCommand _ ->
             myBasicDelegator.PerformOnAllSelections isExtending command count
 
         | WrapLinesDepCommand ScrollPageUp
@@ -250,12 +258,22 @@ type TextAreaBuffer (
     member _.ClearMatching () =
         myMatchRanges.Clear ()
 
-    member private _.ReSearchOrClearMatching() =
+    member private _.ReSearchOrClearMatching () =
         if myContext.reSearchMatching then
             if not myMatchRanges.WasCleared then
                 myMatchRanges.ReSearch ()
         else
             myMatchRanges.Clear ()
+
+    member private this.ReSearchIfNeeded isInitial =
+        if isInitial then
+            true
+        else
+            if myMatchRanges.GetMainGroupCount () = 0 then
+                this.ReSearchMatching ()
+                true
+            else
+                false
 
     // Undo/Redo
 
@@ -387,6 +405,8 @@ type TextAreaBuffer (
 
         this.DisplayPos <- DisplayPos_Zero
 
+        this.PrevCommand <- None
+
         myIsBufferChanged <- false
 
         myDispatcher.DisplayRenderer.ResetLinesCache ()
@@ -410,6 +430,8 @@ type TextAreaBuffer (
         this.DisplayPos <- {
             DisplayPos_Zero with line = newDisplayLine
         }
+
+        this.PrevCommand <- None
 
         myIsBufferChanged <- false
 

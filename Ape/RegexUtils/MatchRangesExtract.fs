@@ -43,6 +43,9 @@ type MatchRangesExtract (
         base.SearchMultiLine regexObject
         this.Update ()
 
+    override _.ReSearch () =
+        base.ReSearch ()
+
     override this.Clear () =
         base.Clear ()
         this.Update ()
@@ -110,10 +113,10 @@ type MatchRangesExtract (
     // IMatchRanges
 
     interface IMatchRanges with
-
+    
         member this.GetInIntervalFromAllGroups startLine endLine =
             this.GetInIntervalFromAllGroups startLine endLine
-
+    
         member this.GetMainGroupCount ()   = this.GetMainGroupCount ()
         member this.GetAllFromMainGroup () = this.GetAllFromMainGroup ()
         member this.ReSearch ()            = this.ReSearch ()
