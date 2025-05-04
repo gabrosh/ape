@@ -93,7 +93,7 @@ type MatchRangesExtract (
         if not this.WasCleared then
             match this.LastRegex with
             | Some regex -> 
-                this.SearchNormal myLinesExtract regex
+                this.SearchAux myLinesExtract regex
             | None ->
                 myUserMessages.RegisterMessage ERROR_NOTHING_TO_SEARCH_FOR            
 
