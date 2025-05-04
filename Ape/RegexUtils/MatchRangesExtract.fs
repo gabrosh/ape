@@ -97,8 +97,6 @@ type MatchRangesExtract (
             | None ->
                 myUserMessages.RegisterMessage ERROR_NOTHING_TO_SEARCH_FOR            
 
-        // We need to re-search here as myLinesExtract has changed.
-
     // auxiliary
 
     member private this.Update () =
