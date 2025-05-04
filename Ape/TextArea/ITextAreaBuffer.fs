@@ -47,7 +47,7 @@ type ITextAreaBuffer =
     abstract member ReSearchMatching:
         unit -> unit
 
-    abstract member ClearMatching:
+    abstract member ClearSearchMatching:
         unit -> unit
 
     // Undo/Redo

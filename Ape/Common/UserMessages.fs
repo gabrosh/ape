@@ -27,14 +27,6 @@ let ERROR_UNKNOWN_COMMAND =
 let ERROR_RECURSION_LIMIT_WAS_REACHED =
     ErrorMessage   , "Recursion limit was reached: {0}"
 
-let ERROR_INVALID_REGISTER_NAME =
-    ErrorMessage   , "Invalid register name: '{0}'"
-let ERROR_EMPTY_REGISTER_VALUE =
-    ErrorMessage   , "Empty register value: '{0}'"
-
-let ERROR_CANT_CREATE_EXTRACT_BUFFER =
-    ErrorMessage   , "Can't create extract buffer from extract buffer."
-
 let INFO_FILE_ALREADY_OPENED =
     InfoMessage    , "File already opened: '{0}'"
 let ERROR_FILE_OPENED_AS_READ_ONLY =
@@ -60,12 +52,22 @@ let INFO_ROTATION_HIT_TOP =
 let ERROR_SELECTIONS_REGISTER_IS_EMPTY =
     ErrorMessage   , "Selections register is empty: '{0}'"
 
-let WARNING_CHAR_NOT_FOUND =
-    WarningMessage , "Character not found."
-let WARNING_PAIRING_CHAR_NOT_FOUND =
-    WarningMessage , "Pairing character not found."
-let ERROR_CURSOR_AT_NON_PAIRED_CHAR =
-    ErrorMessage   , "Cursor at non-paired character."
+let ERROR_INVALID_REGISTER_NAME =
+    ErrorMessage   , "Invalid register name: '{0}'"
+let ERROR_EMPTY_REGISTER_VALUE =
+    ErrorMessage   , "Empty register value: '{0}'"
+
+let ERROR_NOTHING_TO_SEARCH_FOR =
+    ErrorMessage   , "Nothing to search for."
+let WARNING_NO_MATCH_FOUND =
+    WarningMessage , "No match found."
+let INFO_NO_SELECTIONS_DISCARDED =
+    InfoMessage    , "No selections discarded."
+let WARNING_ALL_SELECTIONS_DISCARDED =
+    WarningMessage , "All selections discarded."
+
+let WARNING_MATCH_LINES_COUNT_LIMIT_EXCEEDED =
+    WarningMessage , "Match lines count limit exceeded."
 
 let WARNING_SEARCH_STOPPED_AT_BOTTOM =
     WarningMessage , "Search stopped at bottom."
@@ -76,15 +78,17 @@ let WARNING_SEARCH_HIT_BOTTOM_CONT_AT_TOP =
 let WARNING_SEARCH_HIT_TOP_CONT_AT_BOTTOM =
     WarningMessage , "Search hit top, continuing at bottom."
 
-let WARNING_NO_MATCH_FOUND =
-    WarningMessage , "No match found."
-let INFO_NO_SELECTIONS_DISCARDED =
-    InfoMessage    , "No selections discarded."
-let WARNING_ALL_SELECTIONS_DISCARDED =
-    WarningMessage , "All selections discarded."
+let ERROR_OP_INVALID_ON_EXTRACT_BUFFER =
+    ErrorMessage   , "Operation invalid on an extract buffer."
+let ERROR_OP_INVALID_ON_NON_EXTRACT_BUFFER =
+    ErrorMessage   , "Operation invalid on a non-extract buffer."
 
-let WARNING_MATCH_LINES_COUNT_LIMIT_EXCEEDED =
-    WarningMessage , "Match lines count limit exceeded."
+let WARNING_CHAR_NOT_FOUND =
+    WarningMessage , "Character not found."
+let WARNING_PAIRING_CHAR_NOT_FOUND =
+    WarningMessage , "Pairing character not found."
+let ERROR_CURSOR_AT_NON_PAIRED_CHAR =
+    ErrorMessage   , "Cursor at non-paired character."
 
 let ERROR_CURSOR_AT_WHITE_SPACE =
     ErrorMessage   , "Cursor at white-space character."

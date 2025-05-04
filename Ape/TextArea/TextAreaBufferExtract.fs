@@ -222,19 +222,41 @@ type TextAreaBufferExtract (
 
     // search matching
 
-    member this.SearchMatching regex _isForward _isExtending =
-        this.WrapMatchingAction (
-            fun () -> myMatchRanges.Search regex
+    member this.SearchMatching regex isForward isExtending =
+        let isInitial = (
+               myMatchRanges.LastRegex <> Some regex
+            || myMatchRanges.GetMainGroupCount () = 0
         )
 
-    member this.ReSearchMatching () =
-        this.WrapMatchingAction (
-            fun () -> myMatchRanges.ReSearch ()
-        )        
+        myMatchRanges.Search regex
 
-    member this.ClearMatching () =
+        let command =
+            if isForward then
+                CommonCommand (CursorToNextMatch isInitial)
+            else
+                CommonCommand (CursorToPrevMatch isInitial)
+
+        this.PerformCommand true isExtending command 1
+
+    member _.ReSearchMatching () =
+        myMatchRanges.ReSearch ()
+
+    member _.ClearSearchMatching () =
+        myMatchRanges.ClearSearch ()
+
+    member this.ExtractMatching regex =
         this.WrapMatchingAction (
-            fun () -> myMatchRanges.Clear ()
+            fun () -> myMatchRanges.Extract regex
+        )
+
+    member this.ReExtractMatching () =
+        this.WrapMatchingAction (
+            fun () -> myMatchRanges.ReExtract ()
+        )
+
+    member this.ClearExtractMatching () =
+        this.WrapMatchingAction (
+            fun () -> myMatchRanges.ClearExtract ()
         )
 
     member private this.WrapMatchingAction action =
@@ -297,12 +319,12 @@ type TextAreaBufferExtract (
     // others
 
     member this.ReloadFile encoding strictEncoding =
-        let cursor      = this.Main.Cursor
+        let main        = this.Main
         let displayLine = this.DisplayPos.line
 
         let result = myParent.ReloadFile encoding strictEncoding
 
-        this.ResetStateAfterReload cursor displayLine
+        this.ResetStateAfterReload main displayLine
         this.ResetUndoState ()
 
         result
@@ -330,18 +352,24 @@ type TextAreaBufferExtract (
 
         myDispatcher.DisplayRenderer.ResetLinesCache ()
 
-    member private this.ResetStateAfterReload cursor displayLine =
+    member private this.ResetStateAfterReload main displayLine =
+        let cursor   = main.Cursor
+        let cursorWC = main.CursorWC
+
         mySelections.Clear ()
 
         let newCursor = this.GetValidCursorPos cursor
 
         mySelections.Add {
-            Selection_Zero with first = newCursor; last = newCursor
+            Selection_Zero with first   = newCursor ; last   = newCursor
+                                firstWC = cursorWC  ; lastWC = cursorWC
         }
 
         mySelsRegisters.Clear ()
 
-        if myMatchRanges.GetMainGroupCount () <> 0 then
+        if not myMatchRanges.WasClearedExtract then
+            myMatchRanges.ReExtractBeforeReSearch ()
+        if not myMatchRanges.WasCleared then
             myMatchRanges.ReSearch ()
 
         let newDisplayLine = this.GetValidDisplayLine displayLine
@@ -398,8 +426,8 @@ type TextAreaBufferExtract (
         member this.SearchMatching regex isForward isExtending =
             this.SearchMatching regex isForward isExtending
 
-        member this.ReSearchMatching ()  = this.ReSearchMatching ()
-        member this.ClearMatching ()     = this.ClearMatching ()
+        member this.ReSearchMatching ()    = this.ReSearchMatching ()
+        member this.ClearSearchMatching () = this.ClearSearchMatching ()
 
         // Undo/Redo
 

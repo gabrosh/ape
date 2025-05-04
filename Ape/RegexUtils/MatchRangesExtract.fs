@@ -10,42 +10,94 @@ open Position
 open TextRanges
 open UserMessages
 
-type private Regex = System.Text.RegularExpressions.Regex
-
 /// MatchRangesExtract adds the "extract" functionality to MatchRanges.
 
 type MatchRangesExtract (
-    inUserMessages: UserMessages,
-    inLines:        Lines,
+    myUserMessages: UserMessages,
+    myLines:        Lines,
     myLinesExtract: Lines,
     inLastRegex:    string option,
     inWasCleared:   bool,
     inTextRanges:   Dictionary<string, TextRanges>
 ) =
     inherit MatchRanges (
-        inUserMessages, inLines, inLastRegex, inWasCleared, inTextRanges
+        myUserMessages, myLines, inLastRegex, inWasCleared, inTextRanges
     )
 
     /// Translates index in inLines to index in myLinesExtract.
     let myLineToLineExtract = Dictionary<int, int> ()
 
+    let mutable myLastRegexExtract  = None
+    let mutable myWasClearedExtract = true
+
+    // public properties
+
+    member _.LastRegexExtract  = myLastRegexExtract
+    member _.WasClearedExtract = myWasClearedExtract
+
     /// Initializes the instance after its construction.
     member this.Init () =
+        myLastRegexExtract  <- this.LastRegex
+        myWasClearedExtract <- this.WasCleared
+
         this.Update ()
 
     // virtual
 
-    override this.SearchSingleLine (regexObject: Regex) =
-        base.SearchSingleLine regexObject
+    override this.Search (regex: string) =
+        this.SearchNormal myLinesExtract regex
+
+    override this.ReSearch () =
+        this.ReSearchNormal myLinesExtract
+
+    override this.ClearSearch () =
+        this.ClearSearchNormal ()
+
+    // extract
+
+    member this.Extract (regex: string) =
+        myLastRegexExtract  <- Some regex
+        myWasClearedExtract <- false
+
+        this.SearchNormal myLines regex
         this.Update ()
 
-    override this.SearchMultiLine (regexObject: Regex) =
-        base.SearchMultiLine regexObject
+    member this.ReExtract () =
+        match this.LastRegex with
+        | Some regex ->
+            myLastRegexExtract  <- Some regex
+            myWasClearedExtract <- false
+
+            this.SearchNormal myLines regex
+            this.Update ()
+        | None ->
+            myUserMessages.RegisterMessage ERROR_NOTHING_TO_SEARCH_FOR
+
+    member this.ReExtractBeforeReSearch () =
+        match this.LastRegexExtract with
+        | Some regex ->
+            myLastRegexExtract  <- Some regex
+            myWasClearedExtract <- false
+
+            this.SearchAux myLines regex
+            this.Update ()
+        | None ->
+            myUserMessages.RegisterMessage ERROR_NOTHING_TO_SEARCH_FOR            
+
+    member this.ClearExtract () =
+        myWasClearedExtract <- true
+
+        this.ClearSearchAux ()
         this.Update ()
 
-    override this.Clear () =
-        base.Clear ()
-        this.Update ()
+        if not this.WasCleared then
+            match this.LastRegex with
+            | Some regex -> 
+                this.SearchNormal myLinesExtract regex
+            | None ->
+                myUserMessages.RegisterMessage ERROR_NOTHING_TO_SEARCH_FOR            
+
+        // We need to re-search here as myLinesExtract has changed.
 
     // auxiliary
 
@@ -78,7 +130,7 @@ type MatchRangesExtract (
     member private this.UpdateForNoMatches () =
         myLinesExtract.Clear ()
         myLineToLineExtract.Clear ()
-                    
+
         myLinesExtract.AddRange this.SearchedLines
 
     /// Returns TextRanges corresponding to myLinesExtract.
@@ -110,9 +162,9 @@ type MatchRangesExtract (
     // IMatchRanges
 
     interface IMatchRanges with
-    
+
         member this.GetInIntervalFromAllGroups startLine endLine =
             this.GetInIntervalFromAllGroups startLine endLine
-    
+
         member this.GetMainGroupCount ()   = this.GetMainGroupCount ()
         member this.GetAllFromMainGroup () = this.GetAllFromMainGroup ()

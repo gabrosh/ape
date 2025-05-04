@@ -166,6 +166,9 @@ let private dispatchNormalMain (textArea: TextArea) (prompt: Prompt) key =
         | Alt         InputKey.Question     -> areasToRender <- toRenderPrompt
                                                NextMode (enterPrompt prompt (SearchPrompt (false, true )))
 
+        | NoModif     InputKey.Backslash    -> areasToRender <- toRenderPrompt
+                                               NextMode (enterPrompt prompt ExtractPrompt)
+
         | NoModif     InputKey.S            -> areasToRender <- toRenderPrompt
                                                NextMode (enterPrompt prompt SelectPrompt)
 

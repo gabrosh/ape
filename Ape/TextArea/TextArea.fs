@@ -12,6 +12,7 @@ open Context
 open DataTypes
 open Settings
 open TextAreaBuffer
+open TextAreaBufferExtract
 open UserMessages
 open WrappedRef
 
@@ -464,8 +465,29 @@ type TextArea (
     member _.ReSearchMatching () =
         myBuffer.ReSearchMatching ()
 
-    member _.ClearMatching () =
-        myBuffer.ClearMatching ()
+    member _.ClearSearchMatching () =
+        myBuffer.ClearSearchMatching ()
+
+    member _.ExtractMatching regex =
+        match myBuffer with
+        :? TextAreaBufferExtract as buffer ->
+            buffer.ExtractMatching regex
+        | _ ->
+            myUserMessages.RegisterMessage ERROR_OP_INVALID_ON_NON_EXTRACT_BUFFER
+
+    member _.ReExtractMatching () =
+        match myBuffer with
+        :? TextAreaBufferExtract as buffer ->
+            buffer.ReExtractMatching ()
+        | _ ->
+            myUserMessages.RegisterMessage ERROR_OP_INVALID_ON_NON_EXTRACT_BUFFER
+
+    member _.ClearExtractMatching () =
+        match myBuffer with
+        :? TextAreaBufferExtract as buffer ->
+            buffer.ClearExtractMatching ()
+        | _ ->
+            myUserMessages.RegisterMessage ERROR_OP_INVALID_ON_NON_EXTRACT_BUFFER
 
     member _.SelectMatching regex =
         let command = SelectionsCommand (SelectMatching regex)
@@ -513,7 +535,7 @@ type TextArea (
         | Ok ()   -> this.LoadFileAux false
 
     member this.Extract fileName =
-        match myBuffers.CurrentBuffer with
+        match myBuffer with
         :? TextAreaBuffer as parent ->
             myBuffers.AddTextAreaBufferExtract parent fileName
 
@@ -522,7 +544,7 @@ type TextArea (
             this.SetBufferSettingsAux None None (Some "true")
                 |> ignore
         | _ ->
-            myUserMessages.RegisterMessage ERROR_CANT_CREATE_EXTRACT_BUFFER
+            myUserMessages.RegisterMessage ERROR_OP_INVALID_ON_EXTRACT_BUFFER
 
     member private this.LoadFileAux quite =
         let encoding       = getValueString this.CurrentSettings Name.encoding
@@ -564,7 +586,7 @@ type TextArea (
         let newLineAtEof = getValueBool       this.CurrentSettings Name.newLineAtEof
 
         let endWithNewLine =
-            if isSingleEmptyLine this.Lines then 
+            if isSingleEmptyLine this.Lines then
                 false
             else
                 newLineAtEof
@@ -580,7 +602,7 @@ type TextArea (
         let newLineAtEof = getValueBool       this.CurrentSettings Name.newLineAtEof
 
         let endWithNewLine =
-            if isSingleEmptyLine this.Lines then 
+            if isSingleEmptyLine this.Lines then
                 false
             else
                 newLineAtEof

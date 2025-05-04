@@ -233,9 +233,6 @@ type TextAreaBuffer (
 
     // search matching
 
-    member _.CreateMatchRangesExtract constr (linesExtract: Lines) =
-        myMatchRanges.CreateExtract constr linesExtract
-
     member this.SearchMatching regex isForward isExtending =
         let isInitial = (
                myMatchRanges.LastRegex <> Some regex
@@ -255,15 +252,11 @@ type TextAreaBuffer (
     member _.ReSearchMatching () =
         myMatchRanges.ReSearch ()
 
-    member _.ClearMatching () =
-        myMatchRanges.Clear ()
+    member _.ClearSearchMatching () =
+        myMatchRanges.ClearSearch ()
 
-    member private _.ReSearchOrClearMatching () =
-        if myContext.reSearchMatching then
-            if not myMatchRanges.WasCleared then
-                myMatchRanges.ReSearch ()
-        else
-            myMatchRanges.Clear ()
+    member _.CreateMatchRangesExtract constr (linesExtract: Lines) =
+        myMatchRanges.CreateExtract constr linesExtract
 
     member private this.ReSearchIfNeeded isInitial =
         if isInitial then
@@ -274,6 +267,13 @@ type TextAreaBuffer (
                 true
             else
                 false
+
+    member private _.ReSearchOrClearMatching () =
+        if myContext.reSearchMatching then
+            if not myMatchRanges.WasCleared then
+                myMatchRanges.ReSearch ()
+        else
+            myMatchRanges.ClearSearch ()
 
     // Undo/Redo
 
@@ -290,7 +290,7 @@ type TextAreaBuffer (
     member this.UndoCorruptedState () =
         myDispatcher.UndoRedoPerformer.UndoCorruptedState ()
 
-        this.ClearMatching()
+        this.ClearSearchMatching()
 
         myHasUndoToRegister      <- false
         myHasUndoLinesToRegister <- false
@@ -345,7 +345,7 @@ type TextAreaBuffer (
             this.ResetUndoState ()
 
     member this.ReloadFile encoding strictEncoding =
-        let cursor      = this.Main.Cursor
+        let main        = this.Main
         let displayLine = this.DisplayPos.line
 
         myLines.Clear ()
@@ -356,7 +356,7 @@ type TextAreaBuffer (
             result
         finally
             this.AssureNonZeroLinesCount ()
-            this.ResetStateAfterReload cursor displayLine
+            this.ResetStateAfterReload main displayLine
             this.ResetUndoState ()
 
     member this.WriteFile encoding fileFormat endWithNewLine =
@@ -401,7 +401,7 @@ type TextAreaBuffer (
 
         mySelsRegisters.Clear ()
 
-        myMatchRanges.Clear ()
+        myMatchRanges.ClearSearch ()
 
         this.DisplayPos <- DisplayPos_Zero
 
@@ -411,18 +411,22 @@ type TextAreaBuffer (
 
         myDispatcher.DisplayRenderer.ResetLinesCache ()
 
-    member private this.ResetStateAfterReload cursor displayLine =
+    member private this.ResetStateAfterReload main displayLine =
+        let cursor   = main.Cursor
+        let cursorWC = main.CursorWC
+
         mySelections.Clear ()
 
         let newCursor = this.GetValidCursorPos cursor
 
         mySelections.Add {
-            Selection_Zero with first = newCursor; last = newCursor
+            Selection_Zero with first   = newCursor ; last   = newCursor
+                                firstWC = cursorWC  ; lastWC = cursorWC
         }
 
         mySelsRegisters.Clear ()
 
-        if myMatchRanges.GetMainGroupCount () <> 0 then
+        if not myMatchRanges.WasCleared then
             myMatchRanges.ReSearch ()
 
         let newDisplayLine = this.GetValidDisplayLine displayLine
@@ -479,8 +483,8 @@ type TextAreaBuffer (
         member this.SearchMatching regex isForward isExtending =
             this.SearchMatching regex isForward isExtending
 
-        member this.ReSearchMatching ()  = this.ReSearchMatching ()
-        member this.ClearMatching ()     = this.ClearMatching ()
+        member this.ReSearchMatching ()    = this.ReSearchMatching ()
+        member this.ClearSearchMatching () = this.ClearSearchMatching ()
 
         // Undo/Redo
 

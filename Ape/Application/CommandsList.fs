@@ -23,7 +23,7 @@ let public commandsList = [
     "view"          , "v"   , argsMapSpec_view             , execute_view             , complete_view
     "reload"        , "r"   , argsMapSpec_reload           , execute_reload           , complete_none
     "reload!"       , "r!"  , argsMapSpec_reloadBang       , execute_reloadBang       , complete_none
-    "extract"       , "ex"  , argsMapSpec_extract          , execute_extract          , complete_extract
+    "extract"       , "x"   , argsMapSpec_extract          , execute_extract          , complete_extract
     "bufferDelete"  , "bd"  , argsMapSpec_bufferDelete     , execute_bufferDelete     , complete_none
     "bufferDelete!" , "bd!" , argsMapSpec_bufferDeleteBang , execute_bufferDeleteBang , complete_none
     "bufferNext"    , "bn"  , argsMapSpec_bufferNext       , execute_bufferNext       , complete_none

@@ -222,6 +222,8 @@ Normal mode - enter Prompt Normal mode:
      ?               enter "search forward and select" prompt
      <a-?>           enter "search backward and select" prompt
 
+     \               enter "extract" prompt
+
      s               enter "select within selections" prompt
 
      S               enter "keep selections" prompt
@@ -235,13 +237,17 @@ Prompt Normal and Prompt Insert mode:
      <ret>           execute prompt
                      if line is non-empty, it is stored into history
                      for search: if line is empty and it's not a history line,
-                       current matchings are cleared
+                       current search is cleared
+                     for extract: if line is empty and it's not a history line,
+                       current extract is cleared
 
      <s-ret>         execute prompt
                      if line is non-empty, current history line is updated
                      if line is empty, current history line is deleted
                      for search: if line is empty and it's not a history line,
                        re-search is performed
+                     for extract: if line is empty and it's not a history line,
+                       re-extract is performed
 
      <esc>           leave prompt
                      if line is non-empty, it is stored into history
@@ -286,7 +292,7 @@ view           v      [[strictEncoding] encoding] filePath
 reload         r                                 reload file
 reload!        r!                                reload file, suppressing warnings
                                                  (no write since last change)
-extract        ex     [filePath]                 create new extract buffer from the current one
+extract        x      [filePath]                 create new extract buffer from the current one
                                                  (an extract buffer displays only lines with matchings)
 bufferDelete   bd                                delete buffer
 bufferDelete!  bd!                               delete buffer, suppressing warnings

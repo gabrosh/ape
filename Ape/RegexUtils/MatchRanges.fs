@@ -27,7 +27,7 @@ type MatchRanges (
 
     new (inUserMessages: UserMessages, inLines: Lines) =
         MatchRanges(
-            inUserMessages, inLines, None, false, makeTextRangesGroups ()
+            inUserMessages, inLines, None, true, makeTextRangesGroups ()
         )
 
     // public properties
@@ -75,71 +75,89 @@ type MatchRanges (
         )
         |> Seq.toArray |> Array.sortBy fst
 
-    /// Searches for regex going through the whole myLines.
-    member this.Search regex =
+    /// Searches for regex going through lines.
+    member internal this.SearchNormal lines regex =
         myLastRegex  <- Some regex
         myWasCleared <- false
 
+        this.SearchAux lines regex
+
+    member internal this.SearchAux lines regex =
         let regexObject = RegexUtils.makeRegexObject regex
 
         if RegexUtils.isMultiLineRegex regex then
-            this.SearchMultiLine regexObject
+            this.SearchMultiLine lines regexObject
         else
-            this.SearchSingleLine regexObject
+            this.SearchSingleLine lines regexObject
 
         if this.GetMainGroupCount () = 0 then
-            myUserMessages.RegisterMessage WARNING_NO_MATCH_FOUND            
+            myUserMessages.RegisterMessage WARNING_NO_MATCH_FOUND
 
-    /// Re-searches for the regex used in the last call to Search.
-    member this.ReSearch () =
-        match myLastRegex with
-        | Some regex -> this.Search regex
-        | None       -> ()
-
-        myWasCleared <- false
-
-    // virtual
-
-    /// Searches the lines for given single-line regular expression.
-    abstract member SearchSingleLine:
-        regexObject: Regex
-     -> unit
-
-    override _.SearchSingleLine (regexObject: Regex) =
+    member private _.SearchSingleLine (lines: Lines) (regexObject: Regex) =
         myTextRanges <- makeTextRangesGroups ()
 
         let slr = SingleLineRegex.AddMatchesAsTextRanges regexObject
         slr.Init myTextRanges
 
-        for i, chars in myLines |> Seq.indexed do
+        for i, chars in lines |> Seq.indexed do
             slr.ProcessLine i 0 chars.Length true chars
                 |> ignore
         slr.FinishProcessing ()
 
-    /// Searches the lines for given multi-line regular expression.
-    abstract member SearchMultiLine:
-        regexObject: Regex
-     -> unit
-
-    override _.SearchMultiLine (regexObject: Regex) =
+    member private _.SearchMultiLine (lines: Lines) (regexObject: Regex) =
         myTextRanges <- makeTextRangesGroups ()
 
         let mlr = MultiLineRegex.AddMatchesAsTextRanges (
             myUserMessages, regexObject, myTextRanges
         )
 
-        for i, chars in myLines |> Seq.indexed do
+        for i, chars in lines |> Seq.indexed do
             mlr.ProcessLine i 0 chars.Length true chars
                 |> ignore
         mlr.FinishProcessing ()
 
+    /// Re-searches for the regex used in the last call to Search going through lines.
+    member internal this.ReSearchNormal lines =
+        match myLastRegex with
+        | Some regex ->
+            myWasCleared <- false
+
+            this.SearchAux lines regex
+        | None ->
+            myUserMessages.RegisterMessage ERROR_NOTHING_TO_SEARCH_FOR
+
     /// Clears text ranges from the last call to Search.
-    abstract member Clear:
+    member internal this.ClearSearchNormal () =
+        myWasCleared <- true
+
+        this.ClearSearchAux ()
+
+    member internal _.ClearSearchAux () =
+        myTextRanges <- makeTextRangesGroups ()
+
+    // virtual
+
+    /// Searches for regex.
+    abstract member Search:
+        regex: string
+     -> unit
+
+    override this.Search (regex: string) =
+        this.SearchNormal myLines regex
+
+    /// Re-searches for the regex used in the last call to Search.
+    abstract member ReSearch:
         unit -> unit
 
-    override _.Clear () =
-        myTextRanges <- makeTextRangesGroups ()
-        myWasCleared <- true
+    override this.ReSearch () =
+        this.ReSearchNormal myLines
+
+    /// Clears text ranges from the last call to Search.
+    abstract member ClearSearch:
+        unit -> unit
+
+    override this.ClearSearch () =
+        this.ClearSearchNormal ()
 
     // IMatchRanges
 

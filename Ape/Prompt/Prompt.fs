@@ -334,6 +334,7 @@ type Prompt (
             match promptType with
             | CommandPrompt -> Some myCommandCompletions
             | SearchPrompt _
+            | ExtractPrompt
             | SelectPrompt
             | KeepPrompt
             | DiscardPrompt -> Some myIdentCompletions

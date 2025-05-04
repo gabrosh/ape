@@ -11,6 +11,7 @@ let private getPromptPrefixAndChar promptType =
     | SearchPrompt (false, false) -> ("^"      , '/' )
     | SearchPrompt (true , true ) -> (""       , '?' )
     | SearchPrompt (false, true ) -> ("^"      , '?' )
+    | ExtractPrompt               -> ("extract", ':' )
     | SelectPrompt                -> ("select" , ':' )
     | KeepPrompt                  -> ("keep"   , ':' )
     | DiscardPrompt               -> ("discard", ':' )

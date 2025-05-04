@@ -14,8 +14,11 @@ let executePrompt
         | CommandPrompt ->
             toExit <- CommandExecution.executeCommand userMessages textArea registers promptLine
 
-        | SearchPrompt ( isForward,  isExtending) ->
+        | SearchPrompt (isForward, isExtending) ->
             textArea.SearchMatching promptLine isForward isExtending
+
+        | ExtractPrompt ->
+            textArea.ExtractMatching promptLine
 
         | SelectPrompt  ->
             textArea.SelectMatching  promptLine
@@ -32,7 +35,14 @@ let executePrompt
                 if toOverwrite then
                     textArea.ReSearchMatching ()
                 else
-                    textArea.ClearMatching ()
+                    textArea.ClearSearchMatching ()
+
+        | ExtractPrompt ->
+            if not isCurrentFromHistory then
+                if toOverwrite then
+                    textArea.ReExtractMatching ()
+                else
+                    textArea.ClearExtractMatching ()
 
         | SelectPrompt  -> ()
         | KeepPrompt    -> ()

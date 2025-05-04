@@ -39,6 +39,7 @@ type InsertModeState =
 type PromptType =
     | CommandPrompt
     | SearchPrompt of isForward: bool * isExtending: bool
+    | ExtractPrompt
     | SelectPrompt
     | KeepPrompt
     | DiscardPrompt
