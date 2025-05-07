@@ -541,8 +541,7 @@ type TextArea (
 
             applyBufferSwitch ()
 
-            setValueAsFixed this.CurrentSettings Scope.buffer Name.readOnly "true"
-                |> ignore
+            this.SetBufferAsFixedReadOnly ()
         | _ ->
             myUserMessages.RegisterMessage ERROR_OP_INVALID_ON_EXTRACT_BUFFER
 
@@ -643,6 +642,14 @@ type TextArea (
         | Some e -> Error e
         | None   -> this.ApplySettings ()
                     Ok ()
+
+    member private this.SetBufferAsFixedReadOnly () =
+        let result =
+            setValueAsFixed this.CurrentSettings Scope.buffer Name.readOnly "true"
+
+        match result with
+        | Ok ()   -> this.ApplySettings ()
+        | Error _ -> ()
 
     member __.DeleteBuffer () =
         myBuffers.DeleteBuffer ()
