@@ -213,7 +213,7 @@ ps   g<a-l>          cursor at end of line
      vh              center horizontally
 
 
-Normal mode - enter Prompt Normal mode:
+Normal mode - enter Prompt Insert mode:
 
      :               enter "command" prompt
 
@@ -292,7 +292,7 @@ view           v      [[strictEncoding] encoding] filePath
 reload         r                                 reload file
 reload!        r!                                reload file, suppressing warnings
                                                  (no write since last change)
-extract        x      [filePath]                 create new extract buffer from the current one
+extract        x      [filePath]                 create a new extract buffer from the current one
                                                  (an extract buffer displays only lines with matchings)
 bufferDelete   bd                                delete buffer
 bufferDelete!  bd!                               delete buffer, suppressing warnings

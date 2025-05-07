@@ -196,6 +196,10 @@ let getMessageStringAndColors
 type UserMessages () =
     let mutable myMessage: UserMessage option = None
 
+    /// Returns true if any message is registered.
+    member _.HasAnyMessage =
+        myMessage.IsSome
+
     /// Returns true if an InfoMessage is registered.
     member _.HasInfoMessage =
         match myMessage with

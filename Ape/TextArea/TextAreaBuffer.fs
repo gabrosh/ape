@@ -426,8 +426,19 @@ type TextAreaBuffer (
 
         mySelsRegisters.Clear ()
 
+        // Remember any message from failed reload.
+        let userMessage = myUserMessages.RetrieveMessage ()
+
         if not myMatchRanges.WasCleared then
             myMatchRanges.ReSearch ()
+
+        match userMessage with
+        | Some userMessage ->
+            myUserMessages.RetrieveMessage () |> ignore
+            // Re-register the message from failed reload.
+            myUserMessages.RegisterMessage userMessage
+        | None ->
+            ()
 
         let newDisplayLine = this.GetValidDisplayLine displayLine
 

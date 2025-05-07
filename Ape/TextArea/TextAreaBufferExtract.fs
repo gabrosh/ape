@@ -367,10 +367,21 @@ type TextAreaBufferExtract (
 
         mySelsRegisters.Clear ()
 
-        if not myMatchRanges.WasClearedExtract then
-            myMatchRanges.ReExtractBeforeReSearch ()
+        // Remember any message from failed reload.
+        let userMessage = myUserMessages.RetrieveMessage ()
+
+        myMatchRanges.UpdateAfterReload ()
+
         if not myMatchRanges.WasCleared then
             myMatchRanges.ReSearch ()
+
+        match userMessage with
+        | Some userMessage ->
+            myUserMessages.RetrieveMessage () |> ignore
+            // Re-register the message from failed reload.
+            myUserMessages.RegisterMessage userMessage
+        | None ->
+            ()
 
         let newDisplayLine = this.GetValidDisplayLine displayLine
 

@@ -73,16 +73,12 @@ type MatchRangesExtract (
         | None ->
             myUserMessages.RegisterMessage ERROR_NOTHING_TO_SEARCH_FOR
 
-    member this.ReExtractBeforeReSearch () =
-        match this.LastRegexExtract with
-        | Some regex ->
-            myLastRegexExtract  <- Some regex
-            myWasClearedExtract <- false
-
-            this.SearchAux myLines regex
+    member this.UpdateAfterReload () =
+        if not myWasClearedExtract then
+            this.ReExtractAfterReload ()
+        else
+            this.ClearSearchAux ()
             this.Update ()
-        | None ->
-            myUserMessages.RegisterMessage ERROR_NOTHING_TO_SEARCH_FOR            
 
     member this.ClearExtract () =
         myWasClearedExtract <- true
@@ -98,6 +94,17 @@ type MatchRangesExtract (
                 myUserMessages.RegisterMessage ERROR_NOTHING_TO_SEARCH_FOR            
 
     // auxiliary
+
+    member private this.ReExtractAfterReload () =
+        match this.LastRegexExtract with
+        | Some regex ->
+            myLastRegexExtract  <- Some regex
+            myWasClearedExtract <- false
+
+            this.SearchAux myLines regex
+            this.Update ()
+        | None ->
+            myUserMessages.RegisterMessage ERROR_NOTHING_TO_SEARCH_FOR            
 
     member private this.Update () =
         if this.GetMainGroupCount () <> 0 then
