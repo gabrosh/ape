@@ -59,8 +59,13 @@ let execute_unset context (argsMap: ArgsMap) =
 
     executeSettingsCommand context argsMap (
         fun scope name ->
-            Settings.unsetValue settings scope name
-            applySettings context
+            let result = Settings.unsetValue settings scope name
+
+            match result with
+            | Ok ()   ->
+                applySettings context
+            | Error e ->
+                context.userMessages.RegisterMessage (makeErrorMessage e)
     )
 
     false

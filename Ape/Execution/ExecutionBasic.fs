@@ -180,7 +180,7 @@ let execute_extract context (argsMap: ArgsMap) =
             formatMessage INFO_FILE_ALREADY_OPENED filePath
         )
     else
-        context.textArea.Extract filePath
+        context.textArea.ExtractFile filePath
 
     false
 

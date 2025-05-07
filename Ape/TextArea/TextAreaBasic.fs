@@ -82,13 +82,11 @@ type TextAreaBasic (
         if myMatchRanges.GetMainGroupCount () <> 0 then
             let hitFileBoundary =
                 if isForward then
-                    // Hit bottom of the file or didn't move.
-                    TextAreaBasic.IsLower   newMainCursor oldMainCursor ||
-                    TextAreaBasic.IsEqual   newMainCursor oldMainCursor
+                    // Hit bottom of the file.
+                    TextAreaBasic.IsLower   newMainCursor oldMainCursor
                 else
-                    // Hit top of the file or didn't move.
-                    TextAreaBasic.IsGreater newMainCursor oldMainCursor ||
-                    TextAreaBasic.IsEqual   newMainCursor oldMainCursor
+                    // Hit top of the file.
+                    TextAreaBasic.IsGreater newMainCursor oldMainCursor
 
             let hitLineBoundary =
                 // Moved to another line or stayed at the same one, but hit file boundary.

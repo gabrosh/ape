@@ -10,12 +10,12 @@ type SettingsTest () =
         makeBufferSettings (makeGlobalSettings ())
 
     [<Test>]
-    member _.setValue_Int_Valid () =
+    member _.setValue_Int_Valid_1 () =
         let b = makeSettings ()
 
         Assert.AreEqual (Int 4, getValue b Name.tabStop)
 
-        let result = setValue b Scope.``global`` Name.tabStop "1"
+        let result = setValue b Scope.  buffer   Name.tabStop "1"
 
         Assert.IsTrue   (Result.isOk result)
         Assert.AreEqual (Int 1, getValue b Name.tabStop)
@@ -30,31 +30,176 @@ type SettingsTest () =
         Assert.IsTrue   (Result.isOk result)
         Assert.AreEqual (Int 3, getValue b Name.tabStop)
 
+        let result = setValue b Scope.``global`` Name.tabStop "5"
+
+        Assert.IsTrue   (Result.isOk result)
+        Assert.AreEqual (Int 5, getValue b Name.tabStop)
+
     [<Test>]
-    member _.unset_Int () =
+    member _.setValue_Int_Valid_2 () =
         let b = makeSettings ()
 
-        let _result = setValue b Scope.``global`` Name.tabStop "1"
-        let _result = setValue b Scope.  buffer   Name.tabStop "2"
+        Assert.AreEqual (Int 4, getValue b Name.tabStop)
 
-        unsetValue b Scope.  buffer   Name.tabStop
+        let result = setValue b Scope.``global`` Name.tabStop "1"
 
+        Assert.IsTrue   (Result.isOk result)
         Assert.AreEqual (Int 1, getValue b Name.tabStop)
 
-        unsetValue b Scope.``global`` Name.tabStop
+        let result = setValue b Scope.``global`` Name.tabStop "2"
+
+        Assert.IsTrue   (Result.isOk result)
+        Assert.AreEqual (Int 2, getValue b Name.tabStop)
+
+        let result = setValue b Scope.  buffer   Name.tabStop "3"
+
+        Assert.IsTrue   (Result.isOk result)
+        Assert.AreEqual (Int 3, getValue b Name.tabStop)
+
+        let result = setValue b Scope.  buffer   Name.tabStop "5"
+
+        Assert.IsTrue   (Result.isOk result)
+        Assert.AreEqual (Int 5, getValue b Name.tabStop)
+
+    [<Test>]
+    member _.unset_Int_1 () =
+        let b = makeSettings ()
+
+        let _result = setValue   b Scope.``global`` Name.tabStop "1"
+        let _result = setValue   b Scope.  buffer   Name.tabStop "2"
+
+        let  result = unsetValue b Scope.  buffer   Name.tabStop
+
+        Assert.IsTrue   (Result.isOk result)
+        Assert.AreEqual (Int 1, getValue b Name.tabStop)
+
+        let  result = unsetValue b Scope.  buffer   Name.tabStop
+
+        Assert.IsTrue   (Result.isOk result)
+        Assert.AreEqual (Int 1, getValue b Name.tabStop)
+
+        let  result = unsetValue b Scope.``global`` Name.tabStop
+
+        Assert.IsTrue   (Result.isOk result)
+        Assert.AreEqual (Int 4, getValue b Name.tabStop)
+
+        let  result = unsetValue b Scope.``global`` Name.tabStop
+
+        Assert.IsTrue   (Result.isOk result)
+        Assert.AreEqual (Int 4, getValue b Name.tabStop)
+
+    [<Test>]
+    member _.unset_Int_2 () =
+        let b = makeSettings ()
+
+        let _result = setValue   b Scope.``global`` Name.tabStop "1"
+        let _result = setValue   b Scope.  buffer   Name.tabStop "2"
+
+        let  result = unsetValue b Scope.``global`` Name.tabStop
+
+        Assert.IsTrue   (Result.isOk result)
+        Assert.AreEqual (Int 4, getValue b Name.tabStop)
+
+        let  result = unsetValue b Scope.``global`` Name.tabStop
+
+        Assert.IsTrue   (Result.isOk result)
+        Assert.AreEqual (Int 4, getValue b Name.tabStop)
+
+        let  result = unsetValue b Scope.  buffer   Name.tabStop
+
+        Assert.IsTrue   (Result.isOk result)
+        Assert.AreEqual (Int 4, getValue b Name.tabStop)
+
+        let  result = unsetValue b Scope.  buffer   Name.tabStop
+
+        Assert.IsTrue   (Result.isOk result)
+        Assert.AreEqual (Int 4, getValue b Name.tabStop)
+
+    [<Test>]
+    member _.setValue_Int_IsFixed_1 () =
+        let b = makeSettings ()
 
         Assert.AreEqual (Int 4, getValue b Name.tabStop)
 
-        let _result = setValue b Scope.``global`` Name.tabStop "1"
-        let _result = setValue b Scope.  buffer   Name.tabStop "2"
+        let _result = setValue        b Scope.``global`` Name.tabStop "1"
+        let  result = setValueAsFixed b Scope.  buffer   Name.tabStop "2"
 
-        unsetValue b Scope.``global`` Name.tabStop
+        Assert.IsTrue   (Result.isOk result)
+        Assert.AreEqual (Int 2, getValue b Name.tabStop)
+
+        let  result = setValue        b Scope.  buffer   Name.tabStop "3"
+
+        Assert.IsFalse  (Result.isOk result)
+        Assert.AreEqual (Int 2, getValue b Name.tabStop)
+
+        let  result = setValue        b Scope.``global`` Name.tabStop "3"
+
+        Assert.IsFalse  (Result.isOk result)
+        Assert.AreEqual (Int 2, getValue b Name.tabStop)
+
+    [<Test>]
+    member _.setValue_Int_IsFixed_2 () =
+        let b = makeSettings ()
 
         Assert.AreEqual (Int 4, getValue b Name.tabStop)
 
-        unsetValue b Scope.  buffer   Name.tabStop
+        let  result = setValueAsFixed b Scope.``global`` Name.tabStop "1"
+
+        Assert.IsTrue   (Result.isOk result)
+        Assert.AreEqual (Int 1, getValue b Name.tabStop)
+
+        let  result = setValue        b Scope.  buffer   Name.tabStop "2"
+
+        Assert.IsFalse  (Result.isOk result)
+        Assert.AreEqual (Int 1, getValue b Name.tabStop)
+
+        let  result = setValue        b Scope.``global`` Name.tabStop "2"
+
+        Assert.IsFalse  (Result.isOk result)
+        Assert.AreEqual (Int 1, getValue b Name.tabStop)
+
+    [<Test>]
+    member _.unsetValue_Int_IsFixed_1 () =
+        let b = makeSettings ()
 
         Assert.AreEqual (Int 4, getValue b Name.tabStop)
+
+        let _result = setValue        b Scope.``global`` Name.tabStop "1"
+        let  result = setValueAsFixed b Scope.  buffer   Name.tabStop "2"
+
+        Assert.IsTrue   (Result.isOk result)
+        Assert.AreEqual (Int 2, getValue b Name.tabStop)
+
+        let  result = unsetValue      b Scope.  buffer   Name.tabStop
+
+        Assert.IsFalse  (Result.isOk result)
+        Assert.AreEqual (Int 2, getValue b Name.tabStop)
+
+        let  result = unsetValue      b Scope.``global`` Name.tabStop
+
+        Assert.IsFalse  (Result.isOk result)
+        Assert.AreEqual (Int 2, getValue b Name.tabStop)
+
+    [<Test>]
+    member _.unsetValue_Int_IsFixed_2 () =
+        let b = makeSettings ()
+
+        Assert.AreEqual (Int 4, getValue b Name.tabStop)
+
+        let  result = setValueAsFixed b Scope.``global`` Name.tabStop "1"
+
+        Assert.IsTrue   (Result.isOk result)
+        Assert.AreEqual (Int 1, getValue b Name.tabStop)
+
+        let  result = unsetValue      b Scope.  buffer   Name.tabStop
+
+        Assert.IsFalse  (Result.isOk result)
+        Assert.AreEqual (Int 1, getValue b Name.tabStop)
+
+        let  result = unsetValue      b Scope.``global`` Name.tabStop
+
+        Assert.IsFalse  (Result.isOk result)
+        Assert.AreEqual (Int 1, getValue b Name.tabStop)
 
     [<Test>]
     member _.setValue_Int_Invalid () =

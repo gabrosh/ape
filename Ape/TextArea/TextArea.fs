@@ -534,14 +534,14 @@ type TextArea (
         | Error e -> myUserMessages.RegisterMessage (makeErrorMessage e)
         | Ok ()   -> this.LoadFileAux false
 
-    member this.Extract fileName =
+    member this.ExtractFile fileName =
         match myBuffer with
         :? TextAreaBuffer as parent ->
             myBuffers.AddTextAreaBufferExtract parent fileName
 
             applyBufferSwitch ()
 
-            this.SetBufferSettingsAux None None (Some "true")
+            setValueAsFixed this.CurrentSettings Scope.buffer Name.readOnly "true"
                 |> ignore
         | _ ->
             myUserMessages.RegisterMessage ERROR_OP_INVALID_ON_EXTRACT_BUFFER

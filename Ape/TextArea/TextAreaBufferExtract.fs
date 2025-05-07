@@ -126,7 +126,7 @@ type TextAreaBufferExtract (
 
     member _.Lines                  = myLines
     member _.Selections             = mySelections
-    member _.IsReadOnly             = true
+    member _.IsReadOnly             = myContext.readOnly
     member _.IsBufferChanged        = myIsBufferChanged
     member _.HasUndoToRegister      = myHasUndoToRegister
     member _.HasUndoLinesToRegister = false

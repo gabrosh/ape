@@ -94,8 +94,9 @@ let valueToString (value: Value) =
     | String     x     -> x.ToString ()
     | FileFormat x     -> x.ToString ()
 
+// Contains (value, isFixed) pair as a value.
 type SettingsDict =
-    Dictionary<Name, Value>
+    Dictionary<Name, Value * bool>
 
 type Settings = {
     scope:  Scope
@@ -167,64 +168,103 @@ let private validate name value =
     | Strings     (_, isValid) -> validateAux name value Parsing.parseString     isValid String
     | FileFormats (_, isValid) -> validateAux name value Parsing.parseFileFormat isValid FileFormat
 
+[<TailCall>]
+let rec private isValueFixedRec settings name =
+    let ok, item = settings.dict.TryGetValue name
+    
+    if ok && snd item then
+        true
+    else
+        match settings.parent with
+        | Some parent ->
+            isValueFixedRec parent name
+        | None        ->
+            false
+
 // user commands
 
-let rec private setValueAux settings scope name value =
+[<TailCall>]
+let rec private setValueRec settings scope name value isFixed =
     if settings.scope = scope then
-        settings.dict[name] <- value
+        settings.dict[name] <- (value, isFixed)
     else
         settings.dict.Remove name |> ignore
 
-        if settings.parent.IsSome then
-            setValueAux settings.parent.Value scope name value
-        else
+        match settings.parent with
+        | Some parent ->
+            setValueRec parent scope name value isFixed
+        | None        ->
             invalidOp "Can't go beyond default scope"
 
-/// Unsets the setting with given name up to given scope.
-/// Sets value of the setting with given name in given scope.
-/// Returns error message in the case of an invalid value.
-let setValue settings scope name value =
+let private setValueAux settings scope name value isFixed =
     if settings.scope <> Scope.buffer then
         invalidOp "Must start from buffer scope"
     if scope <= Scope.``default`` then
         invalidOp "Can't set value in default scope"
 
-    match validate name value with
-    | Ok x    ->
-        setValueAux settings scope name x
-        Ok ()
-    | Error e ->
-        Error e
+    if isValueFixedRec settings name then
+        Error "Can't change fixed value."
+    else
+        match validate name value with
+        | Ok x    ->
+            setValueRec settings scope name x isFixed
+            Ok ()
+        | Error e ->
+            Error e
 
-let rec private unsetValueAux settings scope name =
+/// Unsets the setting with given name up to given scope.
+/// Sets value of the setting with given name in given scope.
+/// Returns error message in the case of an invalid value
+/// or if the current value of the setting is fixed.
+let setValue settings scope name value =
+    setValueAux settings scope name value false
+
+/// Unsets the setting with given name up to given scope.
+/// Sets value of the setting with given name in given scope as fixed.
+/// Returns error message in the case of an invalid value
+/// or if the current value of the setting is fixed.
+let setValueAsFixed settings scope name value =
+    setValueAux settings scope name value true
+
+[<TailCall>]
+let rec private unsetValueRec settings scope name =
     settings.dict.Remove name |> ignore
 
     if settings.scope <> scope then
-        if settings.parent.IsSome then
-            unsetValueAux settings.parent.Value scope name
-        else
+        match settings.parent with
+        | Some parent ->
+            unsetValueRec parent scope name
+        | None        ->
             invalidOp "Can't go beyond default scope"
 
 /// Unsets the setting with given name up to given scope.
+/// Returns error message if the current value of the setting is fixed.
 let unsetValue settings scope name =
     if settings.scope <> Scope.buffer then
         invalidOp "Must start from buffer scope"
     if scope <= Scope.``default`` then
         invalidOp "Can't unset value in default scope"
 
-    unsetValueAux settings scope name
-
-let rec private getValueAux settings name =
-    if settings.dict.ContainsKey name then
-        settings.dict[name]
-    elif settings.parent.IsSome then
-        getValueAux settings.parent.Value name
+    if isValueFixedRec settings name then
+        Error "Can't unset fixed value."
     else
-        invalidOp "Can't go beyond default scope"
+        unsetValueRec settings scope name
+        Ok ()
+
+[<TailCall>]
+let rec private getValueRec settings name =
+    if settings.dict.ContainsKey name then
+        fst settings.dict[name]
+    else
+        match settings.parent with
+        | Some parent ->
+            getValueRec parent name
+        | None        ->
+            invalidOp "Can't go beyond default scope"
 
 /// Returns value of the setting with given name.
 let getValue settings name =
-    getValueAux settings name
+    getValueRec settings name
 
 // utility functions
 
@@ -258,7 +298,7 @@ let rec getSettingReprAux settings name (acc: string) =
         let newAcc =
             if settings.dict.ContainsKey name then
                 let scope = settings.scope.ToString ()
-                let value = valueToString settings.dict[name]
+                let value = valueToString (fst settings.dict[name])
                 let separ = if acc <> "" then ", " else ""
                 $"{scope} '{value}'{separ}" + acc
             else
@@ -287,7 +327,7 @@ let private makeDefaultSettings () =
     let mapSeq = seq {
         for item in specsMap do
             KeyValuePair (
-                item.Key, (getDefaultValue item.Value)
+                item.Key, (getDefaultValue item.Value, false)
             )
     }
 

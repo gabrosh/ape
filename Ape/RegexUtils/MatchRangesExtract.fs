@@ -30,11 +30,6 @@ type MatchRangesExtract (
     let mutable myLastRegexExtract  = None
     let mutable myWasClearedExtract = true
 
-    // public properties
-
-    member _.LastRegexExtract  = myLastRegexExtract
-    member _.WasClearedExtract = myWasClearedExtract
-
     /// Initializes the instance after its construction.
     member this.Init () =
         myLastRegexExtract  <- this.LastRegex
@@ -96,10 +91,10 @@ type MatchRangesExtract (
     // auxiliary
 
     member private this.ReExtractAfterReload () =
-        match this.LastRegexExtract with
+        match myLastRegexExtract with
         | Some regex ->
-            myLastRegexExtract  <- Some regex
-            myWasClearedExtract <- false
+            // myLastRegexExtract  = Some regex
+            // myWasClearedExtract = false
 
             this.SearchAux myLines regex
             this.Update ()
