@@ -116,7 +116,7 @@ type MatchRanges (
                 |> ignore
         mlr.FinishProcessing ()
 
-    /// Re-searches for the regex used in the last call to Search going through lines.
+    /// Searches for the regex used in the last call to SearchNormal going through lines.
     member internal this.ReSearchNormal lines =
         match myLastRegex with
         | Some regex ->
@@ -145,7 +145,7 @@ type MatchRanges (
     override this.Search (regex: string) =
         this.SearchNormal myLines regex
 
-    /// Re-searches for the regex used in the last call to Search.
+    /// Searches for the regex used in the last call to Search (or Extract).
     abstract member ReSearch:
         unit -> unit
 

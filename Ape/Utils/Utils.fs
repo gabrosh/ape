@@ -20,7 +20,7 @@ let resultGet result =
     match result with
     | Ok value -> value
     | Error _  ->
-        invalidOp "result must be (Ok value)"
+        invalidOp "Result must be (Ok value)"
 
 /// Returns n ending characters of string s.
 let endSubstring (s: string) n =

@@ -50,6 +50,7 @@ type MatchRangesExtract (
 
     // extract
 
+    /// Extracts lines from myLines according to given regex.
     member this.Extract (regex: string) =
         myLastRegexExtract  <- Some regex
         myWasClearedExtract <- false
@@ -57,6 +58,7 @@ type MatchRangesExtract (
         this.SearchNormal myLines regex
         this.Update ()
 
+    /// Extracts lines from myLines according to the regex used in the last call to Search or Extract.
     member this.ReExtract () =
         match this.LastRegex with
         | Some regex ->
@@ -68,13 +70,7 @@ type MatchRangesExtract (
         | None ->
             myUserMessages.RegisterMessage ERROR_NOTHING_TO_SEARCH_FOR
 
-    member this.UpdateAfterReload () =
-        if not myWasClearedExtract then
-            this.ReExtractAfterReload ()
-        else
-            this.ClearSearchAux ()
-            this.Update ()
-
+    /// Clears the extract and searches for the regex used in the last call to Search or Extract.
     member this.ClearExtract () =
         myWasClearedExtract <- true
 
@@ -83,23 +79,27 @@ type MatchRangesExtract (
 
         if not this.WasCleared then
             match this.LastRegex with
-            | Some regex -> 
+            | Some regex ->
                 this.SearchAux myLinesExtract regex
             | None ->
-                myUserMessages.RegisterMessage ERROR_NOTHING_TO_SEARCH_FOR            
+                // (not WasCleared) => (LastRegex <> None)
+                invalidOp "Broken invariant"
+
+    /// Updates the extract after reloading the file, according to whether the extract was cleared or not.
+    member this.UpdateAfterReload () =
+        if not myWasClearedExtract then
+            match myLastRegexExtract with
+            | Some regex ->
+                this.SearchAux myLines regex
+                this.Update ()
+            | None ->
+                // (not WasClearedExtract) => (LastRegexExtract <> None)
+                invalidOp "Broken invariant"
+        else
+            this.ClearSearchAux ()
+            this.Update ()
 
     // auxiliary
-
-    member private this.ReExtractAfterReload () =
-        match myLastRegexExtract with
-        | Some regex ->
-            // myLastRegexExtract  = Some regex
-            // myWasClearedExtract = false
-
-            this.SearchAux myLines regex
-            this.Update ()
-        | None ->
-            myUserMessages.RegisterMessage ERROR_NOTHING_TO_SEARCH_FOR            
 
     member private this.Update () =
         if this.GetMainGroupCount () <> 0 then
