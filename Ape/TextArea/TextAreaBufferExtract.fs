@@ -245,30 +245,25 @@ type TextAreaBufferExtract (
         myMatchRanges.ClearSearch ()
 
     member this.ExtractMatching regex =
-        this.WrapMatchingAction (
+        this.WrapExtractAction (
             fun () -> myMatchRanges.Extract regex
         )
 
     member this.ReExtractMatching () =
-        this.WrapMatchingAction (
+        this.WrapExtractAction (
             fun () -> myMatchRanges.ReExtract ()
         )
 
     member this.ClearExtractMatching () =
-        this.WrapMatchingAction (
+        this.WrapExtractAction (
             fun () -> myMatchRanges.ClearExtract ()
         )
 
-    member private this.WrapMatchingAction action =
-        let wereMatchings = myMatchRanges.GetMainGroupCount () <> 0
-
+    member private this.WrapExtractAction action =
         action ()
 
-        let areMatchings = myMatchRanges.GetMainGroupCount () <> 0
-
-        if wereMatchings || areMatchings then
-            this.ResetState ()
-            this.ResetUndoState ()
+        this.ResetState ()
+        this.ResetUndoState ()
 
     member private this.ReSearchIfNeeded isInitial =
         if isInitial then
