@@ -171,7 +171,7 @@ let private validate name value =
 [<TailCall>]
 let rec private isValueFixedRec settings name =
     let ok, item = settings.dict.TryGetValue name
-    
+
     if ok && snd item then
         true
     else
@@ -354,4 +354,12 @@ let makeBufferSettings parent =
         scope  = Scope.buffer
         parent = Some parent
         dict   = SettingsDict ()
+    }
+
+/// Returns new settings created by cloning given original.
+let cloneSettings (original: Settings) =
+    {
+        scope  = original.scope
+        parent = original.parent
+        dict   = SettingsDict original.dict
     }

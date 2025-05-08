@@ -64,15 +64,17 @@ type BuffersRegistry (
         }
 
     /// Adds an empty TextAreaBufferExtract at the end of the registry and sets it as the current one.
-    member _.AddTextAreaBufferExtract (parent: TextAreaBuffer.TextAreaBuffer) (fileName: string) =
-        let bufferSettings = Settings.makeBufferSettings myGlobalSettings
+    member _.AddTextAreaBufferExtract
+        (parentBuffer: TextAreaBuffer.TextAreaBuffer) (parentSettings: Settings.Settings) (fileName: string) =
+
+        let bufferSettings = Settings.cloneSettings parentSettings
 
         let bufferKeyMappings = KeyMappings.makeBufferKeyMappings myGlobalKeyMappings
 
         let mainContextRef = WrappedRef (makeMainContext myContextRef.Value bufferSettings)
 
         let buffer = new TextAreaBufferExtract.TextAreaBufferExtract (
-            parent, mainContextRef, myUserMessages, myRegisters, fileName
+            parentBuffer, mainContextRef, myUserMessages, myRegisters, fileName
         )
 
         myCurrentIndex <- myItems.Count

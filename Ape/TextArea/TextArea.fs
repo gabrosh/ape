@@ -536,8 +536,8 @@ type TextArea (
 
     member this.ExtractFile fileName =
         match myBuffer with
-        :? TextAreaBuffer as parent ->
-            myBuffers.AddTextAreaBufferExtract parent fileName
+        :? TextAreaBuffer as buffer ->
+            myBuffers.AddTextAreaBufferExtract buffer this.CurrentSettings fileName
 
             applyBufferSwitch ()
 
