@@ -73,7 +73,7 @@ type TextArea (
         inGetIdentCompletionsFun (fun () -> this_.Lines)
     )
 
-    let myCompletions : ICompletionItems = myIdentCompletions
+    let myCompletions: ICompletionItems = myIdentCompletions
 
     member _.CurrentSettings        = myBuffers.CurrentSettings
     member _.CurrentKeyMappings     = myBuffers.CurrentKeyMappings
@@ -86,6 +86,11 @@ type TextArea (
     member _.IsBufferChanged        = myBuffer.IsBufferChanged
     member _.HasUndoToRegister      = myBuffer.HasUndoToRegister
     member _.HasUndoLinesToRegister = myBuffer.HasUndoLinesToRegister
+
+    member _.IsCurrentBufferAnExtract =
+        match myBuffer with
+        :? TextAreaBufferExtract -> true
+        | _                      -> false
 
     member _.ApplySettings () =
         myBuffers.UpdateCurrentMainContext ()
@@ -472,21 +477,21 @@ type TextArea (
         :? TextAreaBufferExtract as buffer ->
             buffer.ExtractMatching regex
         | _ ->
-            myUserMessages.RegisterMessage ERROR_OP_INVALID_ON_NON_EXTRACT_BUFFER
+            invalidOp (snd ERROR_OP_INVALID_ON_NON_EXTRACT_BUFFER)
 
     member _.ReExtractMatching () =
         match myBuffer with
         :? TextAreaBufferExtract as buffer ->
             buffer.ReExtractMatching ()
         | _ ->
-            myUserMessages.RegisterMessage ERROR_OP_INVALID_ON_NON_EXTRACT_BUFFER
+            invalidOp (snd ERROR_OP_INVALID_ON_NON_EXTRACT_BUFFER)
 
     member _.ClearExtractMatching () =
         match myBuffer with
         :? TextAreaBufferExtract as buffer ->
             buffer.ClearExtractMatching ()
         | _ ->
-            myUserMessages.RegisterMessage ERROR_OP_INVALID_ON_NON_EXTRACT_BUFFER
+            invalidOp (snd ERROR_OP_INVALID_ON_NON_EXTRACT_BUFFER)
 
     member _.SelectMatching regex =
         let command = SelectionsCommand (SelectMatching regex)

@@ -146,7 +146,11 @@ let private promptSelectedRegister promptType isUpper c =
 
 // key dispatching in various editor modes
 
-let private dispatchNormalMain (textArea: TextArea) (prompt: Prompt) key =
+let private dispatchNormalMain
+    (userMessages: UserMessages.UserMessages)
+    (textArea: TextArea) (prompt: Prompt)
+    key =
+
     let mutable areasToRender = toRenderStatus
 
     let result =
@@ -166,8 +170,13 @@ let private dispatchNormalMain (textArea: TextArea) (prompt: Prompt) key =
         | Alt         InputKey.Question     -> areasToRender <- toRenderPrompt
                                                NextMode (enterPrompt prompt (SearchPrompt (false, true )))
 
-        | NoModif     InputKey.Backslash    -> areasToRender <- toRenderPrompt
-                                               NextMode (enterPrompt prompt ExtractPrompt)
+        | NoModif     InputKey.Backslash    -> if textArea.IsCurrentBufferAnExtract then
+                                                   areasToRender <- toRenderPrompt
+                                                   NextMode (enterPrompt prompt ExtractPrompt)
+                                               else
+                                                   areasToRender <- toRenderStatus
+                                                   userMessages.RegisterMessage ERROR_OP_INVALID_ON_NON_EXTRACT_BUFFER
+                                                   KeepMode
 
         | NoModif     InputKey.S            -> areasToRender <- toRenderPrompt
                                                NextMode (enterPrompt prompt SelectPrompt)
@@ -493,7 +502,7 @@ let private dispatchPromptInsertMain
 
         | OptShift     InputKey.Escape s    -> areasToRender <- toRenderStatus
                                                prompt.ClearCompletions ()
-                                               prompt.WhenLeaving s                                             
+                                               prompt.WhenLeaving s
                                                NextMode (NormalMode NormalMainState)
 
         | OptShift     InputKey.Enter s     -> areasToRender <- toRenderTextAndStatus
@@ -545,7 +554,7 @@ let private dispatchPromptInsertPaste (prompt: Prompt) promptType key isUpper =
 let dispatchKey userMessages textArea prompt registers mode key =
     match mode with
     | NormalMode NormalMainState
-        -> dispatchNormalMain           textArea prompt key
+        -> dispatchNormalMain           userMessages textArea prompt key
 
     | NormalMode (CountState count)
         -> dispatchNormalCount          textArea key count
