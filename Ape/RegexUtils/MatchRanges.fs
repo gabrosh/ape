@@ -18,11 +18,11 @@ type MatchRanges (
     myUserMessages: UserMessages,
     myLines:        Lines,
     inLastRegex:    string option,
-    inWasCleared:   bool,
+    inIsCleared:    bool,
     inTextRanges:   Dictionary<string, TextRanges>
 ) =
     let mutable myLastRegex  = inLastRegex
-    let mutable myWasCleared = inWasCleared
+    let mutable myIsCleared  = inIsCleared
     let mutable myTextRanges = inTextRanges
 
     new (inUserMessages: UserMessages, inLines: Lines) =
@@ -34,8 +34,8 @@ type MatchRanges (
 
     member _.SearchedLines = myLines
 
-    member _.LastRegex  = myLastRegex
-    member _.WasCleared = myWasCleared
+    member _.LastRegex = myLastRegex
+    member _.IsCleared = myIsCleared
 
     // internal properties
 
@@ -46,7 +46,7 @@ type MatchRanges (
     /// Creates an extract version of this instance using constructor constr.
     member _.CreateExtract constr (linesExtract: Lines) =
         constr (
-            myUserMessages, myLines, linesExtract, myLastRegex, myWasCleared, myTextRanges
+            myUserMessages, myLines, linesExtract, myLastRegex, myIsCleared, myTextRanges
         )
 
     /// Returns count of text ranges in the main group.
@@ -77,8 +77,8 @@ type MatchRanges (
 
     /// Searches for regex going through lines.
     member internal this.SearchNormal lines regex =
-        myLastRegex  <- Some regex
-        myWasCleared <- false
+        myLastRegex <- Some regex
+        myIsCleared <- false
 
         this.SearchAux lines regex
 
@@ -120,7 +120,7 @@ type MatchRanges (
     member internal this.ReSearchNormal lines =
         match myLastRegex with
         | Some regex ->
-            myWasCleared <- false
+            myIsCleared <- false
 
             this.SearchAux lines regex
         | None ->
@@ -128,7 +128,7 @@ type MatchRanges (
 
     /// Clears text ranges from the last call to Search.
     member internal this.ClearSearchNormal () =
-        myWasCleared <- true
+        myIsCleared <- true
 
         this.ClearSearchAux ()
 

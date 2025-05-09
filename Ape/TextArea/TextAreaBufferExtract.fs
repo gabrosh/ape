@@ -48,6 +48,9 @@ type TextAreaBufferExtract (
     myRegisters:    Registers.Registers,
     inFilePath:     string
 ) =
+    // init mechanism
+    let myParentMainForInit = myParent.Main
+
     let mutable myContext = myContextRef.Value
     let handleContextChanged () = myContext <- myContextRef.Value
     let myContextChangedDisposable =
@@ -114,11 +117,6 @@ type TextAreaBufferExtract (
         myDispatcher
     )
 
-    // constructor
-
-    do
-        myMatchRanges.Init ()
-
     // public properties
 
     member val FilePath = inFilePath
@@ -143,6 +141,16 @@ type TextAreaBufferExtract (
     member private _.PrevCommand
         with get ()    = myBasicState.prevCommand
         and  set value = myBasicState.prevCommand <- value
+
+    // init mechanism
+
+    /// Initializes the instance after its construction.
+    member this.Init () =
+        mySelections.Main <- myParentMainForInit
+
+        this.WrapExtractAction (
+            fun () -> myMatchRanges.Init ()
+        )
 
     // commands
 
@@ -260,10 +268,29 @@ type TextAreaBufferExtract (
         )
 
     member private this.WrapExtractAction action =
+        let lineCurrent = mySelections.Main.Cursor.line
+
+        let lineOrig =
+            if myMatchRanges.IsClearedExtract then
+                lineCurrent
+            else
+                myMatchRanges.LineExtractToLine lineCurrent
+
         action ()
 
-        this.ResetState ()
+        let lineNew =
+            if myMatchRanges.IsClearedExtract then
+                lineOrig
+            else
+                myMatchRanges.LineToLineExtract lineOrig
+
+        let cursorNew = { line = lineNew; char = 0 }
+
+        this.ResetState cursorNew
         this.ResetUndoState ()
+
+        let command = WrapLinesDepCommand CenterVertically
+        this.PerformCommand true false command 1
 
     member private this.ReSearchIfNeeded isInitial =
         if isInitial then
@@ -314,12 +341,13 @@ type TextAreaBufferExtract (
     // others
 
     member this.ReloadFile encoding strictEncoding =
-        let main        = this.Main
+        let cursor      = this.Main.Cursor
+        let cursorWC    = this.Main.CursorWC
         let displayLine = this.DisplayPos.line
 
         let result = myParent.ReloadFile encoding strictEncoding
 
-        this.ResetStateAfterReload main displayLine
+        this.ResetStateAfterReload cursor cursorWC displayLine
         this.ResetUndoState ()
 
         result
@@ -333,9 +361,12 @@ type TextAreaBufferExtract (
 
     // auxiliary
 
-    member private this.ResetState () =
+    member private this.ResetState cursor =
         mySelections.Clear ()
-        mySelections.Add Selection_Zero
+
+        mySelections.Add {
+            Selection_Zero with first = cursor; last = cursor
+        }
 
         mySelsRegisters.Clear ()
 
@@ -347,10 +378,7 @@ type TextAreaBufferExtract (
 
         myDispatcher.DisplayRenderer.ResetLinesCache ()
 
-    member private this.ResetStateAfterReload main displayLine =
-        let cursor   = main.Cursor
-        let cursorWC = main.CursorWC
-
+    member private this.ResetStateAfterReload cursor cursorWC displayLine =
         mySelections.Clear ()
 
         let newCursor = this.GetValidCursorPos cursor
@@ -367,7 +395,7 @@ type TextAreaBufferExtract (
 
         myMatchRanges.UpdateAfterReload ()
 
-        if not myMatchRanges.WasCleared then
+        if not myMatchRanges.IsCleared then
             myMatchRanges.ReSearch ()
 
         match userMessage with

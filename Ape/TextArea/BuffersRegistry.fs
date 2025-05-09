@@ -2,6 +2,7 @@
 
 open System
 
+open Commands.InCommands
 open Context
 open UserMessages
 open WrappedRef
@@ -76,6 +77,7 @@ type BuffersRegistry (
         let buffer = new TextAreaBufferExtract.TextAreaBufferExtract (
             parentBuffer, mainContextRef, myUserMessages, myRegisters, fileName
         )
+        buffer.Init ()
 
         myCurrentIndex <- myItems.Count
 

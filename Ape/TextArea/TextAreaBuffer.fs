@@ -270,7 +270,7 @@ type TextAreaBuffer (
 
     member private _.ReSearchOrClearMatching () =
         if myContext.reSearchMatching then
-            if not myMatchRanges.WasCleared then
+            if not myMatchRanges.IsCleared then
                 myMatchRanges.ReSearch ()
         else
             myMatchRanges.ClearSearch ()
@@ -429,7 +429,7 @@ type TextAreaBuffer (
         // Remember any message from failed reload.
         let userMessage = myUserMessages.RetrieveMessage ()
 
-        if not myMatchRanges.WasCleared then
+        if not myMatchRanges.IsCleared then
             myMatchRanges.ReSearch ()
 
         match userMessage with

@@ -45,8 +45,7 @@ type TextArea (
     inGlobalKeyMappings: KeyMappings.KeyMappings,
     inRegisters:         Registers.Registers,
     inGetIdentCompletionsFun: (unit -> Lines) -> GetCompletionsFun
-) as this_
-  =
+) as this_ =
     let myBuffers = new BuffersRegistry (
         myContextRef, myUserMessages, inGlobalSettings, inGlobalKeyMappings, inRegisters
     )

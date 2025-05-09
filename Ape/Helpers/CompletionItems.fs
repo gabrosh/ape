@@ -17,7 +17,6 @@ type CompletionItems (
     myUserMessages: UserMessages,
     myGetCompletionsFun: GetCompletionsFun
 ) as this_ =
-
     let mutable myItems        = ResizeArray ()
     let mutable myItemsString  = ""
     let mutable myItemsIndices = ResizeArray<(int * int)> ()

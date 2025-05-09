@@ -2,6 +2,7 @@
 
 open System.Collections.Generic
 
+open BinarySearch
 open DataTypes
 open IMatchRanges
 open LineMatchClassifier
@@ -12,29 +13,41 @@ open UserMessages
 
 /// MatchRangesExtract adds the "extract" functionality to MatchRanges.
 
+let private lineToExtractLine (lineExtractToLine: ResizeArray<int>) line =
+    let result =
+        findFirstEqOrGtInSortedArray (compareTo line) lineExtractToLine
+
+    match result with
+    | Some m -> m
+    | _      -> lineExtractToLine.Count - 1
+
 type MatchRangesExtract (
     myUserMessages: UserMessages,
     myLines:        Lines,
     myLinesExtract: Lines,
     inLastRegex:    string option,
-    inWasCleared:   bool,
+    inIsCleared:    bool,
     inTextRanges:   Dictionary<string, TextRanges>
-) =
+) as this =
     inherit MatchRanges (
-        myUserMessages, myLines, inLastRegex, inWasCleared, inTextRanges
+        myUserMessages, myLines, inLastRegex, inIsCleared, inTextRanges
     )
 
-    /// Translates index in inLines to index in myLinesExtract.
-    let myLineToLineExtract = Dictionary<int, int> ()
+    /// Translates index in myLinesExtract to index in myLines.
+    let myLineExtractToLine = ResizeArray<int> ()
 
-    let mutable myLastRegexExtract  = None
-    let mutable myWasClearedExtract = true
+    let mutable myLastRegexExtract = this.LastRegex
+    let mutable myIsClearedExtract = this.IsCleared
+
+    // public properties
+
+    member _.LastRegexExtract = myLastRegexExtract
+    member _.IsClearedExtract = myIsClearedExtract
+
+    // init mechanism
 
     /// Initializes the instance after its construction.
     member this.Init () =
-        myLastRegexExtract  <- this.LastRegex
-        myWasClearedExtract <- this.WasCleared
-
         this.Update ()
 
     // virtual
@@ -52,8 +65,8 @@ type MatchRangesExtract (
 
     /// Extracts lines from myLines according to given regex.
     member this.Extract (regex: string) =
-        myLastRegexExtract  <- Some regex
-        myWasClearedExtract <- false
+        myLastRegexExtract <- Some regex
+        myIsClearedExtract <- false
 
         this.SearchNormal myLines regex
         this.Update ()
@@ -62,8 +75,8 @@ type MatchRangesExtract (
     member this.ReExtract () =
         match this.LastRegex with
         | Some regex ->
-            myLastRegexExtract  <- Some regex
-            myWasClearedExtract <- false
+            myLastRegexExtract <- Some regex
+            myIsClearedExtract <- false
 
             this.SearchNormal myLines regex
             this.Update ()
@@ -72,28 +85,28 @@ type MatchRangesExtract (
 
     /// Clears the extract and searches for the regex used in the last call to Search or Extract.
     member this.ClearExtract () =
-        myWasClearedExtract <- true
+        myIsClearedExtract <- true
 
         this.ClearSearchAux ()
         this.Update ()
 
-        if not this.WasCleared then
+        if not this.IsCleared then
             match this.LastRegex with
             | Some regex ->
                 this.SearchAux myLinesExtract regex
             | None ->
-                // (not WasCleared) => (LastRegex <> None)
+                // (not IsCleared) => (LastRegex <> None)
                 invalidOp "Broken invariant"
 
     /// Updates the extract after reloading the file, according to whether the extract was cleared or not.
     member this.UpdateAfterReload () =
-        if not myWasClearedExtract then
+        if not myIsClearedExtract then
             match myLastRegexExtract with
             | Some regex ->
                 this.SearchAux myLines regex
                 this.Update ()
             | None ->
-                // (not WasClearedExtract) => (LastRegexExtract <> None)
+                // (not IsClearedExtract) => (LastRegexExtract <> None)
                 invalidOp "Broken invariant"
         else
             this.ClearSearchAux ()
@@ -111,7 +124,7 @@ type MatchRangesExtract (
 
     member private this.UpdateForSomeMatches () =
         myLinesExtract.Clear ()
-        myLineToLineExtract.Clear ()
+        myLineExtractToLine.Clear ()
 
         let matchRanges = this.GetAllFromAllGroups ()
 
@@ -121,15 +134,14 @@ type MatchRangesExtract (
             let lineClass = classifier.Classify line
             match lineClass with
             | LineMatch _ ->
-                let lineExtract = myLinesExtract.Count
-                myLineToLineExtract[line] <- lineExtract
                 myLinesExtract.Add chars
+                myLineExtractToLine.Add line
             | LineOther   ->
                 ()
 
     member private this.UpdateForNoMatches () =
         myLinesExtract.Clear ()
-        myLineToLineExtract.Clear ()
+        myLineExtractToLine.Clear ()
 
         myLinesExtract.AddRange this.SearchedLines
 
@@ -147,17 +159,29 @@ type MatchRangesExtract (
 
         result
 
-    member private _.TransformTextRange textRange =
+    member private this.TransformTextRange textRange =
         {
             first = {
-                line = myLineToLineExtract[textRange.first.line]
+                line = this.LineToLineExtract textRange.first.line
                 char = textRange.first.char
             }
             last  = {
-                line = myLineToLineExtract[textRange.last.line]
+                line = this.LineToLineExtract textRange.last.line
                 char = textRange.last.char
             }
         }
+
+    member _.LineExtractToLine line =
+        if myLineExtractToLine.Count <> 0 then
+            myLineExtractToLine[line]
+        else
+            line
+
+    member _.LineToLineExtract line =
+        if myLineExtractToLine.Count <> 0 then
+            lineToExtractLine myLineExtractToLine line 
+        else
+            line
 
     // IMatchRanges
 
