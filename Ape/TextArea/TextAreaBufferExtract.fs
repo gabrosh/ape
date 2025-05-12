@@ -68,9 +68,6 @@ type TextAreaBufferExtract (
     let mySelsRegisters   = SelectionsRegisters ()
     let myWantedColumns   = Helpers.WantedColumns mySelections
 
-    // LoadFile/WriteFile mechanism
-    let mutable myIsBufferChanged = false
-
     // reporting a need for Undo registration
     let mutable myHasUndoToRegister = false
 
@@ -125,7 +122,7 @@ type TextAreaBufferExtract (
     member _.Lines                  = myLines
     member _.Selections             = mySelections
     member _.IsReadOnly             = myContext.readOnly
-    member _.IsBufferChanged        = myIsBufferChanged
+    member _.IsBufferChanged        = false
     member _.HasUndoToRegister      = myHasUndoToRegister
     member _.HasUndoLinesToRegister = false
 
@@ -313,16 +310,11 @@ type TextAreaBufferExtract (
     member _.ClearIsLastUndoVolatile () =
         myUndoProvider.ClearIsLastStateVolatile ()
 
-    member _.UndoCorruptedState () =
-        myDispatcher.UndoRedoPerformer.UndoCorruptedState ()
+    member this.UndoCorruptedState () =
+        let cursorNew = Position_Zero
 
-        //this.ClearMatching()
-
-        myHasUndoToRegister <- false
-
-        myDispatcher.ApplyChangedLinesCountIfNeeded ()
-
-        myDispatcher.DisplayRenderer.ResetLinesCache ()
+        this.ResetState cursorNew
+        this.ResetUndoState ()
 
     member private this.ResetUndoState () =
         myUndoProvider.Reset (this.GetInitialUndoState ())
@@ -357,8 +349,6 @@ type TextAreaBufferExtract (
 
         myUndoProvider.SetCurrentStateAsSaved myContext.maxSavedUndos
 
-        myIsBufferChanged <- false
-
     // auxiliary
 
     member private this.ResetState cursor =
@@ -374,22 +364,9 @@ type TextAreaBufferExtract (
 
         this.PrevCommand <- None
 
-        myIsBufferChanged <- false
-
         myDispatcher.DisplayRenderer.ResetLinesCache ()
 
     member private this.ResetStateAfterReload cursor cursorWC displayLine =
-        mySelections.Clear ()
-
-        let newCursor = this.GetValidCursorPos cursor
-
-        mySelections.Add {
-            Selection_Zero with first   = newCursor ; last   = newCursor
-                                firstWC = cursorWC  ; lastWC = cursorWC
-        }
-
-        mySelsRegisters.Clear ()
-
         // Remember any message from failed reload.
         let userMessage = myUserMessages.RetrieveMessage ()
 
@@ -406,6 +383,17 @@ type TextAreaBufferExtract (
         | None ->
             ()
 
+        mySelections.Clear ()
+
+        let newCursor = this.GetValidCursorPos cursor
+
+        mySelections.Add {
+            Selection_Zero with first   = newCursor ; last   = newCursor
+                                firstWC = cursorWC  ; lastWC = cursorWC
+        }
+
+        mySelsRegisters.Clear ()
+
         let newDisplayLine = this.GetValidDisplayLine displayLine
 
         this.DisplayPos <- {
@@ -413,8 +401,6 @@ type TextAreaBufferExtract (
         }
 
         this.PrevCommand <- None
-
-        myIsBufferChanged <- false
 
         myDispatcher.DisplayRenderer.ResetLinesCache ()
 
@@ -442,6 +428,9 @@ type TextAreaBufferExtract (
         member this.Selections             = this.Selections
         member this.IsReadOnly             = this.IsReadOnly
         member this.IsBufferChanged        = this.IsBufferChanged
+        member this.IsWriteAllowed         = this.IsBufferChanged
+        member this.IsReloadAllowed        = not myParent.IsBufferChanged
+        member this.IsDeleteAllowed        = not this.IsBufferChanged
         member this.HasUndoToRegister      = this.HasUndoToRegister
         member this.HasUndoLinesToRegister = this.HasUndoLinesToRegister
 

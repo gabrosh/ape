@@ -78,7 +78,7 @@ let private command_writeAux quite context (argsMap: ArgsMap) =
         else
             context.textArea.WriteFileAs filePath
     | None ->
-        if not quite && not context.textArea.IsBufferChanged then
+        if not quite && not context.textArea.IsWriteAllowed then
             context.userMessages.RegisterMessage WARNING_NO_CHANGE_SINCE_LAST_WRITE
         else
             context.textArea.WriteFile ()
@@ -151,7 +151,7 @@ let execute_view context (argsMap: ArgsMap) =
 let argsMapSpec_reloadAux: ArgsMapSpec = (0, [| |])
 
 let command_reloadAux quite context (_argsMap: ArgsMap) =
-    if not quite && context.textArea.IsBufferChanged then
+    if not quite && not context.textArea.IsReloadAllowed then
         context.userMessages.RegisterMessage WARNING_NO_WRITE_SINCE_LAST_CHANGE
     else
         context.textArea.ReloadFile ()
@@ -189,7 +189,7 @@ let execute_extract context (argsMap: ArgsMap) =
 let argsMapSpec_bufferDeleteAux: ArgsMapSpec = (0, [| |])
 
 let command_bufferDeleteAux quite context (_argsMap: ArgsMap) =
-    if not quite && context.textArea.IsBufferChanged then
+    if not quite && not context.textArea.IsDeleteAllowed then
         context.userMessages.RegisterMessage WARNING_NO_WRITE_SINCE_LAST_CHANGE
     else
         context.textArea.DeleteBuffer ()

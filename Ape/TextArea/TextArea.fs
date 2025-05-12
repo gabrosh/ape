@@ -84,6 +84,9 @@ type TextArea (
     member _.LinesForCompletion     = myBuffer.LinesForCompletion
     member _.IsReadOnly             = myBuffer.IsReadOnly
     member _.IsBufferChanged        = myBuffer.IsBufferChanged
+    member _.IsWriteAllowed         = myBuffer.IsWriteAllowed
+    member _.IsReloadAllowed        = myBuffer.IsReloadAllowed
+    member _.IsDeleteAllowed        = myBuffer.IsDeleteAllowed
     member _.HasUndoToRegister      = myBuffer.HasUndoToRegister
     member _.HasUndoLinesToRegister = myBuffer.HasUndoLinesToRegister
 

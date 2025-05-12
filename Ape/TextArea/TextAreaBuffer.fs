@@ -407,25 +407,11 @@ type TextAreaBuffer (
 
         this.PrevCommand <- None
 
-        myIsBufferChanged <- false
-
         myDispatcher.DisplayRenderer.ResetLinesCache ()
 
+        myIsBufferChanged <- false
+
     member private this.ResetStateAfterReload main displayLine =
-        let cursor   = main.Cursor
-        let cursorWC = main.CursorWC
-
-        mySelections.Clear ()
-
-        let newCursor = this.GetValidCursorPos cursor
-
-        mySelections.Add {
-            Selection_Zero with first   = newCursor ; last   = newCursor
-                                firstWC = cursorWC  ; lastWC = cursorWC
-        }
-
-        mySelsRegisters.Clear ()
-
         // Remember any message from failed reload.
         let userMessage = myUserMessages.RetrieveMessage ()
 
@@ -440,6 +426,20 @@ type TextAreaBuffer (
         | None ->
             ()
 
+        let cursor   = main.Cursor
+        let cursorWC = main.CursorWC
+
+        mySelections.Clear ()
+
+        let newCursor = this.GetValidCursorPos cursor
+
+        mySelections.Add {
+            Selection_Zero with first   = newCursor ; last   = newCursor
+                                firstWC = cursorWC  ; lastWC = cursorWC
+        }
+
+        mySelsRegisters.Clear ()
+
         let newDisplayLine = this.GetValidDisplayLine displayLine
 
         this.DisplayPos <- {
@@ -448,9 +448,9 @@ type TextAreaBuffer (
 
         this.PrevCommand <- None
 
-        myIsBufferChanged <- false
-
         myDispatcher.DisplayRenderer.ResetLinesCache ()
+
+        myIsBufferChanged <- false
 
     member private _.GetValidCursorPos cursor =
         let line  = min (myLines.Count - 1) cursor.line
@@ -476,6 +476,9 @@ type TextAreaBuffer (
         member this.Selections             = this.Selections
         member this.IsReadOnly             = this.IsReadOnly
         member this.IsBufferChanged        = this.IsBufferChanged
+        member this.IsWriteAllowed         = this.IsBufferChanged
+        member this.IsReloadAllowed        = not this.IsBufferChanged
+        member this.IsDeleteAllowed        = not this.IsBufferChanged
         member this.HasUndoToRegister      = this.HasUndoToRegister
         member this.HasUndoLinesToRegister = this.HasUndoLinesToRegister
 
