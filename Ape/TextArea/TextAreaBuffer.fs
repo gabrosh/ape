@@ -290,13 +290,12 @@ type TextAreaBuffer (
     member this.UndoCorruptedState () =
         myDispatcher.UndoRedoPerformer.UndoCorruptedState ()
 
-        this.ClearSearchMatching()
-
         myHasUndoToRegister      <- false
         myHasUndoLinesToRegister <- false
 
-        myDispatcher.ApplyChangedLinesCountIfNeeded ()
+        this.ClearSearchMatching()
 
+        myDispatcher.ApplyChangedLinesCountIfNeeded ()
         myDispatcher.DisplayRenderer.ResetLinesCache ()
 
     member private this.ResetUndoState () =
@@ -345,7 +344,8 @@ type TextAreaBuffer (
             this.ResetUndoState ()
 
     member this.ReloadFile encoding strictEncoding =
-        let main        = this.Main
+        let cursor      = this.Main.Cursor
+        let cursorWC    = this.Main.CursorWC
         let displayLine = this.DisplayPos.line
 
         myLines.Clear ()
@@ -356,7 +356,7 @@ type TextAreaBuffer (
             result
         finally
             this.AssureNonZeroLinesCount ()
-            this.ResetStateAfterReload main displayLine
+            this.ResetStateAfterReload cursor cursorWC displayLine
             this.ResetUndoState ()
 
     member this.WriteFile encoding fileFormat endWithNewLine =
@@ -398,6 +398,7 @@ type TextAreaBuffer (
     member private this.ResetState () =
         mySelections.Clear ()
         mySelections.Add Selection_Zero
+        myWantedColumns.SetPendingWCActions []
 
         mySelsRegisters.Clear ()
 
@@ -407,11 +408,12 @@ type TextAreaBuffer (
 
         this.PrevCommand <- None
 
+        myDispatcher.ApplyChangedLinesCountIfNeeded ()
         myDispatcher.DisplayRenderer.ResetLinesCache ()
 
         myIsBufferChanged <- false
 
-    member private this.ResetStateAfterReload main displayLine =
+    member private this.ResetStateAfterReload cursor cursorWC displayLine =
         // Remember any message from failed reload.
         let userMessage = myUserMessages.RetrieveMessage ()
 
@@ -426,13 +428,8 @@ type TextAreaBuffer (
         | None ->
             ()
 
-        let cursor   = main.Cursor
-        let cursorWC = main.CursorWC
-
         mySelections.Clear ()
-
         let newCursor = this.GetValidCursorPos cursor
-
         mySelections.Add {
             Selection_Zero with first   = newCursor ; last   = newCursor
                                 firstWC = cursorWC  ; lastWC = cursorWC
@@ -448,6 +445,7 @@ type TextAreaBuffer (
 
         this.PrevCommand <- None
 
+        myDispatcher.ApplyChangedLinesCountIfNeeded ()
         myDispatcher.DisplayRenderer.ResetLinesCache ()
 
         myIsBufferChanged <- false

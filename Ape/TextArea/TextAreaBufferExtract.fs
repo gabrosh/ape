@@ -311,6 +311,9 @@ type TextAreaBufferExtract (
         myUndoProvider.ClearIsLastStateVolatile ()
 
     member this.UndoCorruptedState () =
+        myMatchRanges.ClearSearch ()
+        myMatchRanges.ClearExtract ()
+
         let cursorNew = Position_Zero
 
         this.ResetState cursorNew
@@ -353,10 +356,12 @@ type TextAreaBufferExtract (
 
     member private this.ResetState cursor =
         mySelections.Clear ()
-
         mySelections.Add {
             Selection_Zero with first = cursor; last = cursor
         }
+        myWantedColumns.SetPendingWCActions [
+            SetHardWantedColumn; SetSoftWantedColumn
+        ]
 
         mySelsRegisters.Clear ()
 
@@ -364,6 +369,7 @@ type TextAreaBufferExtract (
 
         this.PrevCommand <- None
 
+        myDispatcher.ApplyChangedLinesCountIfNeeded ()
         myDispatcher.DisplayRenderer.ResetLinesCache ()
 
     member private this.ResetStateAfterReload cursor cursorWC displayLine =
@@ -384,9 +390,7 @@ type TextAreaBufferExtract (
             ()
 
         mySelections.Clear ()
-
         let newCursor = this.GetValidCursorPos cursor
-
         mySelections.Add {
             Selection_Zero with first   = newCursor ; last   = newCursor
                                 firstWC = cursorWC  ; lastWC = cursorWC
@@ -402,6 +406,7 @@ type TextAreaBufferExtract (
 
         this.PrevCommand <- None
 
+        myDispatcher.ApplyChangedLinesCountIfNeeded ()
         myDispatcher.DisplayRenderer.ResetLinesCache ()
 
     member private _.GetValidCursorPos cursor =

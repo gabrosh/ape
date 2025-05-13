@@ -240,6 +240,7 @@ type PromptBuffer (
     member private this.ResetState () =
         mySelections.Clear ()
         mySelections.Add Selection_Zero
+        myWantedColumns.SetPendingWCActions []
 
         mySelsRegisters.Clear ()
 
