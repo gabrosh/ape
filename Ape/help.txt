@@ -209,8 +209,12 @@ Normal mode - goto and view commands:
 ps   gl              cursor before end of line
 ps   g<a-l>          cursor at end of line
 
-     vv              center vertically
-     vh              center horizontally
+     vv              center the main cursor vertically
+     vh              center the main cursor horizontally
+     vt              scroll so that the main cursor is at top
+     vb              scroll so that the main cursor is at bottom
+     vl              scroll so that the main cursor is at left
+     vr              scroll so that the main cursor is at right
 
 
 Normal mode - enter Prompt Insert mode:

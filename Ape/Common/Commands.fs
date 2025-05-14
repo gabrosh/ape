@@ -45,6 +45,10 @@ module InCommands =
         | CenterVertically
         | CenterHorizontally
         | CenterAfterMatch of isForward: bool * hitFileBoundary: bool * hitLineBoundary: bool
+        | ScrollCursorTop
+        | ScrollCursorBottom
+        | ScrollCursorLeft
+        | ScrollCursorRight
         | AdaptDisplayPos
 
     type ModifyingCommand =

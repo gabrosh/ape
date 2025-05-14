@@ -421,6 +421,10 @@ type TextArea (
             match key with
             | NoModif InputKey.V -> Some (WrapLinesDepCommand CenterVertically)
             | NoModif InputKey.H -> Some (WrapLinesDepCommand CenterHorizontally)
+            | NoModif InputKey.T -> Some (WrapLinesDepCommand ScrollCursorTop)
+            | NoModif InputKey.B -> Some (WrapLinesDepCommand ScrollCursorBottom)
+            | NoModif InputKey.L -> Some (WrapLinesDepCommand ScrollCursorLeft)
+            | NoModif InputKey.R -> Some (WrapLinesDepCommand ScrollCursorRight)
             | _                  -> None
 
         performSome command (

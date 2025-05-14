@@ -66,6 +66,10 @@ type NoWrapLinesPerformer (
             | CenterVertically         -> this.CenterVertically    None true
             | CenterHorizontally       -> this.CenterHorizontally  None true
             | CenterAfterMatch (a,b,c) -> this.CenterAfterMatch    a b c
+            | ScrollCursorTop          -> this.ScrollCursorTop     ()
+            | ScrollCursorBottom       -> this.ScrollCursorBottom  ()
+            | ScrollCursorLeft         -> this.ScrollCursorLeft    ()
+            | ScrollCursorRight        -> this.ScrollCursorRight   ()
             | AdaptDisplayPos          -> this.AdaptDisplayPos     ()
 
             let toUpdateSelection =
@@ -75,6 +79,10 @@ type NoWrapLinesPerformer (
                 | CenterVertically
                 | CenterHorizontally
                 | CenterAfterMatch _
+                | ScrollCursorTop
+                | ScrollCursorBottom
+                | ScrollCursorLeft
+                | ScrollCursorRight
                 | AdaptDisplayPos      -> false
 
                 | CursorHardUp             
@@ -115,6 +123,10 @@ type NoWrapLinesPerformer (
             | CenterVertically
             | CenterHorizontally
             | CenterAfterMatch _
+            | ScrollCursorTop
+            | ScrollCursorBottom
+            | ScrollCursorLeft
+            | ScrollCursorRight
             | AdaptDisplayPos
                 -> []
 
@@ -293,6 +305,18 @@ type NoWrapLinesPerformer (
     member private this.CenterAfterMatch isForward hitFileBoundary hitLineBoundary =
         this.CenterVertically   (Some isForward) hitFileBoundary
         this.CenterHorizontally (Some isForward) hitLineBoundary
+
+    member private _.ScrollCursorTop () =
+        myDisplayPos <- { myDisplayPos with line = IntType.MaxValue }
+
+    member private _.ScrollCursorBottom () =
+        myDisplayPos <- { myDisplayPos with line = 0 }
+
+    member private _.ScrollCursorLeft () =
+        myDisplayPos <- { myDisplayPos with column = IntType.MaxValue }
+
+    member private _.ScrollCursorRight () =
+        myDisplayPos <- { myDisplayPos with column = 0 }
 
     member private this.AdaptDisplayPos () =
         let bb = this.GetBottomBound ()

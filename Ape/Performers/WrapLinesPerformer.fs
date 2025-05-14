@@ -99,6 +99,10 @@ type WrapLinesPerformer (
             | CenterVertically           -> this.CenterVertically    None true
             | CenterHorizontally         -> this.CenterHorizontally  None true
             | CenterAfterMatch (a, b, c) -> this.CenterAfterMatch    a b c
+            | ScrollCursorTop            -> this.ScrollCursorTop     ()
+            | ScrollCursorBottom         -> this.ScrollCursorBottom  ()
+            | ScrollCursorLeft           -> this.ScrollCursorLeft    ()
+            | ScrollCursorRight          -> this.ScrollCursorRight   ()
             | AdaptDisplayPos            -> this.AdaptDisplayPos     ()
 
             let toUpdateSelection =
@@ -108,6 +112,10 @@ type WrapLinesPerformer (
                 | CenterVertically
                 | CenterHorizontally
                 | CenterAfterMatch _
+                | ScrollCursorTop
+                | ScrollCursorBottom
+                | ScrollCursorLeft
+                | ScrollCursorRight
                 | AdaptDisplayPos        -> false
 
                 | CursorHardUp
@@ -155,6 +163,10 @@ type WrapLinesPerformer (
             | CenterVertically
             | CenterHorizontally
             | CenterAfterMatch _
+            | ScrollCursorTop
+            | ScrollCursorBottom
+            | ScrollCursorLeft
+            | ScrollCursorRight
             | AdaptDisplayPos
                 -> []
 
@@ -184,6 +196,10 @@ type WrapLinesPerformer (
             | CenterVertically
             | CenterHorizontally
             | CenterAfterMatch _
+            | ScrollCursorTop
+            | ScrollCursorBottom
+            | ScrollCursorLeft
+            | ScrollCursorRight
             | AdaptDisplayPos
                 -> []
 
@@ -366,6 +382,18 @@ type WrapLinesPerformer (
     member private this.CenterAfterMatch isForward hitFileBoundary hitLineBoundary =
         this.CenterVertically   (Some isForward) hitFileBoundary
         this.CenterHorizontally (Some isForward) hitLineBoundary
+
+    member private _.ScrollCursorTop () =
+        myDisplayPos <- { myDisplayPos with line = IntType.MaxValue; lineRow = 0 }
+
+    member private _.ScrollCursorBottom () =
+        myDisplayPos <- { myDisplayPos with line = 0; lineRow = 0 }
+
+    member private _.ScrollCursorLeft () =
+        ()
+
+    member private _.ScrollCursorRight () =
+        ()
 
     member private this.AdaptDisplayPos () =
         let tb = this.GetTopBound ()
