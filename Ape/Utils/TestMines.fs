@@ -14,7 +14,8 @@ let checkMine name =
     | "LoadFile"
     | "ReloadFile"
         -> ()
-    | "InsertChar"
+    | "InsertSingleChar"
+    | "InsertTabBySpaces"
     | "DeleteChar"
     | "DeletePrevChar"
         -> ()

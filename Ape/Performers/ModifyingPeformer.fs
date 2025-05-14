@@ -3,7 +3,6 @@
 open System
 open System.Collections.Immutable
 
-open CharCategories
 open Commands.InCommands
 open Commands.OutCommands
 open Common
@@ -241,7 +240,7 @@ type ModifyingPerformer (
 
         myAccessor.InsertChar target.line target.char c
 
-        TestMines.checkMine (nameof this.InsertChar)
+        TestMines.checkMine (nameof this.InsertSingleChar)
 
         mySelection <- {
             mySelection with first = target; last = target
@@ -274,6 +273,8 @@ type ModifyingPerformer (
         let insertSpec = myAccessor.GetInsertSpec target lines true
         let movedTarget = applyInsertToPos insertSpec target
         let newLast = myAccessor.GetPrevChar movedTarget
+
+        TestMines.checkMine (nameof this.InsertTabBySpaces)
 
         mySelection <- {
             mySelection with first = target; last = newLast
