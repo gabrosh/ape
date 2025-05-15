@@ -383,11 +383,29 @@ type WrapLinesPerformer (
         this.CenterVertically   (Some isForward) hitFileBoundary
         this.CenterHorizontally (Some isForward) hitLineBoundary
 
-    member private _.ScrollCursorTop () =
-        myDisplayPos <- { myDisplayPos with line = IntType.MaxValue; lineRow = 0 }
+    member private this.ScrollCursorTop () =
+        let top = this.GetTopBound ()
+        this.ScrollCursorTopBottom top
 
-    member private _.ScrollCursorBottom () =
-        myDisplayPos <- { myDisplayPos with line = 0; lineRow = 0 }
+    member private this.ScrollCursorBottom () =
+        let top = this.GetBottomBound ()
+        this.ScrollCursorTopBottom top
+
+    member private this.ScrollCursorTopBottom top =
+        let maxTop = this.GetMaxTop ()
+
+        let top =
+            if isLower top myDisplayPos then
+                top
+            elif isGreater top myDisplayPos then
+                if isGreater top maxTop then
+                    getGreater myDisplayPos maxTop
+                else
+                    top
+            else  // top = myDisplayPos
+                top
+
+        myDisplayPos <- top
 
     member private _.ScrollCursorLeft () =
         ()

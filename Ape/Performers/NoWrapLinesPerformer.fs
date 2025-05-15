@@ -1,4 +1,4 @@
-﻿module NoWrapLinesPerformer
+module NoWrapLinesPerformer
 
 open Commands.InCommands
 open Common
@@ -207,7 +207,7 @@ type NoWrapLinesPerformer (
             this.SetCursorByHardWantedColumn cursor
 
     /// Returns cursor line amended so that there is no need to adapt
-    /// display line after scrolling up display to top line.
+    /// displayPos.line after scrolling up display to top line.
     member private this.GetAmendedCursorUp top cursor =
         if top = 0 then
             cursor
@@ -235,7 +235,7 @@ type NoWrapLinesPerformer (
             this.SetCursorByHardWantedColumn cursor
 
     /// Returns cursor line amended so that there is no need to adapt
-    /// displayLine after scrolling down display to top line.
+    /// displayPos.line after scrolling down display to top line.
     member private this.GetAmendedCursorDown top maxTop cursor =
         if top >= maxTop then
             cursor
@@ -306,17 +306,59 @@ type NoWrapLinesPerformer (
         this.CenterVertically   (Some isForward) hitFileBoundary
         this.CenterHorizontally (Some isForward) hitLineBoundary
 
-    member private _.ScrollCursorTop () =
-        myDisplayPos <- { myDisplayPos with line = IntType.MaxValue }
+    member private this.ScrollCursorTop () =
+        let top = this.GetTopBound ()
+        this.ScrollCursorTopBottom top
 
-    member private _.ScrollCursorBottom () =
-        myDisplayPos <- { myDisplayPos with line = 0 }
+    member private this.ScrollCursorBottom () =
+        let top = this.GetBottomBound ()
+        this.ScrollCursorTopBottom top
 
-    member private _.ScrollCursorLeft () =
-        myDisplayPos <- { myDisplayPos with column = IntType.MaxValue }
+    member private this.ScrollCursorTopBottom top =
+        let maxTop = this.GetMaxTop ()
 
-    member private _.ScrollCursorRight () =
-        myDisplayPos <- { myDisplayPos with column = 0 }
+        let top =
+            if top < myDisplayPos.line then
+                top
+            elif top > myDisplayPos.line then
+                if top > maxTop then
+                    max myDisplayPos.line maxTop
+                else
+                    top
+            else  // top = myDisplayPos.line
+                top
+
+        myDisplayPos <- { myDisplayPos with line = top }
+
+    member private this.ScrollCursorLeft () =
+        let cursorFirstColumn, _cursorLastColumn =
+            this.GetCursorColumns ()
+
+        let left = this.GetLeftBound cursorFirstColumn
+        this.ScrollCursorLeftRight left
+
+    member private this.ScrollCursorRight () =
+        let _cursorFirstColumn, cursorLastColumn =
+            this.GetCursorColumns ()
+
+        let left = this.GetRightBound cursorLastColumn
+        this.ScrollCursorLeftRight left
+
+    member private this.ScrollCursorLeftRight left =
+        let maxLeft = this.GetMaxLeft ()
+
+        let left =
+            if left < myDisplayPos.column then
+                left
+            elif left > myDisplayPos.column then
+                if left > maxLeft then
+                    max myDisplayPos.column maxLeft
+                else
+                    left
+            else  // left = myDisplayPos.column
+                left
+
+        myDisplayPos <- { myDisplayPos with column = left }
 
     member private this.AdaptDisplayPos () =
         let bb = this.GetBottomBound ()
@@ -338,25 +380,25 @@ type NoWrapLinesPerformer (
         elif myDisplayPos.column < rb then
             myDisplayPos <- { myDisplayPos with column = rb }
 
-    /// Returns maximum displayLine, by setting which scrollOffsetRows
+    /// Returns maximum displayPos.line, by setting which scrollOffsetRows
     /// will be displayed before the cursor row.
     member private _.GetTopBound () =
         max 0 (myLine - myContext.scrollOffsetRows)
 
-    /// Returns minimum displayLine, by setting which scrollOffsetRows
-    /// will be displayed before the cursor row.
+    /// Returns minimum displayPos.line, by setting which scrollOffsetRows
+    /// will be displayed after the cursor row.
     member private _.GetBottomBound () =
         let bottom =
             min (myLine + myContext.scrollOffsetRows)
                 myLines.Count  // the first "~" line after EOF
         max 0 (bottom - (myContext.areaHeight - 1))
 
-    /// Returns maximum displayColumn, by setting which scrollOffsetColumns
+    /// Returns maximum displayPos.column, by setting which scrollOffsetColumns
     /// will be displayed before the cursor first column.
     member private _.GetLeftBound cursorFirstColumn =
         max 0 (cursorFirstColumn - myContext.scrollOffsetColumns)
 
-    /// Returns minimum displayColumn, by setting which scrollOffsetColumns
+    /// Returns minimum displayPos.column, by setting which scrollOffsetColumns
     /// will be displayed after the last cursor column.
     member private this.GetRightBound cursorLastColumn =
         let right =
