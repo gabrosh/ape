@@ -36,8 +36,9 @@ type MatchRangesExtract (
     /// Translates index in myLinesExtract to index in myLines.
     let myLineExtractToLine = ResizeArray<int> ()
 
-    let mutable myLastRegexExtract = this.LastRegex
-    let mutable myIsClearedExtract = this.IsCleared
+    let mutable myLastRegexExtract  = this.LastRegex
+    let mutable myIsClearedExtract  = this.IsCleared
+    let mutable myIsSearchInExtract = false
 
     // public properties
 
@@ -53,9 +54,13 @@ type MatchRangesExtract (
     // virtual
 
     override this.Search (regex: string) =
+        myIsSearchInExtract <- true
+
         this.SearchNormal myLinesExtract regex
 
     override this.ReSearch () =
+        myIsSearchInExtract <- true
+
         this.ReSearchNormal myLinesExtract
 
     override this.ClearSearch () =
@@ -65,8 +70,9 @@ type MatchRangesExtract (
 
     /// Extracts lines from myLines according to given regex.
     member this.Extract (regex: string) =
-        myLastRegexExtract <- Some regex
-        myIsClearedExtract <- false
+        myLastRegexExtract  <- Some regex
+        myIsClearedExtract  <- false
+        myIsSearchInExtract <- false
 
         this.SearchNormal myLines regex
         this.Update ()
@@ -75,8 +81,9 @@ type MatchRangesExtract (
     member this.ReExtract () =
         match this.LastRegex with
         | Some regex ->
-            myLastRegexExtract <- Some regex
-            myIsClearedExtract <- false
+            myLastRegexExtract  <- Some regex
+            myIsClearedExtract  <- false
+            myIsSearchInExtract <- false
 
             this.SearchNormal myLines regex
             this.Update ()
@@ -94,23 +101,34 @@ type MatchRangesExtract (
             match this.LastRegex with
             | Some regex ->
                 this.SearchAux myLinesExtract regex
+
             | None ->
                 // (not IsCleared) => (LastRegex <> None)
                 invalidOp "Broken invariant"
 
-    /// Updates the extract after reloading the file, according to whether the extract was cleared or not.
+    /// Updates the extract after reloading the file, according to the previous state.
     member this.UpdateAfterReload () =
-        if not myIsClearedExtract then
-            match myLastRegexExtract with
+        if not this.IsClearedExtract then
+            match this.LastRegexExtract with
             | Some regex ->
                 this.SearchAux myLines regex
                 this.Update ()
+
+                if not this.IsCleared then
+                    if myIsSearchInExtract then
+                        this.ReSearch ()
+                else
+                    this.ClearSearchAux ()
+
             | None ->
                 // (not IsClearedExtract) => (LastRegexExtract <> None)
                 invalidOp "Broken invariant"
         else
             this.ClearSearchAux ()
             this.Update ()
+
+            if not this.IsCleared then
+                this.ReSearch ()
 
     // auxiliary
 
@@ -179,7 +197,7 @@ type MatchRangesExtract (
 
     member _.LineToLineExtract line =
         if myLineExtractToLine.Count <> 0 then
-            lineToExtractLine myLineExtractToLine line 
+            lineToExtractLine myLineExtractToLine line
         else
             line
 

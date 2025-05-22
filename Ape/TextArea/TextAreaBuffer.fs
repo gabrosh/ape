@@ -417,8 +417,7 @@ type TextAreaBuffer (
         // Remember any message from failed reload.
         let userMessage = myUserMessages.RetrieveMessage ()
 
-        if not myMatchRanges.IsCleared then
-            myMatchRanges.ReSearch ()
+        myMatchRanges.UpdateAfterReload ()
 
         match userMessage with
         | Some userMessage ->

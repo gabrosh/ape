@@ -378,9 +378,6 @@ type TextAreaBufferExtract (
 
         myMatchRanges.UpdateAfterReload ()
 
-        if not myMatchRanges.IsCleared then
-            myMatchRanges.ReSearch ()
-
         match userMessage with
         | Some userMessage ->
             myUserMessages.RetrieveMessage () |> ignore

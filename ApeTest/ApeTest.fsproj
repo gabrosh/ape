@@ -46,6 +46,8 @@
     <Compile Include="RegexUtilsTest\SimpleRegexTest.fs" />
     <Compile Include="RegexUtilsTest\SingleLineRegexTest.fs" />
     <Compile Include="RegexUtilsTest\MultiLineRegexTest.fs" />
+    <Compile Include="RegexUtilsTest\MatchRangesTest.fs" />
+    <Compile Include="RegexUtilsTest\MatchRangesExtractTest.fs" />
     <Compile Include="TextAreaPerformersTest\CommonTest.fs" />
     <Compile Include="TextAreaPerformersTest\NoWrapLinesTest.fs" />
     <Compile Include="TextAreaPerformersTest\WrapLinesTest.fs" />

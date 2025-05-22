@@ -135,6 +135,11 @@ type MatchRanges (
     member internal _.ClearSearchAux () =
         myTextRanges <- makeTextRangesGroups ()
 
+    /// Updates text ranges after reloading the file, according the previous state.
+    member this.UpdateAfterReload () =
+        if not this.IsCleared then
+            this.ReSearch ()
+
     // virtual
 
     /// Searches for regex.
