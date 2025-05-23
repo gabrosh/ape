@@ -29,10 +29,15 @@ type MatchRangesExtractTest () =
 
     // assertions
 
-    let assertTextRanges (matchRanges: MatchRanges) (expected: TextRange array) =
+    let stringsToLines (ss: string seq) =
+        ss |> Seq.map stringToChars |> Lines
 
+    let assertLines (actual: Lines) (expected: string seq) =
+        let expected' = stringsToLines expected
+        Assert.AreEqual (expected', actual)
+
+    let assertTextRanges (matchRanges: MatchRanges) (expected: TextRange seq) =
         let actual = matchRanges.GetAllFromMainGroup ()
-
         Assert.AreEqual (expected, actual)
 
     // CreateExtract, Search, ClearSearch, ReSearch ----------------------------
@@ -54,21 +59,30 @@ type MatchRangesExtractTest () =
         let matchRangesExtract = matchRanges.CreateExtract MatchRangesExtract linesExtract
         matchRangesExtract.Init ()
 
-        matchRanges.Search "abc"
+        matchRangesExtract.Search "abc"
 
-        assertTextRanges matchRanges [|
+        assertLines linesExtract [|
+            "abc"; "def"; "abc"
+        |]
+        assertTextRanges matchRangesExtract [|
             textRange (0, 0) (0, 2)
             textRange (2, 0) (2, 2)
         |]
 
-        matchRanges.ClearSearch ()
+        matchRangesExtract.ClearSearch ()
 
-        assertTextRanges matchRanges [|
+        assertLines linesExtract [|
+            "abc"; "def"; "abc"
+        |]
+        assertTextRanges matchRangesExtract [|
         |]
 
-        matchRanges.ReSearch ()
+        matchRangesExtract.ReSearch ()
 
-        assertTextRanges matchRanges [|
+        assertLines linesExtract [|
+            "abc"; "def"; "abc"
+        |]
+        assertTextRanges matchRangesExtract [|
             textRange (0, 0) (0, 2)
             textRange (2, 0) (2, 2)
         |]
@@ -94,6 +108,9 @@ type MatchRangesExtractTest () =
         let matchRangesExtract = matchRanges.CreateExtract MatchRangesExtract linesExtract
         matchRangesExtract.Init ()
 
+        assertLines linesExtract [|
+            "abc"; "abc"
+        |]
         assertTextRanges matchRangesExtract [|
             textRange (0, 0) (0, 2)
             textRange (1, 0) (1, 2)
@@ -118,6 +135,9 @@ type MatchRangesExtractTest () =
 
         matchRangesExtract.Extract "abc"
 
+        assertLines linesExtract [|
+            "abc"; "abc"
+        |]
         assertTextRanges matchRangesExtract [|
             textRange (0, 0) (0, 2)
             textRange (1, 0) (1, 2)
@@ -144,6 +164,9 @@ type MatchRangesExtractTest () =
 
         matchRangesExtract.Extract "abc"
 
+        assertLines linesExtract [|
+            "abc"; "abc"
+        |]
         assertTextRanges matchRangesExtract [|
             textRange (0, 0) (0, 2)
             textRange (1, 0) (1, 2)
@@ -151,11 +174,17 @@ type MatchRangesExtractTest () =
 
         matchRangesExtract.ClearSearch ()
 
-        assertTextRanges matchRanges [|
+        assertLines linesExtract [|
+            "abc"; "abc"
+        |]
+        assertTextRanges matchRangesExtract [|
         |]
 
         matchRangesExtract.ReSearch ()
 
+        assertLines linesExtract [|
+            "abc"; "abc"
+        |]
         assertTextRanges matchRangesExtract [|
             textRange (0, 0) (0, 2)
             textRange (1, 0) (1, 2)
@@ -180,6 +209,9 @@ type MatchRangesExtractTest () =
 
         matchRangesExtract.Extract "abc"
 
+        assertLines linesExtract [|
+            "abc"; "abcdef"
+        |]
         assertTextRanges matchRangesExtract [|
             textRange (0, 0) (0, 2)
             textRange (1, 0) (1, 2)
@@ -187,12 +219,18 @@ type MatchRangesExtractTest () =
 
         matchRangesExtract.Search "def"
 
+        assertLines linesExtract [|
+            "abc"; "abcdef"
+        |]
         assertTextRanges matchRangesExtract [|
             textRange (1, 3) (1, 5)
         |]
 
         matchRangesExtract.ReExtract ()
 
+        assertLines linesExtract [|
+            "def"; "abcdef"
+        |]
         assertTextRanges matchRangesExtract [|
             textRange (0, 0) (0, 2)
             textRange (1, 3) (1, 5)
@@ -217,6 +255,9 @@ type MatchRangesExtractTest () =
 
         matchRangesExtract.Extract "abc"
 
+        assertLines linesExtract [|
+            "abc"; "abcdef"
+        |]
         assertTextRanges matchRangesExtract [|
             textRange (0, 0) (0, 2)
             textRange (1, 0) (1, 2)
@@ -224,12 +265,18 @@ type MatchRangesExtractTest () =
 
         matchRangesExtract.Search "def"
 
+        assertLines linesExtract [|
+            "abc"; "abcdef"
+        |]
         assertTextRanges matchRangesExtract [|
             textRange (1, 3) (1, 5)
         |]
 
         matchRangesExtract.ClearExtract ()
 
+        assertLines linesExtract [|
+            "abc"; "def"; "abcdef"
+        |]
         assertTextRanges matchRangesExtract [|
             textRange (1, 0) (1, 2)
             textRange (2, 3) (2, 5)
@@ -254,6 +301,9 @@ type MatchRangesExtractTest () =
         let matchRangesExtract = matchRanges.CreateExtract MatchRangesExtract linesExtract
         matchRangesExtract.Init ()
 
+        assertLines linesExtract [|
+            "abc"; "abc"; "abc"
+        |]
         assertTextRanges matchRangesExtract [|
         |]
 
@@ -281,6 +331,9 @@ type MatchRangesExtractTest () =
 
         matchRangesExtract.Extract @"(?m)(?<=abc\n)abc"
 
+        assertLines linesExtract [|
+            "abc"; "abc"
+        |]
         assertTextRanges matchRangesExtract [|
             textRange (0, 0) (0, 2)
             textRange (1, 0) (1, 2)
@@ -288,6 +341,9 @@ type MatchRangesExtractTest () =
 
         matchRangesExtract.UpdateAfterReload ()
 
+        assertLines linesExtract [|
+            "abc"; "abc"
+        |]
         assertTextRanges matchRangesExtract [|
             textRange (0, 0) (0, 2)
             textRange (1, 0) (1, 2)
@@ -312,6 +368,9 @@ type MatchRangesExtractTest () =
 
         matchRangesExtract.Extract @"(?m)(?<=abc\n)abc"
 
+        assertLines linesExtract [|
+            "abc"; "abc"
+        |]
         assertTextRanges matchRangesExtract [|
             textRange (0, 0) (0, 2)
             textRange (1, 0) (1, 2)
@@ -319,12 +378,18 @@ type MatchRangesExtractTest () =
 
         matchRangesExtract.ReSearch ()
 
+        assertLines linesExtract [|
+            "abc"; "abc"
+        |]
         assertTextRanges matchRangesExtract [|
             textRange (1, 0) (1, 2)
         |]
 
         matchRangesExtract.UpdateAfterReload ()
 
+        assertLines linesExtract [|
+            "abc"; "abc"
+        |]
         assertTextRanges matchRangesExtract [|
             textRange (1, 0) (1, 2)
         |]
