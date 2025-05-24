@@ -283,10 +283,11 @@ type TextAreaBufferExtract (
         let cursorNew = { line = lineNew; char = 0 }
 
         this.ResetState cursorNew
-        this.ResetUndoState ()
 
         let command = WrapLinesDepCommand CenterVertically
         this.PerformCommand true false command 1
+
+        this.ResetUndoState ()
 
     member private this.ReSearchIfNeeded isInitial =
         if isInitial then

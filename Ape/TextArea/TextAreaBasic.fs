@@ -128,9 +128,6 @@ type TextAreaBasic (
 
     // auxiliary
 
-    static member private IsEqual pos1 pos2 =
-        pos1 = pos2
-
     static member private IsLower (pos1: Position) (pos2: Position) =
         pos1.line < pos2.line || (pos1.line = pos2.line && pos1.char < pos2.char)
 
