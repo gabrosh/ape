@@ -9,6 +9,7 @@ open Context
 open DataTypes
 open ITextAreaBuffer
 open MatchRanges
+open MatchRangesExtract
 open Position
 open Selection
 open Selections
@@ -255,8 +256,8 @@ type TextAreaBuffer (
     member _.ClearSearchMatching () =
         myMatchRanges.ClearSearch ()
 
-    member _.CreateMatchRangesExtract constr (linesExtract: Lines) =
-        myMatchRanges.CreateExtract constr linesExtract
+    member _.CreateMatchRangesExtract linesExtract =
+        myMatchRanges.CreateExtract MatchRangesExtract linesExtract
 
     member private this.ReSearchIfNeeded isInitial =
         if isInitial then

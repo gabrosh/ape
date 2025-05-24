@@ -2,8 +2,9 @@
 
 open System
 
-open Commands.InCommands
 open Context
+open TextAreaBuffer
+open TextAreaBufferExtract
 open UserMessages
 open WrappedRef
 
@@ -51,7 +52,7 @@ type BuffersRegistry (
 
         let mainContextRef = WrappedRef (makeMainContext myContextRef.Value bufferSettings)
 
-        let buffer = new TextAreaBuffer.TextAreaBuffer (
+        let buffer = new TextAreaBuffer (
             mainContextRef, myUserMessages, myRegisters, filePath
         )
 
@@ -66,7 +67,7 @@ type BuffersRegistry (
 
     /// Adds an empty TextAreaBufferExtract at the end of the registry and sets it as the current one.
     member _.AddTextAreaBufferExtract
-        (parentBuffer: TextAreaBuffer.TextAreaBuffer) (parentSettings: Settings.Settings) (fileName: string) =
+        (parentBuffer: TextAreaBuffer) (parentSettings: Settings.Settings) (fileName: string) =
 
         let bufferSettings = Settings.cloneSettings parentSettings
 
@@ -74,7 +75,7 @@ type BuffersRegistry (
 
         let mainContextRef = WrappedRef (makeMainContext myContextRef.Value bufferSettings)
 
-        let buffer = new TextAreaBufferExtract.TextAreaBufferExtract (
+        let buffer = new TextAreaBufferExtract (
             parentBuffer, mainContextRef, myUserMessages, myRegisters, fileName
         )
         buffer.Init ()

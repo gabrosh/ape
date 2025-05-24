@@ -91,9 +91,7 @@ type TextArea (
     member _.HasUndoLinesToRegister = myBuffer.HasUndoLinesToRegister
 
     member _.IsCurrentBufferAnExtract =
-        match myBuffer with
-        :? TextAreaBufferExtract -> true
-        | _                      -> false
+        myBuffer :? TextAreaBufferExtract
 
     member _.ApplySettings () =
         myBuffers.UpdateCurrentMainContext ()
@@ -481,21 +479,21 @@ type TextArea (
 
     member _.ExtractMatching regex =
         match myBuffer with
-        :? TextAreaBufferExtract as buffer ->
+        | :? TextAreaBufferExtract as buffer ->
             buffer.ExtractMatching regex
         | _ ->
             invalidOp (snd ERROR_OP_INVALID_ON_NON_EXTRACT_BUFFER)
 
     member _.ReExtractMatching () =
         match myBuffer with
-        :? TextAreaBufferExtract as buffer ->
+        | :? TextAreaBufferExtract as buffer ->
             buffer.ReExtractMatching ()
         | _ ->
             invalidOp (snd ERROR_OP_INVALID_ON_NON_EXTRACT_BUFFER)
 
     member _.ClearExtractMatching () =
         match myBuffer with
-        :? TextAreaBufferExtract as buffer ->
+        | :? TextAreaBufferExtract as buffer ->
             buffer.ClearExtractMatching ()
         | _ ->
             invalidOp (snd ERROR_OP_INVALID_ON_NON_EXTRACT_BUFFER)

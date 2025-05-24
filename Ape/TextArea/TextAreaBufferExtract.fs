@@ -8,7 +8,6 @@ open Common
 open Context
 open DataTypes
 open ITextAreaBuffer
-open MatchRangesExtract
 open Position
 open Selection
 open Selections
@@ -71,7 +70,7 @@ type TextAreaBufferExtract (
     // reporting a need for Undo registration
     let mutable myHasUndoToRegister = false
 
-    let myMatchRanges = myParent.CreateMatchRangesExtract MatchRangesExtract myLines
+    let myMatchRanges = myParent.CreateMatchRangesExtract myLines
 
     let myUndoProvider = UndoProvider (
         // the same code as in GetInitialUndoState, which can't be called here
