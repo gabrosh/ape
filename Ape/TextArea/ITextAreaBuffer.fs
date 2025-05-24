@@ -21,7 +21,6 @@ type ITextAreaBuffer =
     abstract member IsBufferChanged:        bool
     abstract member IsWriteAllowed:         bool
     abstract member IsReloadAllowed:        bool
-    abstract member IsDeleteAllowed:        bool
     abstract member HasUndoToRegister:      bool
     abstract member HasUndoLinesToRegister: bool
 
@@ -74,4 +73,7 @@ type ITextAreaBuffer =
     abstract member WriteFile:
         encoding: string -> fileFormat: FileUtils.FileFormat -> endWithNewLine: bool
      -> unit
-    
+
+    abstract member GetFirstChild:
+        unit
+     -> ITextAreaBuffer option

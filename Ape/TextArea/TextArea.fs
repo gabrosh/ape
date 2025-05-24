@@ -86,9 +86,10 @@ type TextArea (
     member _.IsBufferChanged        = myBuffer.IsBufferChanged
     member _.IsWriteAllowed         = myBuffer.IsWriteAllowed
     member _.IsReloadAllowed        = myBuffer.IsReloadAllowed
-    member _.IsDeleteAllowed        = myBuffer.IsDeleteAllowed
     member _.HasUndoToRegister      = myBuffer.HasUndoToRegister
     member _.HasUndoLinesToRegister = myBuffer.HasUndoLinesToRegister
+
+    member _.GetFirstChildBuffer () = myBuffer.GetFirstChild ()
 
     member _.IsCurrentBufferAnExtract =
         myBuffer :? TextAreaBufferExtract
@@ -662,6 +663,10 @@ type TextArea (
 
     member __.DeleteBuffer () =
         myBuffers.DeleteBuffer ()
+        applyBufferSwitch ()
+
+    member _.ToBuffer buffer =
+        myBuffers.ToBuffer buffer
         applyBufferSwitch ()
 
     member _.ToNextBuffer () =

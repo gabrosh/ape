@@ -71,6 +71,9 @@ type TextAreaBuffer (
     let mutable myHasUndoToRegister      = false
     let mutable myHasUndoLinesToRegister = false
 
+    // registered children (extract buffers)
+    let myChildren = ResizeArray<ITextAreaBuffer> ()
+
     let myMatchRanges = MatchRanges (myUserMessages, myLines)
 
     let myUndoProvider = UndoProvider (
@@ -258,6 +261,13 @@ type TextAreaBuffer (
 
     member _.CreateMatchRangesExtract linesExtract =
         myMatchRanges.CreateExtract MatchRangesExtract linesExtract
+
+    member _.RegisterChild buffer =
+        myChildren.Add buffer
+
+    member _.UnregisterChild buffer =
+        myChildren.Remove buffer
+            |> ignore
 
     member private this.ReSearchIfNeeded isInitial =
         if isInitial then
@@ -476,7 +486,6 @@ type TextAreaBuffer (
         member this.IsBufferChanged        = this.IsBufferChanged
         member this.IsWriteAllowed         = this.IsBufferChanged
         member this.IsReloadAllowed        = not this.IsBufferChanged
-        member this.IsDeleteAllowed        = not this.IsBufferChanged
         member this.HasUndoToRegister      = this.HasUndoToRegister
         member this.HasUndoLinesToRegister = this.HasUndoLinesToRegister
 
@@ -511,6 +520,12 @@ type TextAreaBuffer (
 
         member this.WriteFile encoding fileFormat endWithNewLine =
             this.WriteFile encoding fileFormat endWithNewLine
+
+        member _.GetFirstChild () =
+            if myChildren.Count <> 0 then
+                Some myChildren[0]
+            else
+                None
 
     // IDisposable
 

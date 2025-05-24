@@ -82,6 +82,8 @@ let ERROR_OP_INVALID_ON_EXTRACT_BUFFER =
     ErrorMessage   , "Operation invalid on an extract buffer."
 let ERROR_OP_INVALID_ON_NON_EXTRACT_BUFFER =
     ErrorMessage   , "Operation invalid on a non-extract buffer."
+let WARNING_CHILD_BUFFER_STILL_OPENED =
+    WarningMessage , "Child buffer still opened."
 
 let WARNING_CHAR_NOT_FOUND =
     WarningMessage , "Character not found."

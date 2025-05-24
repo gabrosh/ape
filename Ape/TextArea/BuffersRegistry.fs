@@ -80,6 +80,8 @@ type BuffersRegistry (
         )
         buffer.Init ()
 
+        parentBuffer.RegisterChild buffer
+
         myCurrentIndex <- myItems.Count
 
         myItems.Add {
@@ -102,6 +104,12 @@ type BuffersRegistry (
         elif myCurrentIndex = myItems.Count then
             myCurrentIndex <- 0
 
+    /// Switches to given buffer.
+    member this.ToBuffer buffer =
+        let index = this.GetIndex buffer
+        if index <> -1 then
+            myCurrentIndex <- index
+        
     /// Switches to the next buffer or the first one if the current buffer is the last.
     member _.ToNextBuffer () =
         if myCurrentIndex < myItems.Count - 1 then
@@ -142,6 +150,12 @@ type BuffersRegistry (
         if index <> -1 then
             myCurrentIndex <- index
 
+    member private _.GetIndex buffer =
+        myItems.FindIndex (
+            fun item ->
+                item.buffer = buffer
+        )
+
     member private _.GetIndexOfFirstChanged () =
         myItems.FindIndex (
             fun item -> item.buffer.IsBufferChanged
@@ -152,7 +166,7 @@ type BuffersRegistry (
 
         myItems.FindIndex (
             fun item ->
-                fullName = getFullName item.buffer.FilePath
+                getFullName item.buffer.FilePath = fullName
         )
 
     // IDisposable

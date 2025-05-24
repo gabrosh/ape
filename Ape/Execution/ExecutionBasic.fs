@@ -46,8 +46,9 @@ let argsMapSpec_quitAux: ArgsMapSpec = (0, [| |])
 
 let command_quitAux quite context (_argsMap: ArgsMap) =
     if not quite && context.textArea.IsAnyBufferChanged () then
-        context.userMessages.RegisterMessage WARNING_NO_WRITE_SINCE_LAST_CHANGE
         context.textArea.ToFirstChangedBuffer ()
+        context.userMessages.RegisterMessage
+            WARNING_NO_WRITE_SINCE_LAST_CHANGE
         false
     else
         true
@@ -79,7 +80,8 @@ let private command_writeAux quite context (argsMap: ArgsMap) =
             context.textArea.WriteFileAs filePath
     | None ->
         if not quite && not context.textArea.IsWriteAllowed then
-            context.userMessages.RegisterMessage WARNING_NO_CHANGE_SINCE_LAST_WRITE
+            context.userMessages.RegisterMessage
+                WARNING_NO_CHANGE_SINCE_LAST_WRITE
         else
             context.textArea.WriteFile ()
 
@@ -152,7 +154,8 @@ let argsMapSpec_reloadAux: ArgsMapSpec = (0, [| |])
 
 let command_reloadAux quite context (_argsMap: ArgsMap) =
     if not quite && not context.textArea.IsReloadAllowed then
-        context.userMessages.RegisterMessage WARNING_NO_WRITE_SINCE_LAST_CHANGE
+        context.userMessages.RegisterMessage
+            WARNING_NO_WRITE_SINCE_LAST_CHANGE
     else
         context.textArea.ReloadFile ()
 
@@ -189,10 +192,17 @@ let execute_extract context (argsMap: ArgsMap) =
 let argsMapSpec_bufferDeleteAux: ArgsMapSpec = (0, [| |])
 
 let command_bufferDeleteAux quite context (_argsMap: ArgsMap) =
-    if not quite && not context.textArea.IsDeleteAllowed then
-        context.userMessages.RegisterMessage WARNING_NO_WRITE_SINCE_LAST_CHANGE
-    else
-        context.textArea.DeleteBuffer ()
+    match context.textArea.GetFirstChildBuffer () with
+    | Some childBuffer ->
+        context.textArea.ToBuffer childBuffer
+        context.userMessages.RegisterMessage
+            WARNING_CHILD_BUFFER_STILL_OPENED
+    | None       ->
+        if not quite && context.textArea.IsBufferChanged then
+            context.userMessages.RegisterMessage
+                WARNING_NO_WRITE_SINCE_LAST_CHANGE
+        else
+            context.textArea.DeleteBuffer ()
 
     false
 

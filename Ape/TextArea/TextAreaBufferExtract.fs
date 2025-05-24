@@ -431,7 +431,6 @@ type TextAreaBufferExtract (
         member this.IsBufferChanged        = this.IsBufferChanged
         member this.IsWriteAllowed         = this.IsBufferChanged
         member this.IsReloadAllowed        = not myParent.IsBufferChanged
-        member this.IsDeleteAllowed        = not this.IsBufferChanged
         member this.HasUndoToRegister      = this.HasUndoToRegister
         member this.HasUndoLinesToRegister = this.HasUndoLinesToRegister
 
@@ -467,9 +466,14 @@ type TextAreaBufferExtract (
         member this.WriteFile encoding fileFormat endWithNewLine =
             this.WriteFile encoding fileFormat endWithNewLine
 
+        member _.GetFirstChild () =
+            None
+
     // IDisposable
 
     interface IDisposable with
-        member _.Dispose () =
+        member this.Dispose () =
+            myParent.UnregisterChild this
+
             myContextChangedDisposable.Dispose ()
             (myDispatcher :> IDisposable).Dispose ()
