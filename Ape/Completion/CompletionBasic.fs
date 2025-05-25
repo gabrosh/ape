@@ -78,6 +78,7 @@ let complete_editView: CompleteFun list = [
 let complete_edit     = complete_editView
 let complete_editBang = complete_editView
 let complete_view     = complete_editView
+let complete_viewBang = complete_editView
 
 // extract
 

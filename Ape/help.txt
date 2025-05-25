@@ -290,9 +290,12 @@ edit           e      [[strictEncoding] encoding] filePath
                                                  open file for editing
 edit!          e!     [[strictEncoding] encoding] filePath
                                                  open file for editing, suppressing warnings
-                                                 (directory not found, file not found)
+                                                 (buffer already opened, directory not found, file not found)
 view           v      [[strictEncoding] encoding] filePath
                                                  open file for viewing
+view!          v      [[strictEncoding] encoding] filePath
+                                                 open file for viewing, suppressing warnings
+                                                 (buffer already opened)
 reload         r                                 reload file
 reload!        r!                                reload file, suppressing warnings
                                                  (no write since last change)

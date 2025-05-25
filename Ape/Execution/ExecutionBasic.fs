@@ -33,7 +33,7 @@ let execute_help context (_argsMap: ArgsMap) =
     if context.textArea.HasBufferWithFilePath filePath then
         context.textArea.ToBufferWithFilePath filePath
         context.userMessages.RegisterMessage (
-            formatMessage INFO_BUFFER_ALREADY_OPENED filePath
+            formatMessage WARNING_BUFFER_ALREADY_OPENED filePath
         )
     else
         context.textArea.ViewFile filePath None (Some "true")
@@ -69,8 +69,9 @@ let private command_writeAux quite context (argsMap: ArgsMap) =
     match filePath with
     | Some filePath ->
         if context.textArea.HasBufferWithFilePath filePath then
+            context.textArea.ToBufferWithFilePath filePath
             context.userMessages.RegisterMessage (
-                formatMessage INFO_BUFFER_ALREADY_OPENED filePath
+                formatMessage WARNING_BUFFER_ALREADY_OPENED filePath
             )
         elif not quite && FileUtils.fileExists filePath then
             context.userMessages.RegisterMessage (
@@ -103,7 +104,8 @@ let argsMapSpec_writeQuit: ArgsMapSpec = (0, [| |])
 let execute_writeQuit context (_argsMap: ArgsMap) =
     while context.textArea.IsAnyBufferChanged () do
         context.textArea.ToFirstChangedBuffer ()
-        context.textArea.WriteFile ()
+        if not context.textArea.IsCurrentBufferAnExtract then
+            context.textArea.WriteFile ()
     true
 
 // edit, edit!
@@ -119,7 +121,7 @@ let private command_editAux quite context (argsMap: ArgsMap) =
         context.textArea.ToBufferWithFilePath filePath
         if not quite then
             context.userMessages.RegisterMessage (
-                formatMessage INFO_BUFFER_ALREADY_OPENED filePath
+                formatMessage WARNING_BUFFER_ALREADY_OPENED filePath
             )
     else
         context.textArea.EditFile filePath encoding strictEncoding quite
@@ -134,29 +136,36 @@ let execute_editBang = command_editAux true
 
 // view
 
-let argsMapSpec_view = (1, [| "strictEncoding"; "encoding"; "filePath" |])
+let argsMapSpec_viewAux = (1, [| "strictEncoding"; "encoding"; "filePath" |])
 
-let execute_view context (argsMap: ArgsMap) =
+let private command_viewAux quite context (argsMap: ArgsMap) =
     let strictEncoding = argsMap["strictEncoding"]
     let encoding       = argsMap["encoding"      ]
     let filePath       = argsMap["filePath"      ] |> Option.get
 
     if context.textArea.HasBufferWithFilePath filePath then
         context.textArea.ToBufferWithFilePath filePath
-        context.userMessages.RegisterMessage (
-            formatMessage INFO_BUFFER_ALREADY_OPENED filePath
-        )
+        if not quite then
+            context.userMessages.RegisterMessage (
+                formatMessage WARNING_BUFFER_ALREADY_OPENED filePath
+            )
     else
         context.textArea.ViewFile filePath encoding strictEncoding
 
     false
+
+let argsMapSpec_view     = argsMapSpec_viewAux
+let argsMapSpec_viewBang = argsMapSpec_viewAux
+
+let execute_view     = command_viewAux false
+let execute_viewBang = command_viewAux true
 
 // reload, reload!
 
 let argsMapSpec_reloadAux: ArgsMapSpec = (0, [| |])
 
 let command_reloadAux quite context (_argsMap: ArgsMap) =
-    if not quite && not context.textArea.IsReloadAllowed then
+    if not quite && context.textArea.IsOrigBufferChanged then
         context.userMessages.RegisterMessage
             WARNING_NO_WRITE_SINCE_LAST_CHANGE
     else
@@ -183,7 +192,7 @@ let execute_extract context (argsMap: ArgsMap) =
     if context.textArea.HasBufferWithFilePath filePath then
         context.textArea.ToBufferWithFilePath filePath
         context.userMessages.RegisterMessage (
-            formatMessage INFO_BUFFER_ALREADY_OPENED filePath
+            formatMessage WARNING_BUFFER_ALREADY_OPENED filePath
         )
     else
         context.textArea.ExtractFile filePath

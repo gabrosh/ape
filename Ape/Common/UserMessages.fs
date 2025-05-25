@@ -27,8 +27,8 @@ let ERROR_UNKNOWN_COMMAND =
 let ERROR_RECURSION_LIMIT_WAS_REACHED =
     ErrorMessage   , "Recursion limit was reached: {0}"
 
-let INFO_BUFFER_ALREADY_OPENED =
-    InfoMessage    , "Buffer already opened: '{0}'"
+let WARNING_BUFFER_ALREADY_OPENED =
+    WarningMessage , "Buffer already opened: '{0}'"
 let ERROR_BUFFER_OPENED_AS_READ_ONLY =
     ErrorMessage   , "Buffer opened as read-only."
 let WARNING_NO_WRITE_SINCE_LAST_CHANGE =

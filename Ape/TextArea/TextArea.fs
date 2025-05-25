@@ -84,7 +84,7 @@ type TextArea (
     member _.LinesForCompletion     = myBuffer.LinesForCompletion
     member _.IsReadOnly             = myBuffer.IsReadOnly
     member _.IsBufferChanged        = myBuffer.IsBufferChanged
-    member _.IsReloadAllowed        = myBuffer.IsReloadAllowed
+    member _.IsOrigBufferChanged    = myBuffer.IsOrigBufferChanged
     member _.HasUndoToRegister      = myBuffer.HasUndoToRegister
     member _.HasUndoLinesToRegister = myBuffer.HasUndoLinesToRegister
 
@@ -506,7 +506,7 @@ type TextArea (
         if this.HasBufferWithFilePath filePath then
             this.ToBufferWithFilePath filePath
             myUserMessages.RegisterMessage (
-                formatMessage INFO_BUFFER_ALREADY_OPENED filePath
+                formatMessage WARNING_BUFFER_ALREADY_OPENED filePath
             )
         else
             myBuffers.AddTextAreaBufferExtract

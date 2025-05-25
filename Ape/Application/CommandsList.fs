@@ -21,6 +21,7 @@ let public commandsList = [
     "edit"          , "e"   , argsMapSpec_edit             , execute_edit             , complete_edit
     "edit!"         , "e!"  , argsMapSpec_editBang         , execute_editBang         , complete_editBang
     "view"          , "v"   , argsMapSpec_view             , execute_view             , complete_view
+    "view!"         , "v!"  , argsMapSpec_viewBang         , execute_viewBang         , complete_viewBang
     "reload"        , "r"   , argsMapSpec_reload           , execute_reload           , complete_none
     "reload!"       , "r!"  , argsMapSpec_reloadBang       , execute_reloadBang       , complete_none
     "extract"       , "x"   , argsMapSpec_extract          , execute_extract          , complete_extract

@@ -484,7 +484,7 @@ type TextAreaBuffer (
         member this.Selections             = this.Selections
         member this.IsReadOnly             = this.IsReadOnly
         member this.IsBufferChanged        = this.IsBufferChanged
-        member this.IsReloadAllowed        = not this.IsBufferChanged
+        member this.IsOrigBufferChanged    = this.IsBufferChanged
         member this.HasUndoToRegister      = this.HasUndoToRegister
         member this.HasUndoLinesToRegister = this.HasUndoLinesToRegister
 

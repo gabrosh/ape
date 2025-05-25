@@ -431,7 +431,7 @@ type TextAreaBufferExtract (
         member this.Selections             = this.Selections
         member this.IsReadOnly             = this.IsReadOnly
         member this.IsBufferChanged        = this.IsBufferChanged
-        member this.IsReloadAllowed        = not myParent.IsBufferChanged
+        member this.IsOrigBufferChanged    = myParent.IsBufferChanged
         member this.HasUndoToRegister      = this.HasUndoToRegister
         member this.HasUndoLinesToRegister = this.HasUndoLinesToRegister
 
