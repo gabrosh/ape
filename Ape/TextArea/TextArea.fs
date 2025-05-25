@@ -282,14 +282,9 @@ type TextArea (
 
             | _                  -> None
 
-        let result = performSome command (
+        performSome command (
             fun command -> myBuffer.PerformCommand false false command 1
         )
-
-        if result && myBuffer.IsReadOnly then
-            myUserMessages.RegisterMessage ERROR_FILE_OPENED_AS_READ_ONLY
-
-        result
 
     // NormalRegister
 
@@ -358,14 +353,9 @@ type TextArea (
             | NoModif InputKey.C -> Some (ModifyingCommand (YankAndDelete register))
             | _                  -> None
 
-        let result = performSome command (
+        performSome command (
             fun command -> myBuffer.PerformCommand false false command 1
         )
-
-        if result && myBuffer.IsReadOnly then
-            myUserMessages.RegisterMessage ERROR_FILE_OPENED_AS_READ_ONLY
-
-        result
 
     // NormalCount, NormalFindChar, NormalFillWithChar, NormalGoTo
 

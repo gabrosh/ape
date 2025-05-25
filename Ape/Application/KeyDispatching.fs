@@ -207,8 +207,11 @@ let private dispatchNormalMain
                                                KeepMode
 
         | _ when textArea.PK_NormalMain_BeforeInsert key
-                                            -> areasToRender <- toRenderTextAndStatus
-                                               NextMode (InsertMode InsertMainState)
+                                            -> if not textArea.IsReadOnly then
+                                                   areasToRender <- toRenderTextAndStatus
+                                                   NextMode (InsertMode InsertMainState)
+                                               else
+                                                   NextMode (NormalMode NormalMainState)
 
         | _                                 -> areasToRender <- toRenderNothing
                                                NoChange
@@ -284,8 +287,11 @@ let private dispatchNormalRegister (textArea: TextArea) key count state =
 
             | _ when count <= 1 &&
                      textArea.PK_NormalRegister_BeforeInsert key (SelectedRegister (isUpper, c))
-                                            -> areasToRender <- toRenderTextAndStatus
-                                               NextMode (InsertMode InsertMainState)
+                                            -> if not textArea.IsReadOnly then
+                                                   areasToRender <- toRenderTextAndStatus
+                                                   NextMode (InsertMode InsertMainState)
+                                               else
+                                                   NextMode (NormalMode NormalMainState)
 
             | _                             -> areasToRender <- toRenderNothing
                                                NoChange
