@@ -84,7 +84,6 @@ type TextArea (
     member _.LinesForCompletion     = myBuffer.LinesForCompletion
     member _.IsReadOnly             = myBuffer.IsReadOnly
     member _.IsBufferChanged        = myBuffer.IsBufferChanged
-    member _.IsWriteAllowed         = myBuffer.IsWriteAllowed
     member _.IsReloadAllowed        = myBuffer.IsReloadAllowed
     member _.HasUndoToRegister      = myBuffer.HasUndoToRegister
     member _.HasUndoLinesToRegister = myBuffer.HasUndoLinesToRegister
@@ -507,7 +506,7 @@ type TextArea (
         if this.HasBufferWithFilePath filePath then
             this.ToBufferWithFilePath filePath
             myUserMessages.RegisterMessage (
-                formatMessage INFO_FILE_ALREADY_OPENED filePath
+                formatMessage INFO_BUFFER_ALREADY_OPENED filePath
             )
         else
             myBuffers.AddTextAreaBufferExtract
@@ -566,8 +565,7 @@ type TextArea (
             applyBufferSwitch ()
             this.SetBufferAsFixedReadOnly ()
         | _ ->
-            myUserMessages.RegisterMessage
-                ERROR_OP_INVALID_ON_EXTRACT_BUFFER
+            myUserMessages.RegisterMessage ERROR_OP_INVALID_ON_EXTRACT_BUFFER
 
     member private this.LoadFileAux quite =
         let encoding       = getValueString this.CurrentSettings Name.encoding
@@ -615,7 +613,7 @@ type TextArea (
                 newLineAtEof
 
         if readOnly then
-            myUserMessages.RegisterMessage ERROR_FILE_OPENED_AS_READ_ONLY
+            myUserMessages.RegisterMessage ERROR_BUFFER_OPENED_AS_READ_ONLY
         else
             myBuffer.WriteFile encoding fileFormat endWithNewLine
 

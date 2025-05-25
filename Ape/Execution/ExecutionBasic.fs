@@ -33,7 +33,7 @@ let execute_help context (_argsMap: ArgsMap) =
     if context.textArea.HasBufferWithFilePath filePath then
         context.textArea.ToBufferWithFilePath filePath
         context.userMessages.RegisterMessage (
-            formatMessage INFO_FILE_ALREADY_OPENED filePath
+            formatMessage INFO_BUFFER_ALREADY_OPENED filePath
         )
     else
         context.textArea.ViewFile filePath None (Some "true")
@@ -70,7 +70,7 @@ let private command_writeAux quite context (argsMap: ArgsMap) =
     | Some filePath ->
         if context.textArea.HasBufferWithFilePath filePath then
             context.userMessages.RegisterMessage (
-                formatMessage INFO_FILE_ALREADY_OPENED filePath
+                formatMessage INFO_BUFFER_ALREADY_OPENED filePath
             )
         elif not quite && FileUtils.fileExists filePath then
             context.userMessages.RegisterMessage (
@@ -79,7 +79,10 @@ let private command_writeAux quite context (argsMap: ArgsMap) =
         else
             context.textArea.WriteFileAs filePath
     | None ->
-        if not quite && not context.textArea.IsWriteAllowed then
+        if   not quite
+          && not context.textArea.IsCurrentBufferAnExtract
+          && not context.textArea.IsBufferChanged
+        then
             context.userMessages.RegisterMessage
                 WARNING_NO_CHANGE_SINCE_LAST_WRITE
         else
@@ -116,7 +119,7 @@ let private command_editAux quite context (argsMap: ArgsMap) =
         context.textArea.ToBufferWithFilePath filePath
         if not quite then
             context.userMessages.RegisterMessage (
-                formatMessage INFO_FILE_ALREADY_OPENED filePath
+                formatMessage INFO_BUFFER_ALREADY_OPENED filePath
             )
     else
         context.textArea.EditFile filePath encoding strictEncoding quite
@@ -141,7 +144,7 @@ let execute_view context (argsMap: ArgsMap) =
     if context.textArea.HasBufferWithFilePath filePath then
         context.textArea.ToBufferWithFilePath filePath
         context.userMessages.RegisterMessage (
-            formatMessage INFO_FILE_ALREADY_OPENED filePath
+            formatMessage INFO_BUFFER_ALREADY_OPENED filePath
         )
     else
         context.textArea.ViewFile filePath encoding strictEncoding
@@ -180,7 +183,7 @@ let execute_extract context (argsMap: ArgsMap) =
     if context.textArea.HasBufferWithFilePath filePath then
         context.textArea.ToBufferWithFilePath filePath
         context.userMessages.RegisterMessage (
-            formatMessage INFO_FILE_ALREADY_OPENED filePath
+            formatMessage INFO_BUFFER_ALREADY_OPENED filePath
         )
     else
         context.textArea.ExtractFile filePath

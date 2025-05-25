@@ -19,7 +19,6 @@ type ITextAreaBuffer =
     abstract member Selections:             Selections
     abstract member IsReadOnly:             bool
     abstract member IsBufferChanged:        bool
-    abstract member IsWriteAllowed:         bool
     abstract member IsReloadAllowed:        bool
     abstract member HasUndoToRegister:      bool
     abstract member HasUndoLinesToRegister: bool

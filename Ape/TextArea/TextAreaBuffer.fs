@@ -147,7 +147,7 @@ type TextAreaBuffer (
 
     member this.PerformCommand isNormalMode isExtending command count =
         if this.IsReadOnly && isWriteCommand command then
-            myUserMessages.RegisterMessage ERROR_FILE_OPENED_AS_READ_ONLY
+            myUserMessages.RegisterMessage ERROR_BUFFER_OPENED_AS_READ_ONLY
         else
             this.PerformCommandAux isNormalMode isExtending command count
 
@@ -484,7 +484,6 @@ type TextAreaBuffer (
         member this.Selections             = this.Selections
         member this.IsReadOnly             = this.IsReadOnly
         member this.IsBufferChanged        = this.IsBufferChanged
-        member this.IsWriteAllowed         = this.IsBufferChanged
         member this.IsReloadAllowed        = not this.IsBufferChanged
         member this.HasUndoToRegister      = this.HasUndoToRegister
         member this.HasUndoLinesToRegister = this.HasUndoLinesToRegister

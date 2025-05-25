@@ -27,10 +27,10 @@ let ERROR_UNKNOWN_COMMAND =
 let ERROR_RECURSION_LIMIT_WAS_REACHED =
     ErrorMessage   , "Recursion limit was reached: {0}"
 
-let INFO_FILE_ALREADY_OPENED =
-    InfoMessage    , "File already opened: '{0}'"
-let ERROR_FILE_OPENED_AS_READ_ONLY =
-    ErrorMessage   , "File opened as read-only."
+let INFO_BUFFER_ALREADY_OPENED =
+    InfoMessage    , "Buffer already opened: '{0}'"
+let ERROR_BUFFER_OPENED_AS_READ_ONLY =
+    ErrorMessage   , "Buffer opened as read-only."
 let WARNING_NO_WRITE_SINCE_LAST_CHANGE =
     WarningMessage , "No write since last change. Add ! to override."
 let WARNING_NO_CHANGE_SINCE_LAST_WRITE =

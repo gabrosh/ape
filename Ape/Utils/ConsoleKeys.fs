@@ -298,7 +298,7 @@ let private recognizeSpecial modifs consoleKey _keyChar (_capsLock: bool) =
 /// Recognizes shortcuts like Alt-a, Ctrl-a, Alt-A, Ctrl-A.
 let private recognizeLetterKey modifs consoleKey _keyChar (capsLock: bool) =
     if ConsoleKey.A <= consoleKey && consoleKey <= ConsoleKey.Z
-       && includesEitherCtrlOrAlt modifs
+        && includesEitherCtrlOrAlt modifs
     then
         let inputKey = consoleKeyToInputKey consoleKey
         let modifs =
@@ -338,7 +338,7 @@ let private recognizeSymbol modifs _consoleKey keyChar (_capsLock: bool) =
 /// Recognizes shortcuts like Alt-0, Ctrl-0.
 let private recognizeDigitKey modifs consoleKey _keyChar (_capsLock: bool) =
     if ConsoleKey.D0 <= consoleKey && consoleKey <= ConsoleKey.D9
-       && includesEitherCtrlOrAlt modifs
+        && includesEitherCtrlOrAlt modifs
     then
         let inputKey = consoleKeyToInputKey consoleKey
         Some (getModifierFun_NoClear modifs inputKey)
