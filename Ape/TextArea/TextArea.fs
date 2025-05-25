@@ -468,26 +468,54 @@ type TextArea (
     member _.ClearSearchMatching () =
         myBuffer.ClearSearchMatching ()
 
-    member _.ExtractMatching regex =
+    member this.ExtractMatching regex =
         match myBuffer with
+        | :? TextAreaBuffer as parentBuffer ->
+            this.WrapExtractAction parentBuffer (
+                fun () -> this.ExtractMatching regex
+            )
         | :? TextAreaBufferExtract as buffer ->
             buffer.ExtractMatching regex
         | _ ->
-            invalidOp (snd ERROR_OP_INVALID_ON_NON_EXTRACT_BUFFER)
+            invalidOp ""
 
-    member _.ReExtractMatching () =
+    member this.ReExtractMatching () =
         match myBuffer with
+        | :? TextAreaBuffer as parentBuffer ->
+            this.WrapExtractAction parentBuffer (
+                fun () -> this.ReExtractMatching ()
+            )
         | :? TextAreaBufferExtract as buffer ->
             buffer.ReExtractMatching ()
         | _ ->
-            invalidOp (snd ERROR_OP_INVALID_ON_NON_EXTRACT_BUFFER)
+            invalidOp ""
 
-    member _.ClearExtractMatching () =
+    member this.ClearExtractMatching () =
         match myBuffer with
+        | :? TextAreaBuffer as parentBuffer ->
+            this.WrapExtractAction parentBuffer (
+                fun () -> this.ClearExtractMatching ()
+            )
         | :? TextAreaBufferExtract as buffer ->
             buffer.ClearExtractMatching ()
         | _ ->
-            invalidOp (snd ERROR_OP_INVALID_ON_NON_EXTRACT_BUFFER)
+            invalidOp ""
+
+    member private this.WrapExtractAction (parentBuffer: TextAreaBuffer) action =
+        let filePath = this.FilePath + FileUtils.extractFileExt
+
+        if this.HasBufferWithFilePath filePath then
+            this.ToBufferWithFilePath filePath
+            myUserMessages.RegisterMessage (
+                formatMessage INFO_FILE_ALREADY_OPENED filePath
+            )
+        else
+            myBuffers.AddTextAreaBufferExtract
+                parentBuffer this.CurrentSettings filePath false
+            applyBufferSwitch ()
+            this.SetBufferAsFixedReadOnly ()
+
+            action ()
 
     member _.SelectMatching regex =
         let command = SelectionsCommand (SelectMatching regex)
@@ -505,9 +533,7 @@ type TextArea (
 
     member this.EditFile filePath encoding strictEncoding quite =
         myBuffers.AddTextAreaBuffer filePath
-
         applyBufferSwitch ()
-
         let result = this.SetBufferSettingsAux encoding strictEncoding (Some "false")
 
         match result with
@@ -516,9 +542,7 @@ type TextArea (
 
     member this.ViewFile filePath encoding strictEncoding =
         myBuffers.AddTextAreaBuffer filePath
-
         applyBufferSwitch ()
-
         let result = this.SetBufferSettingsAux encoding strictEncoding (Some "true")
 
         match result with
@@ -534,16 +558,16 @@ type TextArea (
         | Error e -> myUserMessages.RegisterMessage (makeErrorMessage e)
         | Ok ()   -> this.LoadFileAux false
 
-    member this.ExtractFile fileName =
+    member this.ExtractFile filePath =
         match myBuffer with
-        :? TextAreaBuffer as buffer ->
-            myBuffers.AddTextAreaBufferExtract buffer this.CurrentSettings fileName
-
+        :? TextAreaBuffer as parentBuffer ->
+            myBuffers.AddTextAreaBufferExtract
+                parentBuffer this.CurrentSettings filePath true
             applyBufferSwitch ()
-
             this.SetBufferAsFixedReadOnly ()
         | _ ->
-            myUserMessages.RegisterMessage ERROR_OP_INVALID_ON_EXTRACT_BUFFER
+            myUserMessages.RegisterMessage
+                ERROR_OP_INVALID_ON_EXTRACT_BUFFER
 
     member private this.LoadFileAux quite =
         let encoding       = getValueString this.CurrentSettings Name.encoding

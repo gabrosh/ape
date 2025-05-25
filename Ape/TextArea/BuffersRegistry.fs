@@ -67,7 +67,9 @@ type BuffersRegistry (
 
     /// Adds an empty TextAreaBufferExtract at the end of the registry and sets it as the current one.
     member _.AddTextAreaBufferExtract
-        (parentBuffer: TextAreaBuffer) (parentSettings: Settings.Settings) (fileName: string) =
+        (parentBuffer: TextAreaBuffer) (parentSettings: Settings.Settings)
+        (fileName: string) (extractOnConstr: bool)
+      =
 
         let bufferSettings = Settings.cloneSettings parentSettings
 
@@ -76,7 +78,7 @@ type BuffersRegistry (
         let mainContextRef = WrappedRef (makeMainContext myContextRef.Value bufferSettings)
 
         let buffer = new TextAreaBufferExtract (
-            parentBuffer, mainContextRef, myUserMessages, myRegisters, fileName
+            parentBuffer, mainContextRef, myUserMessages, myRegisters, fileName, extractOnConstr
         )
         buffer.Init ()
 

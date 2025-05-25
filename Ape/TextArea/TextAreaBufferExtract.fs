@@ -41,11 +41,12 @@ let private getBufferState
 
 [<Sealed>]
 type TextAreaBufferExtract (
-    myParent:       TextAreaBuffer,
-    myContextRef:   IWrappedRef<MainContext>,
-    myUserMessages: UserMessages,
-    myRegisters:    Registers.Registers,
-    inFilePath:     string
+    myParent:          TextAreaBuffer,
+    myContextRef:      IWrappedRef<MainContext>,
+    myUserMessages:    UserMessages,
+    myRegisters:       Registers.Registers,
+    inFilePath:        string,
+    inExtractOnConstr: bool
 ) =
     // init mechanism
     let myParentMainForInit = myParent.Main
@@ -70,7 +71,7 @@ type TextAreaBufferExtract (
     // reporting a need for Undo registration
     let mutable myHasUndoToRegister = false
 
-    let myMatchRanges = myParent.CreateMatchRangesExtract myLines
+    let myMatchRanges = myParent.CreateMatchRangesExtract myLines inExtractOnConstr
 
     let myUndoProvider = UndoProvider (
         // the same code as in GetInitialUndoState, which can't be called here

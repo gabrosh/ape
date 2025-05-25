@@ -56,7 +56,7 @@ type MatchRangesExtractTest () =
 
         let matchRanges = MatchRanges (myUserMessages, lines)
 
-        let matchRangesExtract = matchRanges.CreateExtract MatchRangesExtract linesExtract
+        let matchRangesExtract = matchRanges.CreateExtract MatchRangesExtract linesExtract true
         matchRangesExtract.Init ()
 
         matchRangesExtract.Search "abc"
@@ -105,7 +105,7 @@ type MatchRangesExtractTest () =
 
         matchRanges.Search "abc"
 
-        let matchRangesExtract = matchRanges.CreateExtract MatchRangesExtract linesExtract
+        let matchRangesExtract = matchRanges.CreateExtract MatchRangesExtract linesExtract true
         matchRangesExtract.Init ()
 
         assertLines linesExtract [|
@@ -130,7 +130,7 @@ type MatchRangesExtractTest () =
 
         let matchRanges = MatchRanges (myUserMessages, lines)
 
-        let matchRangesExtract = matchRanges.CreateExtract MatchRangesExtract linesExtract
+        let matchRangesExtract = matchRanges.CreateExtract MatchRangesExtract linesExtract true
         matchRangesExtract.Init ()
 
         matchRangesExtract.Extract "abc"
@@ -159,7 +159,7 @@ type MatchRangesExtractTest () =
 
         let matchRanges = MatchRanges (myUserMessages, lines)
 
-        let matchRangesExtract = matchRanges.CreateExtract MatchRangesExtract linesExtract
+        let matchRangesExtract = matchRanges.CreateExtract MatchRangesExtract linesExtract true
         matchRangesExtract.Init ()
 
         matchRangesExtract.Extract "abc"
@@ -204,7 +204,7 @@ type MatchRangesExtractTest () =
 
         let matchRanges = MatchRanges (myUserMessages, lines)
 
-        let matchRangesExtract = matchRanges.CreateExtract MatchRangesExtract linesExtract
+        let matchRangesExtract = matchRanges.CreateExtract MatchRangesExtract linesExtract true
         matchRangesExtract.Init ()
 
         matchRangesExtract.Extract "abc"
@@ -250,7 +250,7 @@ type MatchRangesExtractTest () =
 
         let matchRanges = MatchRanges (myUserMessages, lines)
 
-        let matchRangesExtract = matchRanges.CreateExtract MatchRangesExtract linesExtract
+        let matchRangesExtract = matchRanges.CreateExtract MatchRangesExtract linesExtract true
         matchRangesExtract.Init ()
 
         matchRangesExtract.Extract "abc"
@@ -298,7 +298,7 @@ type MatchRangesExtractTest () =
 
         let matchRanges = MatchRanges (myUserMessages, lines)
 
-        let matchRangesExtract = matchRanges.CreateExtract MatchRangesExtract linesExtract
+        let matchRangesExtract = matchRanges.CreateExtract MatchRangesExtract linesExtract true
         matchRangesExtract.Init ()
 
         assertLines linesExtract [|
@@ -326,7 +326,7 @@ type MatchRangesExtractTest () =
 
         let matchRanges = MatchRanges (myUserMessages, lines)
 
-        let matchRangesExtract = matchRanges.CreateExtract MatchRangesExtract linesExtract
+        let matchRangesExtract = matchRanges.CreateExtract MatchRangesExtract linesExtract true
         matchRangesExtract.Init ()
 
         matchRangesExtract.Extract @"(?m)(?<=abc\n)abc"
@@ -363,7 +363,7 @@ type MatchRangesExtractTest () =
 
         let matchRanges = MatchRanges (myUserMessages, lines)
 
-        let matchRangesExtract = matchRanges.CreateExtract MatchRangesExtract linesExtract
+        let matchRangesExtract = matchRanges.CreateExtract MatchRangesExtract linesExtract true
         matchRangesExtract.Init ()
 
         matchRangesExtract.Extract @"(?m)(?<=abc\n)abc"

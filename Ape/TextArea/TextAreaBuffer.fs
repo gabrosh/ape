@@ -259,8 +259,8 @@ type TextAreaBuffer (
     member _.ClearSearchMatching () =
         myMatchRanges.ClearSearch ()
 
-    member _.CreateMatchRangesExtract linesExtract =
-        myMatchRanges.CreateExtract MatchRangesExtract linesExtract
+    member _.CreateMatchRangesExtract linesExtract extractOnConstr =
+        myMatchRanges.CreateExtract MatchRangesExtract linesExtract extractOnConstr
 
     member _.RegisterChild buffer =
         myChildren.Add buffer

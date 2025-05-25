@@ -174,7 +174,7 @@ let argsMapSpec_extract = (0, [| "filePath" |])
 let execute_extract context (argsMap: ArgsMap) =
     let filePath =
         argsMap["filePath"] |> Option.defaultWith (
-            fun () -> context.textArea.FilePath + ".x"
+            fun () -> context.textArea.FilePath + FileUtils.extractFileExt
         )
 
     if context.textArea.HasBufferWithFilePath filePath then

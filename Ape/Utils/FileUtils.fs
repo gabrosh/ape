@@ -6,6 +6,9 @@ open System.Collections.Immutable
 
 open ConsoleInterop_Specific
 
+/// File extension added to the file path when creating an extract buffer.
+let extractFileExt = ".x"
+
 // encodings
 
 // Ensure all available encodings are loaded.

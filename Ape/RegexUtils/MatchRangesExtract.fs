@@ -22,12 +22,13 @@ let private lineToExtractLine (lineExtractToLine: ResizeArray<int>) line =
     | _      -> lineExtractToLine.Count - 1
 
 type MatchRangesExtract (
-    myUserMessages: UserMessages,
-    myLines:        Lines,
-    myLinesExtract: Lines,
-    inLastRegex:    string option,
-    inIsCleared:    bool,
-    inTextRanges:   Dictionary<string, TextRanges>
+    myUserMessages:    UserMessages,
+    myLines:           Lines,
+    inLastRegex:       string option,
+    inIsCleared:       bool,
+    inTextRanges:      Dictionary<string, TextRanges>,
+    myLinesExtract:    Lines,
+    inExtractOnConstr: bool
 ) as this =
     inherit MatchRanges (
         myUserMessages, myLines, inLastRegex, inIsCleared, inTextRanges
@@ -36,9 +37,14 @@ type MatchRangesExtract (
     /// Translates index in myLinesExtract to index in myLines.
     let myLineExtractToLine = ResizeArray<int> ()
 
-    let mutable myLastRegexExtract  = this.LastRegex
-    let mutable myIsClearedExtract  = this.IsCleared
-    let mutable myIsSearchInExtract = false
+    let mutable myLastRegexExtract =
+        if inExtractOnConstr then this.LastRegex else None
+
+    let mutable myIsClearedExtract =
+        if inExtractOnConstr then this.IsCleared else true
+
+    let mutable myIsSearchInExtract =
+        false
 
     // public properties
 
@@ -133,7 +139,7 @@ type MatchRangesExtract (
     // auxiliary
 
     member private this.Update () =
-        if this.GetMainGroupCount () <> 0 then
+        if not this.IsClearedExtract && this.GetMainGroupCount () <> 0 then
             this.UpdateForSomeMatches ()
 
             this.TextRanges <- this.GetTextRangesExtract ()

@@ -170,13 +170,8 @@ let private dispatchNormalMain
         | Alt         InputKey.Question     -> areasToRender <- toRenderPrompt
                                                NextMode (enterPrompt prompt (SearchPrompt (false, true )))
 
-        | NoModif     InputKey.Backslash    -> if textArea.IsCurrentBufferAnExtract then
-                                                   areasToRender <- toRenderPrompt
-                                                   NextMode (enterPrompt prompt ExtractPrompt)
-                                               else
-                                                   areasToRender <- toRenderStatus
-                                                   userMessages.RegisterMessage ERROR_OP_INVALID_ON_NON_EXTRACT_BUFFER
-                                                   KeepMode
+        | NoModif     InputKey.Backslash    -> areasToRender <- toRenderPrompt
+                                               NextMode (enterPrompt prompt ExtractPrompt)
 
         | NoModif     InputKey.S            -> areasToRender <- toRenderPrompt
                                                NextMode (enterPrompt prompt SelectPrompt)
