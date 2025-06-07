@@ -64,8 +64,11 @@ type TextAreaBuffer (
     let mySelsRegisters   = SelectionsRegisters ()
     let myWantedColumns   = Helpers.WantedColumns mySelections
 
-    // LoadFile/WriteFile mechanism
+    // LoadFile/ReloadFile/WriteFile mechanism
     let mutable myIsBufferChanged = false
+
+    // ReloadFile mechanism
+    let mutable myReloadFileParams: FileUtils.ReloadFileParams option = None
 
     // reporting a need for Undo registration
     let mutable myHasUndoToRegister      = false
@@ -345,10 +348,17 @@ type TextAreaBuffer (
     member this.LoadFile encoding strictEncoding quite =
         myLines.Clear ()
 
+        let reloadFileParams = None
+
         try
-            let result = this.LoadFileAux encoding strictEncoding quite
+            let fileFormat, endsWithNewLine, reloadFileParams' =
+                this.LoadFileAux encoding strictEncoding quite reloadFileParams
+
             TestMines.checkMine (nameof this.LoadFile)
-            result
+
+            myReloadFileParams <- reloadFileParams'
+
+            (fileFormat, endsWithNewLine)
         finally
             this.AssureNonZeroLinesCount ()
             this.ResetState ()
@@ -359,12 +369,24 @@ type TextAreaBuffer (
         let cursorWC    = this.Main.CursorWC
         let displayLine = this.DisplayPos.line
 
-        myLines.Clear ()
+        if not myContext.reloadAsLogFile then
+            myLines.Clear ()
+
+        let reloadFileParams =
+            if myContext.reloadAsLogFile then
+                myReloadFileParams
+            else
+                None
 
         try
-            let result = this.LoadFileAux encoding strictEncoding false
+            let fileFormat, endsWithNewLine, reloadFileParams' =
+                this.LoadFileAux encoding strictEncoding false reloadFileParams
+
             TestMines.checkMine (nameof this.ReloadFile)
-            result
+
+            myReloadFileParams <- reloadFileParams'
+
+            (fileFormat, endsWithNewLine)
         finally
             this.AssureNonZeroLinesCount ()
             this.ResetStateAfterReload cursor cursorWC displayLine
@@ -383,22 +405,22 @@ type TextAreaBuffer (
         for line in lines do
             result.Add (stringToChars line)
 
-    member private this.LoadFileAux encoding strictEncoding quite =
+    member private this.LoadFileAux encoding strictEncoding quite reloadFileParams =
         try
-            FileUtils.readFile this.FilePath encoding strictEncoding myLines
+            FileUtils.readFile this.FilePath encoding strictEncoding reloadFileParams myLines
         with
         | :? System.IO.DirectoryNotFoundException as ex ->
             if not quite then
                 myUserMessages.RegisterMessage (
                     UserMessages.makeWarningMessage ex.Message
                 )
-            (FileUtils.FileFormat.dos, true)
+            (FileUtils.FileFormat.dos, true, None)
         | :? System.IO.FileNotFoundException as ex ->
             if not quite then
                 myUserMessages.RegisterMessage (
                     UserMessages.makeInfoMessage ex.Message
                 )
-            (FileUtils.FileFormat.dos, true)
+            (FileUtils.FileFormat.dos, true, None)
 
     member private _.AssureNonZeroLinesCount () =
         if myLines.Count = 0 then

@@ -512,7 +512,7 @@ type TextArea (
             myBuffers.AddTextAreaBufferExtract
                 parentBuffer this.CurrentSettings filePath false
             applyBufferSwitch ()
-            this.SetBufferAsFixedReadOnly ()
+            this.SetExtractBufferSettings () |> ignore
 
             action ()
 
@@ -563,7 +563,7 @@ type TextArea (
             myBuffers.AddTextAreaBufferExtract
                 parentBuffer this.CurrentSettings filePath true
             applyBufferSwitch ()
-            this.SetBufferAsFixedReadOnly ()
+            this.SetExtractBufferSettings () |> ignore
         | _ ->
             myUserMessages.RegisterMessage ERROR_OP_INVALID_ON_EXTRACT_BUFFER
 
@@ -665,13 +665,23 @@ type TextArea (
         | None   -> this.ApplySettings ()
                     Ok ()
 
-    member private this.SetBufferAsFixedReadOnly () =
-        let result =
-            setValueAsFixed this.CurrentSettings Scope.buffer Name.readOnly "true"
+    member private this.SetExtractBufferSettings () =
+        let results = seq {
+            setValueAsFixed this.CurrentSettings Scope.buffer Name.readOnly        "true"
+        ;
+            setValueAsFixed this.CurrentSettings Scope.buffer Name.reloadAsLogFile "false"
+        }
 
-        match result with
-        | Ok ()   -> this.ApplySettings ()
-        | Error _ -> ()
+        let firstError = results |> Seq.tryPick (
+            function
+                | Error e -> Some e
+                | _       -> None
+        )
+
+        match firstError with
+        | Some e -> Error e
+        | None   -> this.ApplySettings ()
+                    Ok ()
 
     member __.DeleteBuffer () =
         myBuffers.DeleteBuffer ()

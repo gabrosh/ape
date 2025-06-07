@@ -56,7 +56,20 @@ let defaultFileFormat =
 let fileFormatsArray =
     System.Enum.GetNames typeof<FileFormat>
 
-let getNewLineSeparator fileFormat =
+let private getFileFormat fileFormatAcc =
+    let hasCR = (fileFormatAcc &&& int '\r') = int '\r'
+    let hasLF = (fileFormatAcc &&& int '\n') = int '\n'
+
+    if hasCR && not hasLF then
+        Some FileFormat.mac
+    elif hasLF && not hasCR then
+        Some FileFormat.unix
+    elif hasLF && hasCR then
+        Some FileFormat.dos
+    else
+        None
+
+let private getNewLineSeparator fileFormat =
     match fileFormat with
     | FileFormat.dos  -> "\r\n"
     | FileFormat.unix -> "\n"
@@ -64,20 +77,25 @@ let getNewLineSeparator fileFormat =
     | _ ->
         invalidOp "Wrong enum value"
 
-let decideFileFormat fileFormatAcc =
-    let hasCR = (fileFormatAcc &&& int '\r') = int '\r'
-    let hasLF = (fileFormatAcc &&& int '\n') = int '\n'
-
-    if hasCR && not hasLF then
-        FileFormat.mac
-    elif hasLF && not hasCR then
-        FileFormat.unix
-    else
-        FileFormat.dos
-
 // others
 
-type private Chars = ImmutableArray<char>
+type Chars = ImmutableArray<char>
+type Lines = ResizeArray<Chars>
+
+[<Struct>]
+type ReloadFileParams = {
+    fileOffset:      int64
+    fileFormatAcc:   int
+    toSkipNextLF:    bool
+    endsWithNewLine: bool
+}
+
+let ReloadFileParams_Zero = {
+    fileOffset      = 0
+    fileFormatAcc   = 0
+    toSkipNextLF    = false
+    endsWithNewLine = false
+}
 
 // the default values for IO.StreamReader and IO.StreamWriter
 let private readBufferSize  = 4096
@@ -114,18 +132,34 @@ let private getEncoding (encoding: string) (strictEncoding: bool) =
 
     | _            -> Text.Encoding.GetEncoding encoding
 
-/// Appends content of the file to lines.
-let readFile
-    (filePath: string) (encoding: string) (strictEncoding: bool)
-    (lines: ResizeArray<Chars>) =
-
-    use stream = new IO.StreamReader (
-        filePath, getEncoding encoding strictEncoding, true, getReadOptions ()
-    )
+/// Provides the core functionality of readFile function.
+let private readFileAux
+    (stream: IO.StreamReader)
+    (reloadFileParams: ReloadFileParams option) (lines: Lines) =
 
     let inputBuffer = Array.zeroCreate readBufferSize
-
     let inputLine = ImmutableArray.CreateBuilder<char> ()
+
+    match reloadFileParams with
+    | Some rfp ->
+        if not rfp.endsWithNewLine then
+            inputLine.AddRange lines[lines.Count - 1]
+            lines.RemoveAt(lines.Count - 1)
+    | None ->
+        ()
+
+    let a, b, c =
+        reloadFileParams
+        |> Option.map (
+            fun x -> (x.fileFormatAcc, x.toSkipNextLF, x.endsWithNewLine)
+        )
+        |> Option.defaultValue (
+            0, false, false
+        )
+
+    let mutable fileFormatAcc   = a
+    let mutable toSkipNextLF    = b
+    let mutable endsWithNewLine = c
 
     let mutable charsRead = 0
 
@@ -134,10 +168,6 @@ let readFile
             charsRead <- stream.ReadBlock (inputBuffer, 0, readBufferSize)
             charsRead <> 0
     )
-
-    let mutable toSkipNextLF    = false
-    let mutable endsWithNewLine = false
-    let mutable fileFormatAcc   = 0
 
     while readData () do
         let mutable i = 0
@@ -160,7 +190,7 @@ let readFile
 
             i <- i + 1
 
-        // any characters after the last new line separator in the block ?
+        // Any characters after the last new line separator in the block ?
         if startChar < i then
             inputLine.AddRange (
                 inputBuffer.AsSpan (startChar, i - startChar)
@@ -172,14 +202,45 @@ let readFile
     if inputLine.Count <> 0 then
         lines.Add (inputLine.DrainToImmutable ())
 
-    let fileFormat = decideFileFormat fileFormatAcc
+    let reloadFileParams = {
+        fileOffset      = stream.BaseStream.Position
+        fileFormatAcc   = fileFormatAcc
+        toSkipNextLF    = toSkipNextLF
+        endsWithNewLine = endsWithNewLine
+    }
 
-    (fileFormat, endsWithNewLine)
+    let fileFormat =
+        getFileFormat fileFormatAcc |> Option.defaultValue FileFormat.dos
+
+    (fileFormat, endsWithNewLine, Some reloadFileParams)
+
+/// Appends content of given file to lines, taking into account reloadFileParams
+/// if provided. In that case it assumes that lines is not empty, and the last line
+/// may be extended based on reloadFileParams and read input.
+let readFile
+    (filePath: string) (encoding: string) (strictEncoding: bool)
+    (reloadFileParams: ReloadFileParams option) (lines: Lines) =
+
+    use stream = new IO.StreamReader (
+        filePath, getEncoding encoding strictEncoding, true, getReadOptions ()
+    )
+
+    match reloadFileParams with
+    | Some reloadFileParams ->
+        // Can seek beyond the length of the file - no bytes are read then.
+        stream.BaseStream.Seek (reloadFileParams.fileOffset, IO.SeekOrigin.Begin)
+            |> ignore
+        stream.DiscardBufferedData ()
+    | None ->
+        ()
+
+    readFileAux stream reloadFileParams lines
 
 /// Writes content of lines to file.
 let writeFile
-    (filePath: string) (encoding: string) (fileFormat: FileFormat) (endWithNewLine: bool)
-    (lines: ResizeArray<Chars>) =
+    (filePath: string) (encoding: string)
+    (fileFormat: FileFormat) (endWithNewLine: bool)
+    (lines: Lines) =
 
     let newLineSeparator = getNewLineSeparator fileFormat
 

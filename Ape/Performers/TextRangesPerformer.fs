@@ -144,7 +144,7 @@ type TextRangesPerformer (
     member private _.TransformText first rightKept f =
         let outCommands = ResizeArray<ModifyingOutCommand> ()
 
-        // on single line ?
+        // On single line ?
         if first.line = rightKept.line then
             myAccessor.Transform first.line first.char rightKept.char f
                 |> outCommands.AddRange

@@ -12,6 +12,7 @@ type ConsoleContext = {
 type SettingsContext = {
     colorScheme:         Colors.Scheme
     readOnly:            bool
+    reloadAsLogFile:     bool
     maxSavedUndos:       int
     reSearchMatching:    bool
     recursionLimit:      int
@@ -34,6 +35,7 @@ type MainContext = {
     promptRow:           int
 
     readOnly:            bool
+    reloadAsLogFile:     bool
     maxSavedUndos:       int
     reSearchMatching:    bool
     recursionLimit:      int
@@ -92,6 +94,7 @@ let private makeSettingsContext (settings: Settings) =
     {
         colorScheme      = Colors.schemesMap[colorSchemeName]
         readOnly         = getValueBool settings Name.readOnly
+        reloadAsLogFile  = getValueBool settings Name.reloadAsLogFile
         maxSavedUndos    = getValueInt  settings Name.maxSavedUndos
         reSearchMatching = getValueBool settings Name.reSearchMatching
         recursionLimit   = getValueInt  settings Name.recursionLimit
@@ -120,6 +123,7 @@ let makeMainContext (consoleContext: ConsoleContext) (settings: Settings) =
         promptRow        = windowHeight - 1
 
         readOnly         = settingsContext.readOnly
+        reloadAsLogFile  = settingsContext.reloadAsLogFile
         maxSavedUndos    = settingsContext.maxSavedUndos
         reSearchMatching = settingsContext.reSearchMatching
         recursionLimit   = settingsContext.recursionLimit

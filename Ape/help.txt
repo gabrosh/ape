@@ -346,6 +346,7 @@ fileFormat       ff     dos      dos unix mac    format of new line separator us
 newLineAtEof     nae    true     false true      append a new line separator at EOF when writing to a file
                                                  (doesn't apply for a single empty line)
 readOnly         ro     false    false true      file opened as read-only (viewing mode)
+reloadAsLogFile  rlf    false    false true      when reloading a file, load only newly appended lines
 maxSavedUndos    msu    25       1 to ...        maximum count of retained saved undos
 reSearchMatching rsm    true     false true      re-search for matchings after the buffer's content change
 recursionLimit   rl     1000     1 to ...        recursion limit for a sequence of keys from key mapping

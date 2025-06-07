@@ -117,7 +117,7 @@ let tabsToSpaces tabStop (line: int) from to_ (chars: Chars) =
 
         if c = Utils.charTab then
             let tabSpaces = getTabSpaces tabStop column
-            // transforming single character to multiple characters ?
+            // Transforming single character to multiple characters ?
             if tabSpaces > 1 then
                 addOutCommand (tabSpaces - 1)
             addFillingSpaces tabSpaces
@@ -171,7 +171,7 @@ let spacesToTabs tabStop (line: int) from to_ (chars: Chars) =
             spaces <- 0
 
         if column % tabStop = 0 && spaces > 0 then
-            // transforming multiple characters to single character ?
+            // Transforming multiple characters to single character ?
             if spaces > 1 then
                 addOutCommand (spaces - 1)
             builder.Add Utils.charTab

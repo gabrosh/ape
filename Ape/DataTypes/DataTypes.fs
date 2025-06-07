@@ -16,8 +16,8 @@ type RegexMatchTimeoutException (message: string) =
 /// int type supplement for accessing int's static members.
 type IntType = int
 
-type Chars = ImmutableArray<char>
-type Lines = ResizeArray<Chars>
+type Chars = FileUtils.Chars
+type Lines = FileUtils.Lines
 
 /// Converts position to user position.
 let posToUserPos x =

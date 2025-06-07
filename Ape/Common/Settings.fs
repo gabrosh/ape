@@ -36,16 +36,17 @@ type Name =
     | fileFormat       = 4
     | newLineAtEof     = 5
     | readOnly         = 6
-    | maxSavedUndos    = 7
-    | reSearchMatching = 8
-    | recursionLimit   = 9
-    | wrapLines        = 10
-    | wrapAtWord       = 11
-    | showLineNumbers  = 12
-    | tabStop          = 13
-    | tabBySpaces      = 14
-    | scrollOffset     = 15
-    | cursorBeforeEol  = 16
+    | reloadAsLogFile  = 7
+    | maxSavedUndos    = 8
+    | reSearchMatching = 9
+    | recursionLimit   = 10
+    | wrapLines        = 11
+    | wrapAtWord       = 12
+    | showLineNumbers  = 13
+    | tabStop          = 14
+    | tabBySpaces      = 15
+    | scrollOffset     = 16
+    | cursorBeforeEol  = 17
 
 let nameToString (name: Name) =
     name.ToString ()
@@ -68,6 +69,7 @@ let parseName (s: string) =
         | "ff"  -> Ok Name.fileFormat
         | "nae" -> Ok Name.newLineAtEof
         | "ro"  -> Ok Name.readOnly
+        | "rlf" -> Ok Name.reloadAsLogFile
         | "msu" -> Ok Name.maxSavedUndos
         | "rsm" -> Ok Name.reSearchMatching
         | "rl"  -> Ok Name.recursionLimit
@@ -141,6 +143,7 @@ let specsMap =
         Name.fileFormat       , FileFormats ( default_ = FUDFF , isValid = all            )
         Name.newLineAtEof     , Bools       ( default_ = true  , isValid = all            )
         Name.readOnly         , Bools       ( default_ = false , isValid = all            )
+        Name.reloadAsLogFile  , Bools       ( default_ = false , isValid = all            )
         Name.maxSavedUndos    , Ints        ( default_ = 25    , isValid = isEqOrGt  1    )
         Name.reSearchMatching , Bools       ( default_ = true  , isValid = all            )
         Name.recursionLimit   , Ints        ( default_ = 1000  , isValid = isEqOrGt  1    )

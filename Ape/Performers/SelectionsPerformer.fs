@@ -569,7 +569,7 @@ type SelectionsPerformer (
     // auxiliary
 
     member private _.ProcessText (first: Position) (rightKept: Position) f =
-        // on single line ?
+        // On single line ?
         if first.line = rightKept.line then
             myAccessor.Process first.line first.char rightKept.char f
         else

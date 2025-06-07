@@ -314,7 +314,7 @@ type TextAreaModifying (
             let line  = first.line
             let char_ = first.char
 
-            // the first selection on the line ?
+            // The first selection on the line ?
             if line <> lastLine then
                 lastLine <- line
 

@@ -470,7 +470,7 @@ type ModifyingPerformer (
     member private _.DoYank first rightKept register index =
         let lines = Lines ()
 
-        // on single line ?
+        // On single line ?
         if first.line = rightKept.line then
             myAccessor.Yank first.line first.char rightKept.char
                 |> lines.Add
@@ -490,7 +490,7 @@ type ModifyingPerformer (
         myRegisters.ApplyToSlot register index lines
 
     member private _.DoDelete first rightKept =
-        // on single line ?
+        // On single line ?
         if first.line = rightKept.line then
             myAccessor.Remove first.line first.char rightKept.char
         else
@@ -532,7 +532,7 @@ type ModifyingPerformer (
         let targetChar = target.char
         let linesCount = lines.Count
 
-        // on single line ?
+        // On single line ?
         if linesCount = 1 then
             myAccessor.Insert targetLine targetChar lines[0]
         else
