@@ -1,6 +1,39 @@
 Ape 0.14 - modal text editor
 
 
+Key specifications -------------------------------------------------------------
+
+Format of a key specification: key, <key> or <modifier-key>
+
+Valid modifiers: s c a ca sc sa sca (shift ctrl alt ctrl-alt ...)
+
+Special keys:
+
+bsp     backspace
+tab     tab
+ret     enter
+esc     escape
+sp      space bar
+pgup    page up
+pgdown  page down
+end     end
+home    home
+left    left arrow
+up      up arrow
+right   right arrow
+down    down arrow
+ins     insert
+del     delete
+
+f1-f12  F1-F12
+
+dq      "
+lt      <
+gt      >
+
+Examples: x, <x>, <c-x>, <del>, <c-del>
+
+
 Text area and Prompt area commands ---------------------------------------------
 
 p = applicable also in prompt modes
@@ -365,40 +398,10 @@ Key mappings -------------------------------------------------------------------
 Scopes: global buffer
 Modes:  normal insert promptNormal promptInsert
 
-Key specifications: key, <key> or <modifier-key>
-
-Valid modifiers: s c a ca sc sa sca (shift ctrl alt ctrl-alt...)
-
-Special keys:
-
-bsp     backspace
-tab     tab
-ret     enter
-esc     escape
-sp      space bar
-pgup    page up
-pgdown  page down
-end     end
-home    home
-left    left arrow
-up      up arrow
-right   right arrow
-down    down arrow
-ins     insert
-del     delete
-
-f1-f12  F1-F12
-
-dq      "
-lt      <
-gt      >
-
-Examples: x, <x>, <c-x>, <del>, <c-del>
-
 In map and unmap commands, key can be a single key or a "key prefix and key" pair.
 Key prefix can be one of <c-b>, <c-e>, <c-B>, <c-E>, <sc-b>, <sc-e>.
 
-Examples: a, <c-b>a, <c-B>a, <sc-b>a.
+Examples: a, <c-b>a, <c-B>a, <sc-b>a
 
 
 Commands valid also in configuration files -------------------------------------

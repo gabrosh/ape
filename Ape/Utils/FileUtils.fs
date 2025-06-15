@@ -41,6 +41,8 @@ let suggestedEncodings = [|
 // file formats
 
 type FileFormat =
+    | none = 0  // Used only in test cases definitions as a substitution for either
+                // defaultFileFormat or None, which are not constant expressions.
     | dos  = 1
     | unix = 2
     | mac  = 3
@@ -60,12 +62,12 @@ let private getFileFormat fileFormatAcc =
     let hasCR = (fileFormatAcc &&& int '\r') = int '\r'
     let hasLF = (fileFormatAcc &&& int '\n') = int '\n'
 
-    if hasCR && not hasLF then
-        Some FileFormat.mac
-    elif hasLF && not hasCR then
-        Some FileFormat.unix
-    elif hasLF && hasCR then
+    if hasCR && hasLF then
         Some FileFormat.dos
+    elif hasCR then
+        Some FileFormat.mac
+    elif hasLF then
+        Some FileFormat.unix
     else
         None
 
@@ -210,7 +212,7 @@ let private readFileAux
     }
 
     let fileFormat =
-        getFileFormat fileFormatAcc |> Option.defaultValue FileFormat.dos
+        getFileFormat fileFormatAcc |> Option.defaultValue defaultFileFormat
 
     (fileFormat, endsWithNewLine, Some reloadFileParams)
 

@@ -64,6 +64,8 @@
     <Compile Include="TextAreaPerformersTest\SelectionsTests.fs" />
     <Compile Include="MultipleSelectionsTest\ModifyingTest.fs" />
     <Compile Include="MultipleSelectionsTest\ModifyingAtEofTest.fs" />
+    <Compile Include="TextBufferTest\LoadFileTest.fs" />
+    <Compile Include="TextBufferTest\ReloadFileTest.fs" />
     <Compile Include="PromptPerformersTest\CommonTest.fs" />
     <Compile Include="PromptPerformersTest\NoWrapLineTest.fs" />
     <Compile Include="PromptPerformersTest\ModifyingByCharTest.fs" />
