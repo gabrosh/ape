@@ -15,7 +15,7 @@ It's intended to be used as a Swiss knife for structural text editing and analyz
 - Storing and loading of cursors/selections
 - Multiple registers, a special register for OS clipboard
 - Command prompt with its own history
-- Multiple regex prompts with shared history - "search", "extract", "select" and "keep"
+- Multiple regex prompts with shared history - "search", "extract", "select", "keep" and "discard"
 - Single-line and multiple-lines regex search
 - Coloring of named groups for "search"
 - Simple word (identificator) completion in Insert mode and regex prompts
