@@ -21,7 +21,7 @@ It's intended to be used as a Swiss knife for structural text editing and analyz
 - Simple word (identificator) completion in Insert mode and regex prompts
 - Command and command arguments completion in command prompt
 - Macro recording and editing
-- Light and dark color scheme
+- Light and dark color schemes
 
 ## No-goals
 - Mouse support
