@@ -7,6 +7,9 @@ open CompletionUtils
 open DataTypes
 open Position
 
+type private Regex        = System.Text.RegularExpressions.Regex
+type private RegexOptions = System.Text.RegularExpressions.RegexOptions
+
 let private isCompletable (lineStr: string) (cursorChar: int) =
     if cursorChar = lineStr.Length then
         true
@@ -96,7 +99,9 @@ let private getIdentCompletions
         else
             @"\b\w+"
 
-    let regexObject = RegexUtils.makeRegexObject regex
+    let regexObject = Regex (
+        regex, RegexOptions.Compiled ||| RegexOptions.IgnoreCase
+    )
 
     let sr = SimpleRegex.AddMatchesAsStringsSet (regexObject, toSkip)
     sr.Init stringsSet

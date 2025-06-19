@@ -431,28 +431,37 @@ type SelectionsPerformer (
     // SelectMatching, KeepMatching, DiscardMatching
 
     member private this.SelectMatching regex =
-        let regexObject = RegexUtils.makeRegexObject regex
+        match RegexUtils.tryMakeRegexObject regex with
+        | Ok regexObject ->
+            if RegexUtils.isMultiLineRegex regex then
+                this.SelectMatchingMultiLine regexObject
+            else
+                this.SelectMatchingSingleLine regexObject
 
-        if RegexUtils.isMultiLineRegex regex then
-            this.SelectMatchingMultiLine regexObject
-        else
-            this.SelectMatchingSingleLine regexObject
+        | Error e ->
+            myUserMessages.RegisterMessage (makeErrorMessage e)
 
     member private this.KeepMatching regex =
-        let regexObject = RegexUtils.makeRegexObject regex
+        match RegexUtils.tryMakeRegexObject regex with
+        | Ok regexObject ->
+            if RegexUtils.isMultiLineRegex regex then
+                this.RemoveFulfillingMultiLine  regexObject (mlrIsMatch >> not)
+            else
+                this.RemoveFulfillingSingleLine regexObject (slrIsMatch >> not)
 
-        if RegexUtils.isMultiLineRegex regex then
-            this.RemoveFulfillingMultiLine  regexObject (mlrIsMatch >> not)
-        else
-            this.RemoveFulfillingSingleLine regexObject (slrIsMatch >> not)
+        | Error e ->
+            myUserMessages.RegisterMessage (makeErrorMessage e)
 
     member private this.DiscardMatching regex =
-        let regexObject = RegexUtils.makeRegexObject regex
+        match RegexUtils.tryMakeRegexObject regex with
+        | Ok regexObject ->
+            if RegexUtils.isMultiLineRegex regex then
+                this.RemoveFulfillingMultiLine  regexObject mlrIsMatch
+            else
+                this.RemoveFulfillingSingleLine regexObject slrIsMatch
 
-        if RegexUtils.isMultiLineRegex regex then
-            this.RemoveFulfillingMultiLine  regexObject mlrIsMatch
-        else
-            this.RemoveFulfillingSingleLine regexObject slrIsMatch
+        | Error e ->
+            myUserMessages.RegisterMessage (makeErrorMessage e)
 
     member private this.SelectMatchingSingleLine regexObject =
         let slr = SingleLineRegex.AddMatchesAsSelections regexObject

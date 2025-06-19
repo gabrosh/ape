@@ -45,15 +45,19 @@ let getColorIndex (s: string) =
 let private matchTimeout = 10  // seconds
 
 /// Returns a new regular expression object for given pattern.
-/// RegularExpressions.RegexParseException is reraised as Utils.RegexParseException,
-/// exceptions of other types are propagated without change.
 let makeRegexObject pattern =
+    Regex (
+        pattern,
+        RegexOptions.Compiled ||| RegexOptions.IgnoreCase,
+        TimeSpan.FromSeconds (matchTimeout: int64)
+    )
+
+/// Returns a new regular expression object for given pattern.
+/// RegularExpressions.RegexParseException is transformed to Error,
+/// exceptions of other types are propagated without change.
+let tryMakeRegexObject pattern =
     try
-        Regex (
-            pattern,
-            RegexOptions.Compiled ||| RegexOptions.IgnoreCase,
-            TimeSpan.FromSeconds (matchTimeout: int64)
-        )
+        Ok (makeRegexObject pattern)
     with
         | :? RegularExpressions.RegexParseException as ex ->
-            raise (RegexParseException ex.Message)
+            Error ex.Message

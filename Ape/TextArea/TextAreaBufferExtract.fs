@@ -235,13 +235,14 @@ type TextAreaBufferExtract (
 
         myMatchRanges.Search regex
 
-        let command =
-            if isForward then
-                CommonCommand (CursorToNextMatch isInitial)
-            else
-                CommonCommand (CursorToPrevMatch isInitial)
+        if not myUserMessages.HasErrorMessage then
+            let command =
+                if isForward then
+                    CommonCommand (CursorToNextMatch isInitial)
+                else
+                    CommonCommand (CursorToPrevMatch isInitial)
 
-        this.PerformCommand true isExtending command 1
+            this.PerformCommand true isExtending command 1
 
     member _.ReSearchMatching () =
         myMatchRanges.ReSearch ()

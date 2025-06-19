@@ -7,9 +7,6 @@ open Colors
 
 // custom exceptions
 
-type RegexParseException (message: string) =
-    inherit Exception(message)
-
 type RegexMatchTimeoutException (message: string) =
     inherit Exception(message)
 

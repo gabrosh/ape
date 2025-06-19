@@ -4,6 +4,7 @@ open System.Collections.Generic
 
 open DataTypes
 open IMatchRanges
+open RegexUtils
 open TextRanges
 open UserMessages
 
@@ -62,14 +63,14 @@ type MatchRanges (
     /// Returns all text ranges from all groups.
     member _.GetAllFromAllGroups () =
         myTextRanges |> Seq.map (
-            fun item -> (RegexUtils.getColorIndex item.Key, item.Value)
+            fun item -> (getColorIndex item.Key, item.Value)
         )
         |> Seq.toArray |> Array.sortBy fst
 
     /// Returns text ranges from all groups in interval <startLine, endLine>.
     member _.GetInIntervalFromAllGroups startLine endLine =
         myTextRanges |> Seq.map (
-            fun item -> (RegexUtils.getColorIndex item.Key, item.Value)
+            fun item -> (getColorIndex item.Key, item.Value)
         )
         |> Seq.map (
             fun (_colorIndex, textRanges) ->
@@ -77,17 +78,15 @@ type MatchRanges (
         )
         |> Seq.toArray |> Array.sortBy fst
 
-    /// Searches for regex going through lines.
-    member internal this.SearchNormal lines regex =
+    /// Searches for regex/regexObject going through lines.
+    member internal this.SearchNormal lines regex regexObject =
         myLastRegex <- Some regex
         myIsCleared <- false
 
-        this.SearchAux lines regex
+        this.SearchAux lines regex regexObject
 
-    member internal this.SearchAux lines regex =
-        let regexObject = RegexUtils.makeRegexObject regex
-
-        if RegexUtils.isMultiLineRegex regex then
+    member internal this.SearchAux lines regex regexObject =
+        if isMultiLineRegex regex then
             this.SearchMultiLine lines regexObject
         else
             this.SearchSingleLine lines regexObject
@@ -124,7 +123,7 @@ type MatchRanges (
         | Some regex ->
             myIsCleared <- false
 
-            this.SearchAux lines regex
+            this.SearchAux lines regex (makeRegexObject regex)
         | None ->
             myUserMessages.RegisterMessage ERROR_NOTHING_TO_SEARCH_FOR
 
@@ -150,7 +149,12 @@ type MatchRanges (
      -> unit
 
     override this.Search (regex: string) =
-        this.SearchNormal myLines regex
+        match tryMakeRegexObject regex with
+        | Ok regexObject ->
+            this.SearchNormal myLines regex regexObject
+
+        | Error e ->
+            myUserMessages.RegisterMessage (makeErrorMessage e)
 
     /// Searches for the regex used in the last call to Search (or Extract).
     abstract member ReSearch:

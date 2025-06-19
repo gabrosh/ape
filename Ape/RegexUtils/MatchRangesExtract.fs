@@ -8,6 +8,7 @@ open IMatchRanges
 open LineMatchClassifier
 open MatchRanges
 open Position
+open RegexUtils
 open TextRanges
 open UserMessages
 
@@ -60,9 +61,14 @@ type MatchRangesExtract (
     // virtual
 
     override this.Search (regex: string) =
-        myIsSearchInExtract <- true
+        match tryMakeRegexObject regex with
+        | Ok regexObject ->
+            myIsSearchInExtract <- true
 
-        this.SearchNormal myLinesExtract regex
+            this.SearchNormal myLinesExtract regex regexObject
+
+        | Error e ->
+            myUserMessages.RegisterMessage (makeErrorMessage e)
 
     override this.ReSearch () =
         myIsSearchInExtract <- true
@@ -76,12 +82,17 @@ type MatchRangesExtract (
 
     /// Extracts lines from myLines according to given regex.
     member this.Extract (regex: string) =
-        myLastRegexExtract  <- Some regex
-        myIsClearedExtract  <- false
-        myIsSearchInExtract <- false
+        match tryMakeRegexObject regex with
+        | Ok regexObject ->
+            myLastRegexExtract  <- Some regex
+            myIsClearedExtract  <- false
+            myIsSearchInExtract <- false
 
-        this.SearchNormal myLines regex
-        this.Update ()
+            this.SearchNormal myLines regex regexObject
+            this.Update ()
+
+        | Error e ->
+            myUserMessages.RegisterMessage (makeErrorMessage e)
 
     /// Extracts lines from myLines according to the regex used in the last call to Search or Extract.
     member this.ReExtract () =
@@ -91,8 +102,9 @@ type MatchRangesExtract (
             myIsClearedExtract  <- false
             myIsSearchInExtract <- false
 
-            this.SearchNormal myLines regex
+            this.SearchNormal myLines regex (makeRegexObject regex)
             this.Update ()
+
         | None ->
             myUserMessages.RegisterMessage ERROR_NOTHING_TO_SEARCH_FOR
 
@@ -106,7 +118,7 @@ type MatchRangesExtract (
         if not this.IsCleared then
             match this.LastRegex with
             | Some regex ->
-                this.SearchAux myLinesExtract regex
+                this.SearchAux myLinesExtract regex (makeRegexObject regex)
 
             | None ->
                 // (not IsCleared) => (LastRegex <> None)
@@ -117,7 +129,7 @@ type MatchRangesExtract (
         if not this.IsClearedExtract then
             match this.LastRegexExtract with
             | Some regex ->
-                this.SearchAux myLines regex
+                this.SearchAux myLines regex (makeRegexObject regex)
                 this.Update ()
 
                 if not this.IsCleared then

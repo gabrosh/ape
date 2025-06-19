@@ -150,7 +150,6 @@ let private exceptionToMessage (ex: Exception) =
     | :? System.ArgumentException when
         ex.Message.StartsWith ("The path is empty.", StringComparison.Ordinal) ->
             makeErrorMessage "Empty file path."
-    | :? RegexParseException
     | :? RegexMatchTimeoutException ->
         makeErrorMessage ex.Message
     | _ ->
