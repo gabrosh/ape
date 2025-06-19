@@ -3,7 +3,6 @@
 open System
 open System.Text
 
-open DataTypes
 open TextRanges
 
 type private Regex        = System.Text.RegularExpressions.Regex
