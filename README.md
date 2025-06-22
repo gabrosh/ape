@@ -3,7 +3,7 @@ Ape is a minimalistic modal text editor developed in the F# programming language
 
 It was strongly inspired by the Vim and Kakoune text editors.
 
-It's intended to be used as a Swiss knife for structural text editing and log or trace file analysis. It's not a replacement for an IDE or any established text editor you might use today.
+It's intended to be used as a Swiss knife for structural text editing and log or trace files analysis. It's not a replacement for an IDE or any established text editor you might use today.
 
 ## Highlights
 - Console oriented
