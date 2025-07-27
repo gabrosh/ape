@@ -365,7 +365,7 @@ type TextAreaBuffer (
             this.ResetState ()
             this.ResetUndoState ()
 
-    member this.ReloadFile encoding strictEncoding =
+    member this.ReloadFile encoding strictEncoding warnIfNoMatchFound =
         let cursor      = this.Main.Cursor
         let cursorWC    = this.Main.CursorWC
         let displayLine = this.DisplayPos.line
@@ -390,7 +390,11 @@ type TextAreaBuffer (
             (fileFormat, endsWithNewLine)
         finally
             this.AssureNonZeroLinesCount ()
-            this.ResetStateAfterReload cursor cursorWC displayLine
+
+            myMatchRanges.RunWithSetWarnIfNoMatchFound warnIfNoMatchFound (
+                fun () -> this.ResetStateAfterReload cursor cursorWC displayLine
+            )
+
             this.ResetUndoState ()
 
     member this.WriteFile encoding fileFormat endWithNewLine =
@@ -408,19 +412,34 @@ type TextAreaBuffer (
 
     member private this.LoadFileAux encoding strictEncoding quite reloadFileParams =
         try
-            FileUtils.readFile this.FilePath encoding strictEncoding reloadFileParams myLines
+            let result = FileUtils.readFile this.FilePath encoding reloadFileParams myLines
+
+            if strictEncoding then
+                match result with
+                | _, _, Some reloadFileParams' ->
+                    if reloadFileParams'.nonTranslatableBytes then
+                        myUserMessages.RegisterMessage (
+                            UserMessages.formatMessage WARNING_NON_TRANSLATABLE_BYTES this.FilePath
+                        )
+                | _ ->
+                    ()
+
+            result
         with
         | :? System.IO.DirectoryNotFoundException as ex ->
             if not quite then
                 myUserMessages.RegisterMessage (
                     UserMessages.makeWarningMessage ex.Message
                 )
+
             (FileUtils.FileFormat.dos, true, None)
+
         | :? System.IO.FileNotFoundException as ex ->
             if not quite then
                 myUserMessages.RegisterMessage (
-                    UserMessages.makeInfoMessage ex.Message
+                    UserMessages.makeWarningMessage ex.Message
                 )
+
             (FileUtils.FileFormat.dos, true, None)
 
     member private _.AssureNonZeroLinesCount () =
@@ -455,8 +474,8 @@ type TextAreaBuffer (
 
         match userMessage with
         | Some userMessage ->
-            myUserMessages.RetrieveMessage () |> ignore
             // Re-register the message from failed reload.
+            myUserMessages.RetrieveMessage () |> ignore
             myUserMessages.RegisterMessage userMessage
         | None ->
             ()
@@ -536,9 +555,6 @@ type TextAreaBuffer (
         member this.UndoCorruptedState ()        = this.UndoCorruptedState ()
 
         // others
-
-        member this.ReloadFile encoding strictEncoding =
-            this.ReloadFile encoding strictEncoding
 
         member this.WriteFile encoding fileFormat endWithNewLine =
             this.WriteFile encoding fileFormat endWithNewLine

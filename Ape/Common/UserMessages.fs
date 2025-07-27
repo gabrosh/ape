@@ -27,6 +27,9 @@ let ERROR_UNKNOWN_COMMAND =
 let ERROR_RECURSION_LIMIT_WAS_REACHED =
     ErrorMessage   , "Recursion limit was reached: {0}"
 
+let WARNING_NON_TRANSLATABLE_BYTES =
+    WarningMessage , "File contains non-translatable bytes: '{0}'"
+
 let WARNING_BUFFER_ALREADY_OPENED =
     WarningMessage , "Buffer already opened: '{0}'"
 let ERROR_BUFFER_OPENED_AS_READ_ONLY =

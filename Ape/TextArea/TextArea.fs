@@ -586,19 +586,49 @@ type TextArea (
             |> ignore
 
     member this.ReloadFile () =
-        let encoding       = getValueString this.CurrentSettings Name.encoding
-        let strictEncoding = getValueBool   this.CurrentSettings Name.strictEncoding
+        match myBuffer with
+        | :? TextAreaBuffer as buffer ->
+            this.ReloadTextAreaBuffer buffer
+        | :? TextAreaBufferExtract as buffer ->
+            this.ReloadTextAreaBufferExtract buffer
+        | _ ->
+            invalidOp ""
+            
+    member private this.ReloadTextAreaBuffer buffer =
+        this.ReloadTextAreaBufferAux buffer true |> ignore
 
-        let fileFormat, endsWithNewLine = myBuffer.ReloadFile encoding strictEncoding
-        let newLineAtEof = if isSingleEmptyLine this.Lines then true else endsWithNewLine
+    member private _.ReloadTextAreaBufferAux buffer warnIfNoMatchFound =
+        let settings = myBuffers.GetBufferSettings buffer
+
+        let encoding       = getValueString settings Name.encoding
+        let strictEncoding = getValueBool   settings Name.strictEncoding
+
+        let fileFormat, endsWithNewLine = buffer.ReloadFile encoding strictEncoding warnIfNoMatchFound
+        let newLineAtEof = if isSingleEmptyLine buffer.Lines then true else endsWithNewLine
 
         let fileFormat   = valueToString (FileFormat fileFormat)
         let newLineAtEof = valueToString (Bool newLineAtEof)
 
-        setValue this.CurrentSettings Scope.buffer Name.fileFormat fileFormat
+        setValue settings Scope.buffer Name.fileFormat fileFormat
             |> ignore
-        setValue this.CurrentSettings Scope.buffer Name.newLineAtEof newLineAtEof
+        setValue settings Scope.buffer Name.newLineAtEof newLineAtEof
             |> ignore
+
+        (fileFormat, newLineAtEof)
+
+    member private this.ReloadTextAreaBufferExtract buffer =
+        let parentBuffer = buffer.Parent
+
+        let fileFormat, newLineAtEof = this.ReloadTextAreaBufferAux parentBuffer false
+
+        let settings = myBuffers.GetBufferSettings buffer
+
+        setValue settings Scope.buffer Name.fileFormat fileFormat
+            |> ignore
+        setValue settings Scope.buffer Name.newLineAtEof newLineAtEof
+            |> ignore
+
+        buffer.ReloadFile ()
 
     member this.WriteFile () =
         let readOnly     = getValueBool       this.CurrentSettings Name.readOnly

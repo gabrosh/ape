@@ -86,17 +86,19 @@ type Lines = ResizeArray<Chars>
 
 [<Struct>]
 type ReloadFileParams = {
-    fileOffset:      int64
-    fileFormatAcc:   int
-    toSkipNextLF:    bool
-    endsWithNewLine: bool
+    fileOffset:           int64
+    fileFormatAcc:        int
+    toSkipNextLF:         bool
+    endsWithNewLine:      bool
+    nonTranslatableBytes: bool
 }
 
 let ReloadFileParams_Zero = {
-    fileOffset      = 0
-    fileFormatAcc   = 0
-    toSkipNextLF    = false
-    endsWithNewLine = false
+    fileOffset           = 0
+    fileFormatAcc        = 0
+    toSkipNextLF         = false
+    endsWithNewLine      = false
+    nonTranslatableBytes = false
 }
 
 // the default values for IO.StreamReader and IO.StreamWriter
@@ -150,18 +152,19 @@ let private readFileAux
     | None ->
         ()
 
-    let a, b, c =
+    let a, b, c, d =
         reloadFileParams
         |> Option.map (
-            fun x -> (x.fileFormatAcc, x.toSkipNextLF, x.endsWithNewLine)
+            fun x -> (x.fileFormatAcc, x.toSkipNextLF, x.endsWithNewLine, x.nonTranslatableBytes)
         )
         |> Option.defaultValue (
-            0, false, false
+            0, false, false, false
         )
 
-    let mutable fileFormatAcc   = a
-    let mutable toSkipNextLF    = b
-    let mutable endsWithNewLine = c
+    let mutable fileFormatAcc        = a
+    let mutable toSkipNextLF         = b
+    let mutable endsWithNewLine      = c
+    let mutable nonTranslatableBytes = d
 
     let mutable charsRead = 0
 
@@ -187,6 +190,8 @@ let private readFileAux
                 startChar <- i + 1
 
                 fileFormatAcc <- fileFormatAcc ||| int c
+            elif c = '\uFFFD' then
+                nonTranslatableBytes <- true
 
             toSkipNextLF <- c = '\r'
 
@@ -205,10 +210,11 @@ let private readFileAux
         lines.Add (inputLine.DrainToImmutable ())
 
     let reloadFileParams = {
-        fileOffset      = stream.BaseStream.Position
-        fileFormatAcc   = fileFormatAcc
-        toSkipNextLF    = toSkipNextLF
-        endsWithNewLine = endsWithNewLine
+        fileOffset           = stream.BaseStream.Position
+        fileFormatAcc        = fileFormatAcc
+        toSkipNextLF         = toSkipNextLF
+        endsWithNewLine      = endsWithNewLine
+        nonTranslatableBytes = nonTranslatableBytes
     }
 
     let fileFormat =
@@ -220,11 +226,12 @@ let private readFileAux
 /// if provided. In that case it assumes that lines is not empty, and the last line
 /// may be extended based on reloadFileParams and read input.
 let readFile
-    (filePath: string) (encoding: string) (strictEncoding: bool)
-    (reloadFileParams: ReloadFileParams option) (lines: Lines) =
+    (filePath: string) (encoding: string)
+    (reloadFileParams: ReloadFileParams option)
+    (lines: Lines) =
 
     use stream = new IO.StreamReader (
-        filePath, getEncoding encoding strictEncoding, true, getReadOptions ()
+        filePath, getEncoding encoding false, true, getReadOptions ()
     )
 
     match reloadFileParams with

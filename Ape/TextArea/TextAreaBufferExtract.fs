@@ -119,6 +119,8 @@ type TextAreaBufferExtract (
     member val FilePath = inFilePath
         with get, set
 
+    member _.Parent = myParent
+
     member _.Lines                  = myLines
     member _.Selections             = mySelections
     member _.IsReadOnly             = myContext.readOnly
@@ -337,17 +339,13 @@ type TextAreaBufferExtract (
 
     // others
 
-    member this.ReloadFile encoding strictEncoding =
+    member this.ReloadFile () =
         let cursor      = this.Main.Cursor
         let cursorWC    = this.Main.CursorWC
         let displayLine = this.DisplayPos.line
 
-        let result = myParent.ReloadFile encoding strictEncoding
-
         this.ResetStateAfterReload cursor cursorWC displayLine
         this.ResetUndoState ()
-
-        result
 
     member this.WriteFile encoding fileFormat endWithNewLine =
         FileUtils.writeFile this.FilePath encoding fileFormat endWithNewLine myLines
@@ -382,8 +380,8 @@ type TextAreaBufferExtract (
 
         match userMessage with
         | Some userMessage ->
-            myUserMessages.RetrieveMessage () |> ignore
             // Re-register the message from failed reload.
+            myUserMessages.RetrieveMessage () |> ignore
             myUserMessages.RegisterMessage userMessage
         | None ->
             ()
@@ -461,9 +459,6 @@ type TextAreaBufferExtract (
         member this.UndoCorruptedState ()        = this.UndoCorruptedState ()
 
         // others
-
-        member this.ReloadFile encoding strictEncoding =
-            this.ReloadFile encoding strictEncoding
 
         member this.WriteFile encoding fileFormat endWithNewLine =
             this.WriteFile encoding fileFormat endWithNewLine

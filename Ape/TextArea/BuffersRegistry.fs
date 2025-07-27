@@ -152,6 +152,14 @@ type BuffersRegistry (
         if index <> -1 then
             myCurrentIndex <- index
 
+    /// Returns settings of given buffer.
+    member this.GetBufferSettings buffer =
+        let index = this.GetIndex buffer
+        if index <> -1 then
+            myItems[index].settings
+        else
+            invalidOp ""
+
     member private _.GetIndex buffer =
         myItems.FindIndex (
             fun item ->

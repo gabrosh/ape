@@ -98,7 +98,7 @@ type ReloadFileTest () =
 
         writeChars (fileContent1 + fileContent2)
 
-        let fileFormat, endsWithNewLine = myBuffer.ReloadFile "utf-8" true
+        let fileFormat, endsWithNewLine = myBuffer.ReloadFile "utf-8" true true
 
         assertLines  [|"a"; "b"|]
         assertFormat expFileFormat2 fileFormat
@@ -122,7 +122,7 @@ type ReloadFileTest () =
 
         writeChars (fileContent1 + fileContent2)
 
-        let fileFormat, endsWithNewLine = myBuffer.ReloadFile "utf-8" true
+        let fileFormat, endsWithNewLine = myBuffer.ReloadFile "utf-8" true true
 
         assertLines  [|"a"; ""; "b"|]
         assertFormat expFileFormat2 fileFormat

@@ -65,10 +65,6 @@ type ITextAreaBuffer =
 
     // others
 
-    abstract member ReloadFile:
-        encoding: string -> strictEncoding: bool
-     -> FileUtils.FileFormat * bool
-
     abstract member WriteFile:
         encoding: string -> fileFormat: FileUtils.FileFormat -> endWithNewLine: bool
      -> unit

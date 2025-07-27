@@ -26,6 +26,8 @@ type MatchRanges (
     let mutable myIsCleared  = inIsCleared
     let mutable myTextRanges = inTextRanges
 
+    let mutable myWarnIfNoMatchFound = true
+
     new (inUserMessages: UserMessages, inLines: Lines) =
         MatchRanges(
             inUserMessages, inLines, None, true, makeTextRangesGroups ()
@@ -43,6 +45,15 @@ type MatchRanges (
     member internal _.TextRanges
         with get ()    = myTextRanges
         and  set value = myTextRanges <- value
+
+    /// Runs given function with or without a warning if no match is found.
+    member _.RunWithSetWarnIfNoMatchFound warnIfNoMatchFound f =
+        let prevValue = myWarnIfNoMatchFound
+        try
+            myWarnIfNoMatchFound <- warnIfNoMatchFound
+            f ()
+        finally
+            myWarnIfNoMatchFound <- prevValue
 
     /// Creates an extract version of this instance using constructor constr.
     member _.CreateExtract constr (linesExtract: Lines) (extractOnConstr: bool) =
@@ -91,7 +102,7 @@ type MatchRanges (
         else
             this.SearchSingleLine lines regexObject
 
-        if this.GetMainGroupCount () = 0 then
+        if myWarnIfNoMatchFound && this.GetMainGroupCount () = 0 then
             myUserMessages.RegisterMessage WARNING_NO_MATCH_FOUND
 
     member private _.SearchSingleLine (lines: Lines) (regexObject: Regex) =
