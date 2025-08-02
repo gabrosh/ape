@@ -29,13 +29,16 @@ type ReloadFileTest () =
     let writeChars (chars: string) =
         File.WriteAllText (testFilePath, chars, Encoding.UTF8)
 
+    let writeCharsLatin1 (chars: string) =
+        File.WriteAllText (testFilePath, chars, Encoding.Latin1)
+
     let deleteTestFile () =
         if System.IO.File.Exists(testFilePath) then
             System.IO.File.Delete(testFilePath)
 
     // command and simple assertions
 
-    let assertLines expLines =
+    let assertLines (expLines: string array) =
         Assert.AreEqual (expLines, myBuffer.Lines)
 
     let assertFormat (expFileFormat: FileFormat) (fileFormat: FileFormat) =
@@ -43,6 +46,14 @@ type ReloadFileTest () =
 
     let assertEnding (expEndsWithNewLine: bool) (endsWithNewLine: bool) =
         Assert.AreEqual (expEndsWithNewLine, endsWithNewLine)
+
+    let assertNonTranslatableByes (expNonTranslatableBytes: bool) =
+        let reloadFileParams = myBuffer.ReloadFileParams
+
+        Assert.IsTrue reloadFileParams.IsSome
+        Assert.AreEqual (
+            expNonTranslatableBytes, reloadFileParams.Value.nonTranslatableBytes
+        )
 
     // teardown
 
@@ -74,7 +85,7 @@ type ReloadFileTest () =
     [<TestCase( [|"a\r"  ; "b\r\n"    |], [|FileFormat.mac ; FileFormat.dos |], [|true ; true |] )>]  // mac  dos
     [<TestCase( [|"a\n"  ; "b\r"      |], [|FileFormat.unix; FileFormat.dos |], [|true ; true |] )>]  // unix mac
                                                                             
-    [<TestCase( [|"a\r"  ; "\nb"      |], [|FileFormat.mac        ; FileFormat.dos |], [|true ; false|] )>]  // mac -> dos
+    [<TestCase( [|"a\r"  ; "\nb"      |], [|FileFormat.mac ; FileFormat.dos |], [|true ; false|] )>]  // mac -> dos
     member _.ReloadFile fileContents expFileFormats expEndsWithNewLines  =
         let fileContent1       , fileContent2        = toTuple2 fileContents
         let expFileFormat1     , expFileFormat2      = toTuple2 expFileFormats
@@ -127,3 +138,27 @@ type ReloadFileTest () =
         assertLines  [|"a"; ""; "b"|]
         assertFormat expFileFormat2 fileFormat
         assertEnding expEndsWithNewLine2 endsWithNewLine
+
+    [<TestCase( [|"a"    ; "bc"   |], [|"a"      ; "bc"     |], [|false; false|] )>]
+    [<TestCase( [|"a"    ; "\xFFc"|], [|"a"      ; "\uFFFDc"|], [|false; true |] )>]
+    [<TestCase( [|"a\xFF"; "c"    |], [|"a\uFFFD"; "c"      |], [|true ; true |] )>]
+    member _.ReloadFile_NonTranslatable fileContents expLines expNonTranss =
+        let fileContent1, fileContent2 = toTuple2 fileContents
+        let expLine1    , expLine2     = toTuple2 expLines
+        let expNonTrans1, expNonTrans2 = toTuple2 expNonTranss
+
+        init ()
+
+        writeCharsLatin1 fileContent1
+
+        let _fileFormat, _endsWithNewLine = myBuffer.LoadFile "utf-8" true false
+
+        assertLines [| expLine1 |]
+        assertNonTranslatableByes expNonTrans1
+
+        writeCharsLatin1 (fileContent1 + fileContent2)
+
+        let _fileFormat, _endsWithNewLine = myBuffer.ReloadFile "utf-8" true true
+
+        assertLines [| expLine1 + expLine2 |]
+        assertNonTranslatableByes expNonTrans2
