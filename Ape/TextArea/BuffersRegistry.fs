@@ -70,8 +70,7 @@ type BuffersRegistry (
         (parentBuffer: TextAreaBuffer) (parentSettings: Settings.Settings)
         (fileName: string) (extractOnConstr: bool)
       =
-
-        let bufferSettings = Settings.cloneSettings parentSettings
+        let bufferSettings = Settings.makeExtractBufferSettings parentSettings
 
         let bufferKeyMappings = KeyMappings.makeBufferKeyMappings myGlobalKeyMappings
 

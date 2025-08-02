@@ -134,7 +134,8 @@ type TextAreaBuffer (
     member _.HasUndoLinesToRegister = myHasUndoLinesToRegister
 
     // only for testing purposes
-    member _.Main = mySelections.Main
+    member _.Main             = mySelections.Main
+    member _.ReloadFileParams = myReloadFileParams
 
     // private properties
 

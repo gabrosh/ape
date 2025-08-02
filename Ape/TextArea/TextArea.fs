@@ -595,7 +595,12 @@ type TextArea (
             invalidOp ""
             
     member private this.ReloadTextAreaBuffer buffer =
-        this.ReloadTextAreaBufferAux buffer true |> ignore
+        this.ReloadTextAreaBufferAux buffer true
+
+    member private this.ReloadTextAreaBufferExtract buffer =
+        this.ReloadTextAreaBufferAux buffer.Parent false
+
+        buffer.ReloadFile ()
 
     member private _.ReloadTextAreaBufferAux buffer warnIfNoMatchFound =
         let settings = myBuffers.GetBufferSettings buffer
@@ -613,22 +618,6 @@ type TextArea (
             |> ignore
         setValue settings Scope.buffer Name.newLineAtEof newLineAtEof
             |> ignore
-
-        (fileFormat, newLineAtEof)
-
-    member private this.ReloadTextAreaBufferExtract buffer =
-        let parentBuffer = buffer.Parent
-
-        let fileFormat, newLineAtEof = this.ReloadTextAreaBufferAux parentBuffer false
-
-        let settings = myBuffers.GetBufferSettings buffer
-
-        setValue settings Scope.buffer Name.fileFormat fileFormat
-            |> ignore
-        setValue settings Scope.buffer Name.newLineAtEof newLineAtEof
-            |> ignore
-
-        buffer.ReloadFile ()
 
     member this.WriteFile () =
         let readOnly     = getValueBool       this.CurrentSettings Name.readOnly
@@ -697,9 +686,7 @@ type TextArea (
 
     member private this.SetExtractBufferSettings () =
         let results = seq {
-            setValueAsFixed this.CurrentSettings Scope.buffer Name.readOnly        "true"
-        ;
-            setValueAsFixed this.CurrentSettings Scope.buffer Name.reloadAsLogFile "false"
+            setValueAsFixed this.CurrentSettings Scope.extract Name.readOnly "true"
         }
 
         let firstError = results |> Seq.tryPick (

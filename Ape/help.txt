@@ -368,7 +368,7 @@ Examples: "Hello, \"world\"!"
 
 Settings -----------------------------------------------------------------------
 
-Scopes: global buffer
+Scopes: global buffer extract
 
 settings         abbr.  default  valid values
 

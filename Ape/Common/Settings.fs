@@ -12,6 +12,7 @@ type Scope =
     | ``default`` = 1
     | ``global``  = 2
     |   buffer    = 3
+    |   extract   = 4
 
 let scopeToString (scope: Scope) =
     scope.ToString ()
@@ -20,14 +21,16 @@ let scopeStrings =
     [
         Scope.``global``
         Scope.  buffer
+        Scope.  extract
     ]
     |> Seq.map scopeToString
 
 let parseScope (s: string) =
     match s with
-    | "global" | "g" -> Ok Scope.``global``
-    | "buffer" | "b" -> Ok Scope.  buffer
-    | _              -> Error $"Invalid setting's scope: '{s}'"
+    | "global"  | "g" -> Ok Scope.``global``
+    | "buffer"  | "b" -> Ok Scope.  buffer
+    | "extract" | "e" -> Ok Scope.  extract
+    | _               -> Error $"Invalid setting's scope: '{s}'"
 
 type Name =
     | colorScheme      = 1
@@ -186,6 +189,20 @@ let rec private isValueFixedRec settings name =
 
 // user commands
 
+let private isScopeInvalid settings scope =
+    scope = Scope.extract && settings.scope <> Scope.extract
+
+let private isNameInScopeInvalid scope name =
+    scope = Scope.extract && (
+        match name with
+        | Name.strictEncoding
+        | Name.reloadAsLogFile
+        | Name.reSearchMatching ->
+            true
+        | _ ->
+            false
+    )
+
 [<TailCall>]
 let rec private setValueRec settings scope name value isFixed =
     if settings.scope = scope then
@@ -200,12 +217,16 @@ let rec private setValueRec settings scope name value isFixed =
             invalidOp "Can't go beyond default scope"
 
 let private setValueAux settings scope name value isFixed =
-    if settings.scope <> Scope.buffer then
-        invalidOp "Must start from buffer scope"
+    if settings.scope < Scope.buffer then
+        invalidOp "Must start from buffer or buffer extract scope"
     if scope <= Scope.``default`` then
         invalidOp "Can't set value in default scope"
 
-    if isValueFixedRec settings name then
+    if isScopeInvalid settings scope then
+        Error $"Invalid setting's scope for this buffer: '{scope}'"
+    elif isNameInScopeInvalid scope name then
+        Error $"Invalid setting's name for {scope} scope: '{name}'"
+    elif isValueFixedRec settings name then
         Error "Can't change fixed value."
     else
         match validate name value with
@@ -243,12 +264,16 @@ let rec private unsetValueRec settings scope name =
 /// Unsets the setting with given name up to given scope.
 /// Returns error message if the current value of the setting is fixed.
 let unsetValue settings scope name =
-    if settings.scope <> Scope.buffer then
-        invalidOp "Must start from buffer scope"
+    if settings.scope < Scope.buffer then
+        invalidOp "Must start from buffer or buffer extract scope"
     if scope <= Scope.``default`` then
         invalidOp "Can't unset value in default scope"
 
-    if isValueFixedRec settings name then
+    if isScopeInvalid settings scope then
+        Error $"Invalid setting's scope for this buffer: '{scope}'"
+    elif isNameInScopeInvalid scope name then
+        Error $"Invalid setting's name for {scope} scope: '{name}'"
+    elif isValueFixedRec settings name then
         Error "Can't unset fixed value."
     else
         unsetValueRec settings scope name
@@ -359,10 +384,10 @@ let makeBufferSettings parent =
         dict   = SettingsDict ()
     }
 
-/// Returns new settings created by cloning given original.
-let cloneSettings (original: Settings) =
+/// Returns new buffer extract settings with given parent.
+let makeExtractBufferSettings parent =
     {
-        scope  = original.scope
-        parent = original.parent
-        dict   = SettingsDict original.dict
+        scope  = Scope.extract
+        parent = Some parent
+        dict   = SettingsDict ()
     }
