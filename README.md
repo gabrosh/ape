@@ -23,7 +23,7 @@ It's intended to be used as a Swiss knife for structural text editing and log or
 - Macro recording and editing
 - Light and dark color schemes
 
-## No-goals
+## Non-goals
 - Mouse support
 - Syntax highlighting
 - Context sensitive text completion
