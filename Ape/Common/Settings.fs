@@ -225,7 +225,7 @@ let private setValueAux settings scope name value isFixed =
     let scope = scope |> Option.defaultValue settings.scope
 
     if settings.scope < Scope.buffer then
-        invalidOp "Must start from buffer or buffer extract scope"
+        invalidOp "Must start from buffer or extract buffer scope"
     if scope <= Scope.``default`` then
         invalidOp "Can't set value in default scope"
 
@@ -277,7 +277,7 @@ let unsetValue settings scope name =
     let scope = scope |> Option.defaultValue settings.scope
 
     if settings.scope < Scope.buffer then
-        invalidOp "Must start from buffer or buffer extract scope"
+        invalidOp "Must start from buffer or extract buffer scope"
     if scope <= Scope.``default`` then
         invalidOp "Can't unset value in default scope"
 
@@ -396,8 +396,8 @@ let makeBufferSettings parent =
         dict   = SettingsDict ()
     }
 
-/// Returns new buffer extract settings with given parent.
-let makeExtractBufferSettings parent =
+/// Returns new extract buffer settings with given parent.
+let makeBufferExtractSettings parent =
     {
         scope  = Scope.extract
         parent = Some parent
