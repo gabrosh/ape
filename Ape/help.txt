@@ -370,6 +370,10 @@ Settings -----------------------------------------------------------------------
 
 Scopes: global buffer extract
 
+"global" scope inherits the default settings, "buffer" scope inherits from "global"
+scope and "extract" scope (only for buffer extracts) inherits from "buffer" scope.
+When unspecified, the command is applied on the most local scope ("buffer" or "extract").
+
 settings         abbr.  default  valid values
 
 colorScheme      cs     light    light dark      color scheme
@@ -397,6 +401,8 @@ Key mappings -------------------------------------------------------------------
 
 Scopes: global buffer
 Modes:  normal insert promptNormal promptInsert
+
+When unspecified, the command is applied on the most local scope ("buffer").
 
 In map and unmap commands, key can be a single key or a "key prefix and key" pair.
 Key prefix can be one of <c-b>, <c-e>, <c-B>, <c-E>, <sc-b>, <sc-e>.

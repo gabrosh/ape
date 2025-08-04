@@ -1,4 +1,4 @@
-﻿module SettingsTest
+module SettingsTest
 
 open NUnit.Framework
 
@@ -15,22 +15,22 @@ type SettingsTest () =
 
         Assert.AreEqual (Int 4, getValue b Name.tabStop)
 
-        let result = setValue b Scope.  buffer   Name.tabStop "1"
+        let result = setValue b (Some Scope.  buffer  ) Name.tabStop "1"
 
         Assert.IsTrue   (Result.isOk result)
         Assert.AreEqual (Int 1, getValue b Name.tabStop)
 
-        let result = setValue b Scope.  buffer   Name.tabStop "2"
+        let result = setValue b (Some Scope.  buffer  ) Name.tabStop "2"
 
         Assert.IsTrue   (Result.isOk result)
         Assert.AreEqual (Int 2, getValue b Name.tabStop)
 
-        let result = setValue b Scope.``global`` Name.tabStop "3"
+        let result = setValue b (Some Scope.``global``) Name.tabStop "3"
 
         Assert.IsTrue   (Result.isOk result)
         Assert.AreEqual (Int 3, getValue b Name.tabStop)
 
-        let result = setValue b Scope.``global`` Name.tabStop "5"
+        let result = setValue b (Some Scope.``global``) Name.tabStop "5"
 
         Assert.IsTrue   (Result.isOk result)
         Assert.AreEqual (Int 5, getValue b Name.tabStop)
@@ -41,22 +41,22 @@ type SettingsTest () =
 
         Assert.AreEqual (Int 4, getValue b Name.tabStop)
 
-        let result = setValue b Scope.``global`` Name.tabStop "1"
+        let result = setValue b (Some Scope.``global``) Name.tabStop "1"
 
         Assert.IsTrue   (Result.isOk result)
         Assert.AreEqual (Int 1, getValue b Name.tabStop)
 
-        let result = setValue b Scope.``global`` Name.tabStop "2"
+        let result = setValue b (Some Scope.``global``) Name.tabStop "2"
 
         Assert.IsTrue   (Result.isOk result)
         Assert.AreEqual (Int 2, getValue b Name.tabStop)
 
-        let result = setValue b Scope.  buffer   Name.tabStop "3"
+        let result = setValue b (Some Scope.  buffer  ) Name.tabStop "3"
 
         Assert.IsTrue   (Result.isOk result)
         Assert.AreEqual (Int 3, getValue b Name.tabStop)
 
-        let result = setValue b Scope.  buffer   Name.tabStop "5"
+        let result = setValue b (Some Scope.  buffer  ) Name.tabStop "5"
 
         Assert.IsTrue   (Result.isOk result)
         Assert.AreEqual (Int 5, getValue b Name.tabStop)
@@ -65,25 +65,25 @@ type SettingsTest () =
     member _.unset_Int_1 () =
         let b = makeSettings ()
 
-        let _result = setValue   b Scope.``global`` Name.tabStop "1"
-        let _result = setValue   b Scope.  buffer   Name.tabStop "2"
+        let _result = setValue   b (Some Scope.``global``) Name.tabStop "1"
+        let _result = setValue   b (Some Scope.  buffer  ) Name.tabStop "2"
 
-        let  result = unsetValue b Scope.  buffer   Name.tabStop
-
-        Assert.IsTrue   (Result.isOk result)
-        Assert.AreEqual (Int 1, getValue b Name.tabStop)
-
-        let  result = unsetValue b Scope.  buffer   Name.tabStop
+        let  result = unsetValue b (Some Scope.  buffer  ) Name.tabStop
 
         Assert.IsTrue   (Result.isOk result)
         Assert.AreEqual (Int 1, getValue b Name.tabStop)
 
-        let  result = unsetValue b Scope.``global`` Name.tabStop
+        let  result = unsetValue b (Some Scope.  buffer  ) Name.tabStop
+
+        Assert.IsTrue   (Result.isOk result)
+        Assert.AreEqual (Int 1, getValue b Name.tabStop)
+
+        let  result = unsetValue b (Some Scope.``global``) Name.tabStop
 
         Assert.IsTrue   (Result.isOk result)
         Assert.AreEqual (Int 4, getValue b Name.tabStop)
 
-        let  result = unsetValue b Scope.``global`` Name.tabStop
+        let  result = unsetValue b (Some Scope.``global``) Name.tabStop
 
         Assert.IsTrue   (Result.isOk result)
         Assert.AreEqual (Int 4, getValue b Name.tabStop)
@@ -92,25 +92,25 @@ type SettingsTest () =
     member _.unset_Int_2 () =
         let b = makeSettings ()
 
-        let _result = setValue   b Scope.``global`` Name.tabStop "1"
-        let _result = setValue   b Scope.  buffer   Name.tabStop "2"
+        let _result = setValue   b (Some Scope.``global``) Name.tabStop "1"
+        let _result = setValue   b (Some Scope.  buffer  ) Name.tabStop "2"
 
-        let  result = unsetValue b Scope.``global`` Name.tabStop
-
-        Assert.IsTrue   (Result.isOk result)
-        Assert.AreEqual (Int 4, getValue b Name.tabStop)
-
-        let  result = unsetValue b Scope.``global`` Name.tabStop
+        let  result = unsetValue b (Some Scope.``global``) Name.tabStop
 
         Assert.IsTrue   (Result.isOk result)
         Assert.AreEqual (Int 4, getValue b Name.tabStop)
 
-        let  result = unsetValue b Scope.  buffer   Name.tabStop
+        let  result = unsetValue b (Some Scope.``global``) Name.tabStop
 
         Assert.IsTrue   (Result.isOk result)
         Assert.AreEqual (Int 4, getValue b Name.tabStop)
 
-        let  result = unsetValue b Scope.  buffer   Name.tabStop
+        let  result = unsetValue b (Some Scope.  buffer  ) Name.tabStop
+
+        Assert.IsTrue   (Result.isOk result)
+        Assert.AreEqual (Int 4, getValue b Name.tabStop)
+
+        let  result = unsetValue b (Some Scope.  buffer  ) Name.tabStop
 
         Assert.IsTrue   (Result.isOk result)
         Assert.AreEqual (Int 4, getValue b Name.tabStop)
@@ -121,18 +121,18 @@ type SettingsTest () =
 
         Assert.AreEqual (Int 4, getValue b Name.tabStop)
 
-        let _result = setValue        b Scope.``global`` Name.tabStop "1"
-        let  result = setValueAsFixed b Scope.  buffer   Name.tabStop "2"
+        let _result = setValue        b (Some Scope.``global``) Name.tabStop "1"
+        let  result = setValueAsFixed b (Some Scope.  buffer  ) Name.tabStop "2"
 
         Assert.IsTrue   (Result.isOk result)
         Assert.AreEqual (Int 2, getValue b Name.tabStop)
 
-        let  result = setValue        b Scope.  buffer   Name.tabStop "3"
+        let  result = setValue        b (Some Scope.  buffer  ) Name.tabStop "3"
 
         Assert.IsFalse  (Result.isOk result)
         Assert.AreEqual (Int 2, getValue b Name.tabStop)
 
-        let  result = setValue        b Scope.``global`` Name.tabStop "3"
+        let  result = setValue        b (Some Scope.``global``) Name.tabStop "3"
 
         Assert.IsFalse  (Result.isOk result)
         Assert.AreEqual (Int 2, getValue b Name.tabStop)
@@ -143,17 +143,17 @@ type SettingsTest () =
 
         Assert.AreEqual (Int 4, getValue b Name.tabStop)
 
-        let  result = setValueAsFixed b Scope.``global`` Name.tabStop "1"
+        let  result = setValueAsFixed b (Some Scope.``global``) Name.tabStop "1"
 
         Assert.IsTrue   (Result.isOk result)
         Assert.AreEqual (Int 1, getValue b Name.tabStop)
 
-        let  result = setValue        b Scope.  buffer   Name.tabStop "2"
+        let  result = setValue        b (Some Scope.  buffer  ) Name.tabStop "2"
 
         Assert.IsFalse  (Result.isOk result)
         Assert.AreEqual (Int 1, getValue b Name.tabStop)
 
-        let  result = setValue        b Scope.``global`` Name.tabStop "2"
+        let  result = setValue        b (Some Scope.``global``) Name.tabStop "2"
 
         Assert.IsFalse  (Result.isOk result)
         Assert.AreEqual (Int 1, getValue b Name.tabStop)
@@ -164,18 +164,18 @@ type SettingsTest () =
 
         Assert.AreEqual (Int 4, getValue b Name.tabStop)
 
-        let _result = setValue        b Scope.``global`` Name.tabStop "1"
-        let  result = setValueAsFixed b Scope.  buffer   Name.tabStop "2"
+        let _result = setValue        b (Some Scope.``global``) Name.tabStop "1"
+        let  result = setValueAsFixed b (Some Scope.  buffer  ) Name.tabStop "2"
 
         Assert.IsTrue   (Result.isOk result)
         Assert.AreEqual (Int 2, getValue b Name.tabStop)
 
-        let  result = unsetValue      b Scope.  buffer   Name.tabStop
+        let  result = unsetValue      b (Some Scope.  buffer  ) Name.tabStop
 
         Assert.IsFalse  (Result.isOk result)
         Assert.AreEqual (Int 2, getValue b Name.tabStop)
 
-        let  result = unsetValue      b Scope.``global`` Name.tabStop
+        let  result = unsetValue      b (Some Scope.``global``) Name.tabStop
 
         Assert.IsFalse  (Result.isOk result)
         Assert.AreEqual (Int 2, getValue b Name.tabStop)
@@ -186,17 +186,17 @@ type SettingsTest () =
 
         Assert.AreEqual (Int 4, getValue b Name.tabStop)
 
-        let  result = setValueAsFixed b Scope.``global`` Name.tabStop "1"
+        let  result = setValueAsFixed b (Some Scope.``global``) Name.tabStop "1"
 
         Assert.IsTrue   (Result.isOk result)
         Assert.AreEqual (Int 1, getValue b Name.tabStop)
 
-        let  result = unsetValue      b Scope.  buffer   Name.tabStop
+        let  result = unsetValue      b (Some Scope.  buffer  ) Name.tabStop
 
         Assert.IsFalse  (Result.isOk result)
         Assert.AreEqual (Int 1, getValue b Name.tabStop)
 
-        let  result = unsetValue      b Scope.``global`` Name.tabStop
+        let  result = unsetValue      b (Some Scope.``global``) Name.tabStop
 
         Assert.IsFalse  (Result.isOk result)
         Assert.AreEqual (Int 1, getValue b Name.tabStop)
@@ -207,7 +207,7 @@ type SettingsTest () =
 
         Assert.AreEqual (Int 4, getValue b Name.tabStop)
 
-        let result = setValue b Scope.``global`` Name.tabStop "0"
+        let result = setValue b (Some Scope.``global``) Name.tabStop "0"
 
         Assert.IsFalse  (Result.isOk result)
         Assert.AreEqual (Int 4, getValue b Name.tabStop)
@@ -218,7 +218,7 @@ type SettingsTest () =
 
         Assert.AreEqual (Bool false, getValue b Name.wrapLines)
 
-        let result = setValue b Scope.``global`` Name.wrapLines "true"
+        let result = setValue b (Some Scope.``global``) Name.wrapLines "true"
 
         Assert.IsTrue   (Result.isOk result)
         Assert.AreEqual (Bool true, getValue b Name.wrapLines)
@@ -229,7 +229,7 @@ type SettingsTest () =
 
         Assert.AreEqual (Bool false, getValue b Name.wrapLines)
 
-        let result = setValue b Scope.``global`` Name.wrapLines "_true_"
+        let result = setValue b (Some Scope.``global``) Name.wrapLines "_true_"
 
         Assert.IsFalse  (Result.isOk result)
         Assert.AreEqual (Bool false, getValue b Name.wrapLines)
@@ -240,7 +240,7 @@ type SettingsTest () =
 
         Assert.AreEqual (String "dark", getValue b Name.colorScheme)
 
-        let result = setValue b Scope.``global`` Name.colorScheme "light"
+        let result = setValue b (Some Scope.``global``) Name.colorScheme "light"
 
         Assert.IsTrue   (Result.isOk result)
         Assert.AreEqual (String "light", getValue b Name.colorScheme)
@@ -251,7 +251,7 @@ type SettingsTest () =
 
         Assert.AreEqual (String "dark", getValue b Name.colorScheme)
 
-        let result = setValue b Scope.``global`` Name.colorScheme "_light_"
+        let result = setValue b (Some Scope.``global``) Name.colorScheme "_light_"
 
         Assert.IsFalse  (Result.isOk result)
         Assert.AreEqual (String "dark", getValue b Name.colorScheme)
@@ -260,8 +260,8 @@ type SettingsTest () =
     member _.getSettingRepr_global_buffer () =
         let b = makeSettings ()
 
-        let _result = setValue b Scope.``global`` Name.tabStop "1"
-        let _result = setValue b Scope.  buffer   Name.tabStop "2"
+        let _result = setValue b (Some Scope.``global``) Name.tabStop "1"
+        let _result = setValue b (Some Scope.  buffer  ) Name.tabStop "2"
 
         let result = getSettingRepr b Name.tabStop
 
@@ -271,7 +271,7 @@ type SettingsTest () =
     member _.getSettingRepr_global () =
         let b = makeSettings ()
 
-        let _result = setValue b Scope.``global`` Name.tabStop "1"
+        let _result = setValue b (Some Scope.``global``) Name.tabStop "1"
 
         let result = getSettingRepr b Name.tabStop
 
@@ -281,7 +281,7 @@ type SettingsTest () =
     member _.getSettingRepr_buffer () =
         let b = makeSettings ()
 
-        let _result = setValue b Scope.  buffer   Name.tabStop "2"
+        let _result = setValue b (Some Scope.  buffer  ) Name.tabStop "2"
 
         let result = getSettingRepr b Name.tabStop
 

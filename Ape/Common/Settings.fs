@@ -195,9 +195,14 @@ let private isScopeInvalid settings scope =
 let private isNameInScopeInvalid scope name =
     scope = Scope.extract && (
         match name with
+        // Buffers extract is read-only.
+        | Name.encoding
         | Name.strictEncoding
-        | Name.reloadAsLogFile
-        | Name.reSearchMatching ->
+        | Name.fileFormat
+        | Name.newLineAtEof
+        | Name.reSearchMatching
+        // Taken from the parent buffer.
+        | Name.reloadAsLogFile ->
             true
         | _ ->
             false
@@ -217,6 +222,8 @@ let rec private setValueRec settings scope name value isFixed =
             invalidOp "Can't go beyond default scope"
 
 let private setValueAux settings scope name value isFixed =
+    let scope = scope |> Option.defaultValue settings.scope
+
     if settings.scope < Scope.buffer then
         invalidOp "Must start from buffer or buffer extract scope"
     if scope <= Scope.``default`` then
@@ -240,6 +247,7 @@ let private setValueAux settings scope name value isFixed =
 /// Sets value of the setting with given name in given scope.
 /// Returns error message in the case of an invalid value
 /// or if the current value of the setting is fixed.
+/// If scope = None, the most local scope is assumed.
 let setValue settings scope name value =
     setValueAux settings scope name value false
 
@@ -247,6 +255,7 @@ let setValue settings scope name value =
 /// Sets value of the setting with given name in given scope as fixed.
 /// Returns error message in the case of an invalid value
 /// or if the current value of the setting is fixed.
+/// If scope = None, the most local scope is assumed.
 let setValueAsFixed settings scope name value =
     setValueAux settings scope name value true
 
@@ -263,7 +272,10 @@ let rec private unsetValueRec settings scope name =
 
 /// Unsets the setting with given name up to given scope.
 /// Returns error message if the current value of the setting is fixed.
+/// If scope = None, the most local scope is assumed.
 let unsetValue settings scope name =
+    let scope = scope |> Option.defaultValue settings.scope
+
     if settings.scope < Scope.buffer then
         invalidOp "Must start from buffer or buffer extract scope"
     if scope <= Scope.``default`` then

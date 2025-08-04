@@ -580,9 +580,9 @@ type TextArea (
         let fileFormat   = valueToString (FileFormat fileFormat)
         let newLineAtEof = valueToString (Bool newLineAtEof)
 
-        setValue this.CurrentSettings Scope.buffer Name.fileFormat fileFormat
+        setValue this.CurrentSettings (Some Scope.buffer) Name.fileFormat fileFormat
             |> ignore
-        setValue this.CurrentSettings Scope.buffer Name.newLineAtEof newLineAtEof
+        setValue this.CurrentSettings (Some Scope.buffer) Name.newLineAtEof newLineAtEof
             |> ignore
 
     member this.ReloadFile () =
@@ -614,9 +614,9 @@ type TextArea (
         let fileFormat   = valueToString (FileFormat fileFormat)
         let newLineAtEof = valueToString (Bool newLineAtEof)
 
-        setValue settings Scope.buffer Name.fileFormat fileFormat
+        setValue settings (Some Scope.buffer) Name.fileFormat fileFormat
             |> ignore
-        setValue settings Scope.buffer Name.newLineAtEof newLineAtEof
+        setValue settings (Some Scope.buffer) Name.newLineAtEof newLineAtEof
             |> ignore
 
     member this.WriteFile () =
@@ -661,15 +661,15 @@ type TextArea (
     member private this.SetBufferSettingsAux encoding strictEncoding isReadOnly =
         let results = seq {
             strictEncoding |> Option.map (
-                setValue this.CurrentSettings Scope.buffer Name.strictEncoding
+                setValue this.CurrentSettings (Some Scope.buffer) Name.strictEncoding
             )
         ;
             encoding       |> Option.map (
-                setValue this.CurrentSettings Scope.buffer Name.encoding
+                setValue this.CurrentSettings (Some Scope.buffer) Name.encoding
             )
         ;
             isReadOnly     |> Option.map (
-                setValue this.CurrentSettings Scope.buffer Name.readOnly
+                setValue this.CurrentSettings (Some Scope.buffer) Name.readOnly
             )
         }
 
@@ -686,7 +686,7 @@ type TextArea (
 
     member private this.SetExtractBufferSettings () =
         let results = seq {
-            setValueAsFixed this.CurrentSettings Scope.extract Name.readOnly "true"
+            setValueAsFixed this.CurrentSettings (Some Scope.extract) Name.readOnly "true"
         }
 
         let firstError = results |> Seq.tryPick (

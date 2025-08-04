@@ -14,9 +14,9 @@ let private executeSettingsCommand context (argsMap: ArgsMap) f =
     let scopeResult =
         match scopeString with
         | Some x ->
-            Settings.parseScope x
+            Settings.parseScope x |> Result.map Some
         | None   ->
-            Ok Settings.Scope.buffer
+            Ok None
 
     let nameResult =
         Settings.parseName nameString
