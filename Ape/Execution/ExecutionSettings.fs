@@ -39,9 +39,7 @@ let execute_set context (argsMap: ArgsMap) =
         fun scope name ->
             let value = argsMap["value"] |> Option.get
 
-            let result = Settings.setValue settings scope name value
-
-            match result with
+            match Settings.setValue settings scope name value with
             | Ok ()   ->
                 applySettings context
             | Error e ->
@@ -59,9 +57,7 @@ let execute_unset context (argsMap: ArgsMap) =
 
     executeSettingsCommand context argsMap (
         fun scope name ->
-            let result = Settings.unsetValue settings scope name
-
-            match result with
+            match Settings.unsetValue settings scope name with
             | Ok ()   ->
                 applySettings context
             | Error e ->

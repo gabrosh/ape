@@ -8,6 +8,7 @@ type Scope =
     | ``default`` = 1
     | ``global``  = 2
     |   buffer    = 3
+    |   extract   = 4
 
 let scopeToString (scope: Scope) =
     scope.ToString ()
@@ -16,14 +17,16 @@ let scopeStrings =
     [
         Scope.``global``
         Scope.  buffer
+        Scope.  extract
     ]
     |> Seq.map scopeToString
 
 let parseScope (s: string) =
     match s with
-    | "global" | "g" -> Ok Scope.``global``
-    | "buffer" | "b" -> Ok Scope.  buffer
-    | _              -> Error $"Invalid key mapping's scope: '{s}'"
+    | "global"  | "g" -> Ok Scope.``global``
+    | "buffer"  | "b" -> Ok Scope.  buffer
+    | "extract" | "e" -> Ok Scope.  extract
+    | _               -> Error $"Invalid key mapping's scope: '{s}'"
 
 type Mode =
     | normal       = 1
@@ -56,44 +59,59 @@ type KeyMappings = {
 
 // user commands
 
-let rec private mapKeyAux keyMappings scope modeKeyTriple keySeq =
+let private isScopeInvalid keyMappings scope =
+    scope = Scope.extract && keyMappings.scope <> Scope.extract
+
+let rec private mapKeyRec keyMappings scope modeKeyTriple keySeq =
     if keyMappings.scope = scope then
         keyMappings.dict[modeKeyTriple] <- keySeq
     else
         keyMappings.dict.Remove (modeKeyTriple) |> ignore
 
         if keyMappings.parent.IsSome then
-            mapKeyAux keyMappings.parent.Value scope modeKeyTriple keySeq
+            mapKeyRec keyMappings.parent.Value scope modeKeyTriple keySeq
         else
             invalidOp "Can't go beyond default scope"
 
 /// Unmaps modeKeyTriple up to given scope.
 /// Maps keySeq to modeKeyTriple in given scope.
 let mapKey keyMappings scope modeKeyTriple keySeq =
-    if keyMappings.scope <> Scope.buffer then
-        invalidOp "Must start from buffer scope"
+    let scope = scope |> Option.defaultValue keyMappings.scope
+
+    if keyMappings.scope < Scope.buffer then
+        invalidOp "Must start from buffer or extract buffer scope"
     if scope <= Scope.``default`` then
         invalidOp "Can't map key in default scope"
 
-    mapKeyAux keyMappings scope modeKeyTriple keySeq
+    if isScopeInvalid keyMappings scope then
+        Error $"Invalid key mapping's scope for this buffer: '{scope}'"
+    else
+        mapKeyRec keyMappings scope modeKeyTriple keySeq
+        Ok ()
 
-let rec private unmapKeyAux keyMappings scope modeKeyTriple =
+let rec private unmapKeyRec keyMappings scope modeKeyTriple =
     keyMappings.dict.Remove modeKeyTriple |> ignore
 
     if keyMappings.scope <> scope then
         if keyMappings.parent.IsSome then
-            unmapKeyAux keyMappings.parent.Value scope modeKeyTriple
+            unmapKeyRec keyMappings.parent.Value scope modeKeyTriple
         else
             invalidOp "Can't go beyond default scope"
 
 /// Unmaps modeKeyTriple up to given scope.
 let unmapKey keyMappings scope modeKeyTriple =
-    if keyMappings.scope <> Scope.buffer then
-        invalidOp "Must start from buffer scope"
-    if scope <= Scope.``default`` then
-        invalidOp "Can't unmap key in default scope"
+    let scope = scope |> Option.defaultValue keyMappings.scope
 
-    unmapKeyAux keyMappings scope modeKeyTriple
+    if keyMappings.scope < Scope.buffer then
+        invalidOp "Must start from buffer or extract buffer scope"
+    if scope <= Scope.``default`` then
+        invalidOp "Can't unmap value in default scope"
+
+    if isScopeInvalid keyMappings scope then
+        Error $"Invalid key mapping's scope for this buffer: '{scope}'"
+    else
+        unmapKeyRec keyMappings scope modeKeyTriple
+        Ok ()
 
 let rec private getKeySequenceAux keyMappings modeKeyTriple =
     if keyMappings.dict.ContainsKey modeKeyTriple then
@@ -132,6 +150,14 @@ let makeGlobalKeyMappings () =
 let makeBufferKeyMappings parent =
     {
         scope  = Scope.buffer
+        parent = Some parent
+        dict   = KeyMappingsDict ()
+    }
+
+/// Returns new extract buffer key mappings with given parent.
+let makeBufferExtractKeyMappings parent =
+    {
+        scope  = Scope.extract
         parent = Some parent
         dict   = KeyMappingsDict ()
     }

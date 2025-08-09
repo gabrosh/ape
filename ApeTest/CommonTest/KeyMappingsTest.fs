@@ -1,4 +1,4 @@
-﻿module KeyMappingsTest
+module KeyMappingsTest
 
 open NUnit.Framework
 
@@ -10,52 +10,191 @@ type KeyMappingsTest () =
     let makeKeyMappings () =
         makeBufferKeyMappings (makeGlobalKeyMappings ())
 
-    let keyCtrlA = (Ctrl InputKey.A)
+    let makeExtractKeyMappings () =
+        makeBufferExtractKeyMappings (
+            makeBufferKeyMappings (makeGlobalKeyMappings ())
+        )
+
+    let keyCtrlA      = (Ctrl InputKey.A)
+    let modeKeyTriple = (Mode.normal, None, keyCtrlA)
 
     let seqA = [| NoModif InputKey.A |]
     let seqB = [| NoModif InputKey.B |]
     let seqC = [| NoModif InputKey.C |]
+    let seqD = [| NoModif InputKey.D |]
+
+    // mapKey ------------------------------------------------------------------
 
     [<Test>]
-    member _.mapKey () =
+    member _.mapKey_1 () =
         let b = makeKeyMappings ()
 
-        Assert.AreEqual (None     , getKeySequence b (Mode.normal, None, keyCtrlA))
+        Assert.AreEqual (None     , getKeySequence b modeKeyTriple)
 
-        mapKey b Scope.``global`` (Mode.normal, None, keyCtrlA) seqA
+        let result = mapKey b (Some Scope.  buffer  ) modeKeyTriple seqA
 
-        Assert.AreEqual (Some seqA, getKeySequence b (Mode.normal, None, keyCtrlA))
+        Assert.IsTrue   (Result.isOk result)
+        Assert.AreEqual (Some seqA, getKeySequence b modeKeyTriple)
 
-        mapKey b Scope.  buffer   (Mode.normal, None, keyCtrlA) seqB
+        let result = mapKey b (Some Scope.  buffer  ) modeKeyTriple seqB
 
-        Assert.AreEqual (Some seqB, getKeySequence b (Mode.normal, None, keyCtrlA))
+        Assert.IsTrue   (Result.isOk result)
+        Assert.AreEqual (Some seqB, getKeySequence b modeKeyTriple)
 
-        mapKey b Scope.``global`` (Mode.normal, None, keyCtrlA) seqC
+        let result = mapKey b (Some Scope.``global``) modeKeyTriple seqC
 
-        Assert.AreEqual (Some seqC, getKeySequence b (Mode.normal, None, keyCtrlA))
+        Assert.IsTrue   (Result.isOk result)
+        Assert.AreEqual (Some seqC, getKeySequence b modeKeyTriple)
+
+        let result = mapKey b (Some Scope.``global``) modeKeyTriple seqD
+
+        Assert.IsTrue   (Result.isOk result)
+        Assert.AreEqual (Some seqD, getKeySequence b modeKeyTriple)
 
     [<Test>]
-    member _.unmapKey () =
+    member _.mapKey_2 () =
         let b = makeKeyMappings ()
 
-        mapKey   b Scope.``global`` (Mode.normal, None, keyCtrlA) seqA
-        mapKey   b Scope.  buffer   (Mode.normal, None, keyCtrlA) seqB
+        Assert.AreEqual (None     , getKeySequence b modeKeyTriple)
 
-        unmapKey b Scope.  buffer   (Mode.normal, None, keyCtrlA)
+        let result = mapKey b (Some Scope.``global``) modeKeyTriple seqA
 
-        Assert.AreEqual (Some seqA, getKeySequence b (Mode.normal, None, keyCtrlA))
+        Assert.IsTrue   (Result.isOk result)
+        Assert.AreEqual (Some seqA, getKeySequence b modeKeyTriple)
 
-        unmapKey b Scope.``global`` (Mode.normal, None, keyCtrlA)
+        let result = mapKey b (Some Scope.``global``) modeKeyTriple seqB
 
-        Assert.AreEqual (None     , getKeySequence b (Mode.normal, None, keyCtrlA))
+        Assert.IsTrue   (Result.isOk result)
+        Assert.AreEqual (Some seqB, getKeySequence b modeKeyTriple)
 
-        mapKey   b Scope.``global`` (Mode.normal, None, keyCtrlA) seqA
-        mapKey   b Scope.  buffer   (Mode.normal, None, keyCtrlA) seqB
+        let result = mapKey b (Some Scope.  buffer  ) modeKeyTriple seqC
 
-        unmapKey b Scope.``global`` (Mode.normal, None, keyCtrlA)
+        Assert.IsTrue   (Result.isOk result)
+        Assert.AreEqual (Some seqC, getKeySequence b modeKeyTriple)
 
-        Assert.AreEqual (None     , getKeySequence b (Mode.normal, None, keyCtrlA))
+        let result = mapKey b (Some Scope.  buffer ) modeKeyTriple seqD
 
-        unmapKey b Scope.  buffer   (Mode.normal, None, keyCtrlA)
+        Assert.IsTrue   (Result.isOk result)
+        Assert.AreEqual (Some seqD, getKeySequence b modeKeyTriple)
 
-        Assert.AreEqual (None     , getKeySequence b (Mode.normal, None, keyCtrlA))
+    // unmapKey ----------------------------------------------------------------
+
+    [<Test>]
+    member _.unmapKey_1 () =
+        let b = makeKeyMappings ()
+
+        let _result = mapKey   b (Some Scope.``global``) modeKeyTriple seqA
+        let _result = mapKey   b (Some Scope.  buffer  ) modeKeyTriple seqB
+
+        let  result = unmapKey b (Some Scope.  buffer  ) modeKeyTriple
+
+        Assert.IsTrue   (Result.isOk result)
+        Assert.AreEqual (Some seqA, getKeySequence b modeKeyTriple)
+
+        let  result = unmapKey b (Some Scope.  buffer  ) modeKeyTriple
+
+        Assert.IsTrue   (Result.isOk result)
+        Assert.AreEqual (Some seqA, getKeySequence b modeKeyTriple)
+
+        let  result = unmapKey b (Some Scope.``global``) modeKeyTriple
+
+        Assert.IsTrue   (Result.isOk result)
+        Assert.AreEqual (None     , getKeySequence b modeKeyTriple)
+
+        let  result = unmapKey b (Some Scope.``global``) modeKeyTriple
+
+        Assert.IsTrue   (Result.isOk result)
+        Assert.AreEqual (None     , getKeySequence b modeKeyTriple)
+
+    [<Test>]
+    member _.unmapKey_2 () =
+        let b = makeKeyMappings ()
+
+        let _result = mapKey   b (Some Scope.``global``) modeKeyTriple seqA
+        let _result = mapKey   b (Some Scope.  buffer  ) modeKeyTriple seqB
+
+        let  result = unmapKey b (Some Scope.``global``) modeKeyTriple
+
+        Assert.IsTrue   (Result.isOk result)
+        Assert.AreEqual (None     , getKeySequence b modeKeyTriple)
+
+        let  result = unmapKey b (Some Scope.``global``) modeKeyTriple
+
+        Assert.IsTrue   (Result.isOk result)
+        Assert.AreEqual (None     , getKeySequence b modeKeyTriple)
+
+        let  result = unmapKey b (Some Scope.  buffer  ) modeKeyTriple
+
+        Assert.IsTrue   (Result.isOk result)
+        Assert.AreEqual (None     , getKeySequence b modeKeyTriple)
+
+        let  result = unmapKey b (Some Scope.  buffer  ) modeKeyTriple
+
+        Assert.IsTrue   (Result.isOk result)
+        Assert.AreEqual (None     , getKeySequence b modeKeyTriple)
+
+    // setValue, unsetValue - default scope ------------------------------------
+
+    [<Test>]
+    member _.mapKey_defaultScope_buffer () =
+        let b = makeKeyMappings ()
+
+        Assert.AreEqual (None     , getKeySequence b modeKeyTriple)
+
+        let result = mapKey   b None                   modeKeyTriple seqA
+
+        Assert.IsTrue   (Result.isOk result)
+        Assert.AreEqual (Some seqA, getKeySequence b modeKeyTriple)
+
+        let result = unmapKey b (Some Scope.  buffer  ) modeKeyTriple
+
+        Assert.IsTrue   (Result.isOk result)
+        Assert.AreEqual (None     , getKeySequence b modeKeyTriple)
+
+    [<Test>]
+    member _.unmapKey_defaultScope_buffer () =
+        let b = makeKeyMappings ()
+
+        Assert.AreEqual (None     , getKeySequence b modeKeyTriple)
+
+        let result = mapKey   b (Some Scope.  buffer  ) modeKeyTriple seqA
+
+        Assert.IsTrue   (Result.isOk result)
+        Assert.AreEqual (Some seqA, getKeySequence b modeKeyTriple)
+
+        let result = unmapKey b None                    modeKeyTriple
+
+        Assert.IsTrue   (Result.isOk result)
+        Assert.AreEqual (None     , getKeySequence b modeKeyTriple)
+
+    [<Test>]
+    member _.mapKey_defaultScope_extract () =
+        let b = makeExtractKeyMappings ()
+
+        Assert.AreEqual (None     , getKeySequence b modeKeyTriple)
+
+        let result = mapKey   b None                    modeKeyTriple seqA
+
+        Assert.IsTrue   (Result.isOk result)
+        Assert.AreEqual (Some seqA, getKeySequence b modeKeyTriple)
+
+        let result = unmapKey b (Some Scope.  extract ) modeKeyTriple
+
+        Assert.IsTrue   (Result.isOk result)
+        Assert.AreEqual (None     , getKeySequence b modeKeyTriple)
+
+    [<Test>]
+    member _.unmaptKey_defaultScope_extract () =
+        let b = makeExtractKeyMappings ()
+
+        Assert.AreEqual (None     , getKeySequence b modeKeyTriple)
+
+        let result = mapKey   b (Some Scope.  extract ) modeKeyTriple seqA
+
+        Assert.IsTrue   (Result.isOk result)
+        Assert.AreEqual (Some seqA, getKeySequence b modeKeyTriple)
+
+        let result = unmapKey b None                    modeKeyTriple
+
+        Assert.IsTrue   (Result.isOk result)
+        Assert.AreEqual (None     , getKeySequence b modeKeyTriple)

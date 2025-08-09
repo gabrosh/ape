@@ -245,7 +245,7 @@ let private setValueAux settings scope name value isFixed =
 
 /// Unsets the setting with given name up to given scope.
 /// Sets value of the setting with given name in given scope.
-/// Returns error message in the case of an invalid value
+/// Returns error message in the case of an invalid scope, name or value
 /// or if the current value of the setting is fixed.
 /// If scope = None, the most local scope is assumed.
 let setValue settings scope name value =
@@ -253,7 +253,7 @@ let setValue settings scope name value =
 
 /// Unsets the setting with given name up to given scope.
 /// Sets value of the setting with given name in given scope as fixed.
-/// Returns error message in the case of an invalid value
+/// Returns error message in the case of an invalid scope, name or value
 /// or if the current value of the setting is fixed.
 /// If scope = None, the most local scope is assumed.
 let setValueAsFixed settings scope name value =
@@ -271,7 +271,8 @@ let rec private unsetValueRec settings scope name =
             invalidOp "Can't go beyond default scope"
 
 /// Unsets the setting with given name up to given scope.
-/// Returns error message if the current value of the setting is fixed.
+/// Returns error message in the case of an invalid scope or name
+/// or if the current value of the setting is fixed.
 /// If scope = None, the most local scope is assumed.
 let unsetValue settings scope name =
     let scope = scope |> Option.defaultValue settings.scope

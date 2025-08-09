@@ -72,7 +72,7 @@ type BuffersRegistry (
       =
         let bufferSettings = Settings.makeBufferExtractSettings parentSettings
 
-        let bufferKeyMappings = KeyMappings.makeBufferKeyMappings myGlobalKeyMappings
+        let bufferKeyMappings = KeyMappings.makeBufferExtractKeyMappings myGlobalKeyMappings
 
         let mainContextRef = WrappedRef (makeMainContext myContextRef.Value bufferSettings)
 

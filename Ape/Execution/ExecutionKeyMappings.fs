@@ -12,9 +12,9 @@ let private executeKeyMappingsCommand context (argsMap: ArgsMap) f =
     let scopeResult =
         match scopeString with
         | Some x ->
-            KeyMappings.parseScope x
+            KeyMappings.parseScope x |> Result.map Some
         | None   ->
-            Ok KeyMappings.Scope.buffer
+            Ok None
 
     let modeResult =
         match modeString with
@@ -49,7 +49,11 @@ let execute_map context (argsMap: ArgsMap) =
 
             match keySeq with
             | Ok keySeq ->
-                KeyMappings.mapKey keyMappings scope modeKeyTriple keySeq
+                match KeyMappings.mapKey keyMappings scope modeKeyTriple keySeq with
+                | Ok ()   ->
+                    ()
+                | Error e ->
+                    context.userMessages.RegisterMessage (makeErrorMessage e)
             | Error e   ->
                 context.userMessages.RegisterMessage (makeErrorMessage e)
     )
@@ -65,7 +69,11 @@ let execute_unmap context (argsMap: ArgsMap) =
 
     executeKeyMappingsCommand context argsMap (
         fun scope modeKeyTriple ->
-            KeyMappings.unmapKey keyMappings scope modeKeyTriple
+            match KeyMappings.unmapKey keyMappings scope modeKeyTriple with
+            | Ok ()   ->
+                ()
+            | Error e ->
+                context.userMessages.RegisterMessage (makeErrorMessage e)
     )
 
     false
