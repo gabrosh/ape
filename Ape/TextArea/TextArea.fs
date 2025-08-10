@@ -541,14 +541,14 @@ type TextArea (
         | Error e ->
             myUserMessages.RegisterMessage (makeErrorMessage e)
 
-    member this.ViewFile filePath encoding strictEncoding =
+    member this.ViewFile filePath encoding strictEncoding quite =
         myBuffers.AddTextAreaBuffer filePath
         applyBufferSwitch ()
         let result = this.SetBufferSettingsAux encoding strictEncoding (Some "true")
 
         match result with
         | Ok ()   ->
-            this.LoadTextAreaBuffer (myBuffer :?> TextAreaBuffer) false
+            this.LoadTextAreaBuffer (myBuffer :?> TextAreaBuffer) quite
         | Error e ->
             myUserMessages.RegisterMessage (makeErrorMessage e)
 

@@ -36,7 +36,7 @@ let execute_help context (_argsMap: ArgsMap) =
             formatMessage WARNING_BUFFER_ALREADY_OPENED filePath
         )
     else
-        context.textArea.ViewFile filePath None (Some "true")
+        context.textArea.ViewFile filePath None (Some "true") false
 
     false
 
@@ -150,7 +150,7 @@ let private command_viewAux quite context (argsMap: ArgsMap) =
                 formatMessage WARNING_BUFFER_ALREADY_OPENED filePath
             )
     else
-        context.textArea.ViewFile filePath encoding strictEncoding
+        context.textArea.ViewFile filePath encoding strictEncoding quite
 
     false
 
