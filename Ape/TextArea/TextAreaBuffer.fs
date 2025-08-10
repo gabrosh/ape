@@ -347,56 +347,70 @@ type TextAreaBuffer (
             this.ResetState ()
             this.ResetUndoState ()
 
-    member this.LoadFile encoding strictEncoding quite =
-        myLines.Clear ()
+    member this.LoadFile encoding strictEncoding =
+        match this.OpenFileForReading encoding with
+        | Ok stream' ->
+            use stream = stream'
 
-        let reloadFileParams = None
-
-        try
-            let fileFormat, endsWithNewLine, reloadFileParams' =
-                this.LoadFileAux encoding strictEncoding quite reloadFileParams
-
-            TestMines.checkMine (nameof this.LoadFile)
-
-            myReloadFileParams <- reloadFileParams'
-
-            (fileFormat, endsWithNewLine)
-        finally
-            this.AssureNonZeroLinesCount ()
-            this.ResetState ()
-            this.ResetUndoState ()
-
-    member this.ReloadFile encoding strictEncoding warnIfNoMatchFound =
-        let cursor      = this.Main.Cursor
-        let cursorWC    = this.Main.CursorWC
-        let displayLine = this.DisplayPos.line
-
-        if not myContext.reloadAsLogFile then
             myLines.Clear ()
 
-        let reloadFileParams =
-            if myContext.reloadAsLogFile then
-                myReloadFileParams
-            else
-                None
+            let reloadFileParams = None
 
-        try
-            let fileFormat, endsWithNewLine, reloadFileParams' =
-                this.LoadFileAux encoding strictEncoding false reloadFileParams
+            try
+                let fileFormat, endsWithNewLine, reloadFileParams' =
+                    this.LoadFileAux stream strictEncoding reloadFileParams
 
-            TestMines.checkMine (nameof this.ReloadFile)
+                TestMines.checkMine (nameof this.LoadFile)
 
-            myReloadFileParams <- reloadFileParams'
+                myReloadFileParams <- reloadFileParams'
 
-            (fileFormat, endsWithNewLine)
-        finally
-            this.AssureNonZeroLinesCount ()
+                Ok (fileFormat, endsWithNewLine)
+            finally
+                this.AssureNonZeroLinesCount ()
+                this.ResetState ()
+                this.ResetUndoState ()
 
-            myMatchRanges.RunWithSetWarnIfNoMatchFound warnIfNoMatchFound (
-                fun () -> this.ResetStateAfterReload cursor cursorWC displayLine
-            )
+        | Error e ->
+            Error e
 
-            this.ResetUndoState ()
+    member this.ReloadFile encoding strictEncoding warnIfNoMatchFound =
+        match this.OpenFileForReading encoding with
+        | Ok stream' ->
+            use stream = stream'
+
+            let cursor      = this.Main.Cursor
+            let cursorWC    = this.Main.CursorWC
+            let displayLine = this.DisplayPos.line
+
+            if not myContext.reloadAsLogFile then
+                myLines.Clear ()
+
+            let reloadFileParams =
+                if myContext.reloadAsLogFile then
+                    myReloadFileParams
+                else
+                    None
+
+            try
+                let fileFormat, endsWithNewLine, reloadFileParams' =
+                    this.LoadFileAux stream strictEncoding reloadFileParams
+
+                TestMines.checkMine (nameof this.ReloadFile)
+
+                myReloadFileParams <- reloadFileParams'
+
+                Ok (fileFormat, endsWithNewLine)
+            finally
+                this.AssureNonZeroLinesCount ()
+
+                myMatchRanges.RunWithSetWarnIfNoMatchFound warnIfNoMatchFound (
+                    fun () -> this.ResetStateAfterReload cursor cursorWC displayLine
+                )
+
+                this.ResetUndoState ()
+
+        | Error e ->
+            Error e
 
     member this.WriteFile encoding fileFormat endWithNewLine =
         FileUtils.writeFile this.FilePath encoding fileFormat endWithNewLine myLines
@@ -411,37 +425,29 @@ type TextAreaBuffer (
         for line in lines do
             result.Add (stringToChars line)
 
-    member private this.LoadFileAux encoding strictEncoding quite reloadFileParams =
+    member private this.OpenFileForReading encoding =
         try
-            let result = FileUtils.readFile this.FilePath encoding reloadFileParams myLines
-
-            if strictEncoding then
-                match result with
-                | _, _, Some reloadFileParams' ->
-                    if reloadFileParams'.nonTranslatableBytes then
-                        myUserMessages.RegisterMessage (
-                            UserMessages.formatMessage WARNING_NON_TRANSLATABLE_BYTES this.FilePath
-                        )
-                | _ ->
-                    ()
-
-            result
+            Ok (FileUtils.openFileForReading this.FilePath encoding)
         with
         | :? System.IO.DirectoryNotFoundException as ex ->
-            if not quite then
-                myUserMessages.RegisterMessage (
-                    UserMessages.makeWarningMessage ex.Message
-                )
-
-            (FileUtils.FileFormat.dos, true, None)
-
+            Error ex.Message
         | :? System.IO.FileNotFoundException as ex ->
-            if not quite then
-                myUserMessages.RegisterMessage (
-                    UserMessages.makeWarningMessage ex.Message
-                )
+            Error ex.Message
 
-            (FileUtils.FileFormat.dos, true, None)
+    member private this.LoadFileAux stream strictEncoding reloadFileParams =
+        let result = FileUtils.readFile stream reloadFileParams myLines
+
+        if strictEncoding then
+            match result with
+            | _, _, Some reloadFileParams' ->
+                if reloadFileParams'.nonTranslatableBytes then
+                    myUserMessages.RegisterMessage (
+                        UserMessages.formatMessage WARNING_NON_TRANSLATABLE_BYTES this.FilePath
+                    )
+            | _ ->
+                ()
+
+        result
 
     member private _.AssureNonZeroLinesCount () =
         if myLines.Count = 0 then

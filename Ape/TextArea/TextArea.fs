@@ -536,8 +536,10 @@ type TextArea (
         let result = this.SetBufferSettingsAux encoding strictEncoding (Some "false")
 
         match result with
-        | Error e -> myUserMessages.RegisterMessage (makeErrorMessage e)
-        | Ok ()   -> this.LoadFileAux quite
+        | Ok ()   ->
+            this.LoadTextAreaBuffer (myBuffer :?> TextAreaBuffer) quite
+        | Error e ->
+            myUserMessages.RegisterMessage (makeErrorMessage e)
 
     member this.ViewFile filePath encoding strictEncoding =
         myBuffers.AddTextAreaBuffer filePath
@@ -545,8 +547,10 @@ type TextArea (
         let result = this.SetBufferSettingsAux encoding strictEncoding (Some "true")
 
         match result with
-        | Error e -> myUserMessages.RegisterMessage (makeErrorMessage e)
-        | Ok ()   -> this.LoadFileAux false
+        | Ok ()   ->
+            this.LoadTextAreaBuffer (myBuffer :?> TextAreaBuffer) false
+        | Error e ->
+            myUserMessages.RegisterMessage (makeErrorMessage e)
 
     member this.EditOrViewFile filePath encoding strictEncoding isReadOnly =
         myBuffer.FilePath <- filePath
@@ -554,36 +558,60 @@ type TextArea (
         let result = this.SetBufferSettingsAux encoding strictEncoding isReadOnly
 
         match result with
-        | Error e -> myUserMessages.RegisterMessage (makeErrorMessage e)
-        | Ok ()   -> this.LoadFileAux false
+        | Ok ()   ->
+            this.LoadTextAreaBuffer (myBuffer :?> TextAreaBuffer) false
+        | Error e ->
+            myUserMessages.RegisterMessage (makeErrorMessage e)
+
+    member private this.LoadTextAreaBuffer buffer quite =
+        match this.LoadFileAux buffer with
+        | Ok () ->
+            ()
+        | Error e ->
+            if not quite then
+                myUserMessages.RegisterMessage (
+                    UserMessages.makeWarningMessage e
+                )
+
+    /// Loads file to given TextAreaBuffer.
+    member private this.LoadFileAux (buffer: TextAreaBuffer)  =
+        let settings = myBuffers.GetBufferSettings buffer
+
+        let encoding       = getValueString settings Name.encoding
+        let strictEncoding = getValueBool   settings Name.strictEncoding
+
+        match buffer.LoadFile encoding strictEncoding with
+        | Ok (fileFormat, endsWithNewLine) ->
+            let newLineAtEof = if isSingleEmptyLine this.Lines then true else endsWithNewLine
+
+            let fileFormat   = valueToString (FileFormat fileFormat)
+            let newLineAtEof = valueToString (Bool newLineAtEof)
+
+            setValue settings (Some Scope.buffer) Name.fileFormat fileFormat
+                |> ignore
+            setValue settings (Some Scope.buffer) Name.newLineAtEof newLineAtEof
+                |> ignore
+
+            Ok ()
+
+        | Error e ->
+            Error e
 
     member this.ExtractFile filePath =
         match myBuffer with
-        :? TextAreaBuffer as parentBuffer ->
+        | :? TextAreaBuffer as parentBuffer ->
             myBuffers.AddTextAreaBufferExtract
                 parentBuffer this.CurrentSettings filePath true
             applyBufferSwitch ()
-            this.SetExtractBufferSettings () |> ignore
+            let result = this.SetExtractBufferSettings ()
+
+            match result with
+            | Ok ()   ->
+                ()
+            | Error e ->
+                myUserMessages.RegisterMessage (makeErrorMessage e)
         | _ ->
             myUserMessages.RegisterMessage ERROR_OP_INVALID_ON_EXTRACT_BUFFER
-
-    member private this.LoadFileAux quite =
-        let encoding       = getValueString this.CurrentSettings Name.encoding
-        let strictEncoding = getValueBool   this.CurrentSettings Name.strictEncoding
-
-        // It's definitely an instance of TextAreaBuffer.
-        let buffer = myBuffer :?> TextAreaBuffer
-
-        let fileFormat, endsWithNewLine = buffer.LoadFile encoding strictEncoding quite
-        let newLineAtEof = if isSingleEmptyLine this.Lines then true else endsWithNewLine
-
-        let fileFormat   = valueToString (FileFormat fileFormat)
-        let newLineAtEof = valueToString (Bool newLineAtEof)
-
-        setValue this.CurrentSettings (Some Scope.buffer) Name.fileFormat fileFormat
-            |> ignore
-        setValue this.CurrentSettings (Some Scope.buffer) Name.newLineAtEof newLineAtEof
-            |> ignore
 
     member this.ReloadFile () =
         match myBuffer with
@@ -593,31 +621,48 @@ type TextArea (
             this.ReloadTextAreaBufferExtract buffer
         | _ ->
             invalidOp ""
-            
+
     member private this.ReloadTextAreaBuffer buffer =
-        this.ReloadTextAreaBufferAux buffer true
+        match this.ReloadFileAux buffer true with
+        | Ok () ->
+            ()
+        | Error e ->
+            myUserMessages.RegisterMessage (
+                UserMessages.makeWarningMessage e
+            )
 
     member private this.ReloadTextAreaBufferExtract buffer =
-        this.ReloadTextAreaBufferAux buffer.Parent false
+        match this.ReloadFileAux buffer.Parent false with
+        | Ok () ->
+            buffer.ReloadFile ()
+        | Error e ->
+            myUserMessages.RegisterMessage (
+                UserMessages.makeWarningMessage e
+            )
 
-        buffer.ReloadFile ()
-
-    member private _.ReloadTextAreaBufferAux buffer warnIfNoMatchFound =
+    /// Reloads file to given TextAreaBuffer.
+    member private _.ReloadFileAux (buffer: TextAreaBuffer) warnIfNoMatchFound =
         let settings = myBuffers.GetBufferSettings buffer
 
         let encoding       = getValueString settings Name.encoding
         let strictEncoding = getValueBool   settings Name.strictEncoding
 
-        let fileFormat, endsWithNewLine = buffer.ReloadFile encoding strictEncoding warnIfNoMatchFound
-        let newLineAtEof = if isSingleEmptyLine buffer.Lines then true else endsWithNewLine
+        match buffer.ReloadFile encoding strictEncoding warnIfNoMatchFound with
+        | Ok (fileFormat, endsWithNewLine) ->
+            let newLineAtEof = if isSingleEmptyLine buffer.Lines then true else endsWithNewLine
 
-        let fileFormat   = valueToString (FileFormat fileFormat)
-        let newLineAtEof = valueToString (Bool newLineAtEof)
+            let fileFormat   = valueToString (FileFormat fileFormat)
+            let newLineAtEof = valueToString (Bool newLineAtEof)
 
-        setValue settings (Some Scope.buffer) Name.fileFormat fileFormat
-            |> ignore
-        setValue settings (Some Scope.buffer) Name.newLineAtEof newLineAtEof
-            |> ignore
+            setValue settings (Some Scope.buffer) Name.fileFormat fileFormat
+                |> ignore
+            setValue settings (Some Scope.buffer) Name.newLineAtEof newLineAtEof
+                |> ignore
+
+            Ok ()
+
+        | Error e ->
+            Error e
 
     member this.WriteFile () =
         let readOnly     = getValueBool       this.CurrentSettings Name.readOnly

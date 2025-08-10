@@ -9,6 +9,7 @@ open FileUtils
 open Registers
 open TextAreaBuffer
 open UserMessages
+open Utils
 
 let contextRef = TestUtils.makeContextRef 80 25
 
@@ -82,7 +83,7 @@ type LoadFileTest () =
 
         writeChars fileContent
 
-        let fileFormat, endsWithNewLine = myBuffer.LoadFile "utf-8" true false
+        let fileFormat, endsWithNewLine = myBuffer.LoadFile "utf-8" true |> resultGet
 
         assertLines  [|"a"; "b"; "c"|]
         assertFormat expFileFormat fileFormat
@@ -94,7 +95,7 @@ type LoadFileTest () =
 
         writeChars fileContent
 
-        let fileFormat, endsWithNewLine = myBuffer.LoadFile "utf-8" true false
+        let fileFormat, endsWithNewLine = myBuffer.LoadFile "utf-8" true |> resultGet
 
         assertLines  [|"a"; ""; "b"; "c"|]
         assertFormat expFileFormat fileFormat
@@ -107,7 +108,7 @@ type LoadFileTest () =
 
         writeCharsLatin1 fileContent
 
-        let _fileFormat, _endsWithNewLine = myBuffer.LoadFile "utf-8" true false
+        let _fileFormat, _endsWithNewLine = myBuffer.LoadFile "utf-8" true |> resultGet
 
         assertLines [| expLine |]
         assertNonTranslatableByes expNonTranslatable

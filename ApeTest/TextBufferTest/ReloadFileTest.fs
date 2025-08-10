@@ -9,6 +9,7 @@ open FileUtils
 open Registers
 open TextAreaBuffer
 open UserMessages
+open Utils
 
 let contextRef = TestUtils.makeContextRef 80 25
 
@@ -101,7 +102,7 @@ type ReloadFileTest () =
 
         writeChars fileContent1
 
-        let fileFormat, endsWithNewLine = myBuffer.LoadFile "utf-8" true false
+        let fileFormat, endsWithNewLine = myBuffer.LoadFile "utf-8" true |> resultGet
 
         assertLines  [|"a"|]
         assertFormat expFileFormat1 fileFormat
@@ -109,7 +110,7 @@ type ReloadFileTest () =
 
         writeChars (fileContent1 + fileContent2)
 
-        let fileFormat, endsWithNewLine = myBuffer.ReloadFile "utf-8" true true
+        let fileFormat, endsWithNewLine = myBuffer.ReloadFile "utf-8" true true |> resultGet
 
         assertLines  [|"a"; "b"|]
         assertFormat expFileFormat2 fileFormat
@@ -125,7 +126,7 @@ type ReloadFileTest () =
 
         writeChars fileContent1
 
-        let fileFormat, endsWithNewLine = myBuffer.LoadFile "utf-8" true false
+        let fileFormat, endsWithNewLine = myBuffer.LoadFile "utf-8" true |> resultGet
 
         assertLines  [|"a"|]
         assertFormat expFileFormat1 fileFormat
@@ -133,7 +134,7 @@ type ReloadFileTest () =
 
         writeChars (fileContent1 + fileContent2)
 
-        let fileFormat, endsWithNewLine = myBuffer.ReloadFile "utf-8" true true
+        let fileFormat, endsWithNewLine = myBuffer.ReloadFile "utf-8" true true |> resultGet
 
         assertLines  [|"a"; ""; "b"|]
         assertFormat expFileFormat2 fileFormat
@@ -151,14 +152,14 @@ type ReloadFileTest () =
 
         writeCharsLatin1 fileContent1
 
-        let _fileFormat, _endsWithNewLine = myBuffer.LoadFile "utf-8" true false
+        let _fileFormat, _endsWithNewLine = myBuffer.LoadFile "utf-8" true |> resultGet
 
         assertLines [| expLine1 |]
         assertNonTranslatableByes expNonTrans1
 
         writeCharsLatin1 (fileContent1 + fileContent2)
 
-        let _fileFormat, _endsWithNewLine = myBuffer.ReloadFile "utf-8" true true
+        let _fileFormat, _endsWithNewLine = myBuffer.ReloadFile "utf-8" true true |> resultGet
 
         assertLines [| expLine1 + expLine2 |]
         assertNonTranslatableByes expNonTrans2

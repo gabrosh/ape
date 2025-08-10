@@ -55,7 +55,7 @@ type WrapLinesOnFileTest () =
 
     [<OneTimeSetUp>]
     member _.OneTimeSetup () =
-        myBuffer.LoadFile FileUtils.defaultEncoding true false
+        myBuffer.LoadFile FileUtils.defaultEncoding true
             |> ignore
 
     // teardown

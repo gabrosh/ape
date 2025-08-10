@@ -222,17 +222,19 @@ let private readFileAux
 
     (fileFormat, endsWithNewLine, Some reloadFileParams)
 
-/// Appends content of given file to lines, taking into account reloadFileParams
+/// Opens given file with encoding for reading and returns it as a StreamReader.
+let openFileForReading (filePath: string) (encoding: string) =
+    new IO.StreamReader (
+        filePath, getEncoding encoding false, true, getReadOptions ()
+    )
+
+/// Appends content of given stream to lines, taking into account reloadFileParams
 /// if provided. In that case it assumes that lines is not empty, and the last line
 /// may be extended based on reloadFileParams and read input.
 let readFile
-    (filePath: string) (encoding: string)
+    (stream: IO.StreamReader)
     (reloadFileParams: ReloadFileParams option)
     (lines: Lines) =
-
-    use stream = new IO.StreamReader (
-        filePath, getEncoding encoding false, true, getReadOptions ()
-    )
 
     match reloadFileParams with
     | Some reloadFileParams ->
