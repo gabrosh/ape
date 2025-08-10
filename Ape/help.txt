@@ -328,7 +328,7 @@ view           v      [[strictEncoding] encoding] filePath
                                                  open file for viewing
 view!          v      [[strictEncoding] encoding] filePath
                                                  open file for viewing, suppressing warnings
-                                                 (buffer already opened)
+                                                 (buffer already opened, directory not found, file not found)
 reload         r                                 reload file
 reload!        r!                                reload file, suppressing warnings
                                                  (no write since last change)
