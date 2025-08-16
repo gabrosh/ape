@@ -96,7 +96,7 @@ let darkScheme = {
                          { fg = black    ; bg = green      }
                          { fg = black    ; bg = blue       }
                          { fg = black    ; bg = red        }
-                         { fg = darkRed  ; bg = green      }
+                         { fg = white    ; bg = green      }
                          { fg = white    ; bg = blue       }
                          { fg = white    ; bg = red        }
                          |]
@@ -131,7 +131,7 @@ let lightColorScheme = {
                          { fg = black    ; bg = green      }
                          { fg = black    ; bg = blue       }
                          { fg = black    ; bg = red        }
-                         { fg = darkRed  ; bg = green      }
+                         { fg = white    ; bg = green      }
                          { fg = white    ; bg = blue       }
                          { fg = white    ; bg = red        }
                          |]
