@@ -33,12 +33,16 @@ let getColorIndex (s: string) =
     else
         let c = s[0]
 
-        let delta =
-            if   'A' <= c && c <= 'Z' then int (c - 'A')
-            elif 'a' <= c && c <= 'z' then int (c - 'a')
-            else invalidOp "Invalid group name"
+        let setSize = Colors.coloredSetSize
 
-        delta % Colors.colorGroupsCount + 1
+        if   'a' <= c && c <= 'z' then
+            let indexInSet = int (c - 'a') % setSize
+            1 + 0 * setSize + indexInSet
+        elif 'A' <= c && c <= 'Z' then
+            let indexInSet = int (c - 'A') % setSize
+            1 + 1 * setSize + indexInSet
+        else
+            invalidOp "Invalid group name"
 
 /// Standard match timeout
 let private matchTimeout = 10  // seconds

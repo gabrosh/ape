@@ -70,13 +70,15 @@ let private darkMagenta = Color.DarkMagenta
 let private darkYellow  = Color.DarkYellow
 
 /// Color index of the main group.
-let mainGroupColor = 0
+let mainGroupColor   = 0
 
-/// Count of supported colored groups. Must equal Scheme.matches.Length - 1.
-let colorGroupsCount = 3
+/// Count of colored groups in one set.
+let coloredSetSize   = 3
+/// Count of sets of colored groups.
+let coloredSetsCount = 2
 
 let private checkMatches (matches: CharColors array) =
-    if matches.Length <> 1 + colorGroupsCount then
+    if matches.Length <> 1 + coloredSetsCount * coloredSetSize then
         invalidOp "Wrong match colors count"
     else
         matches
@@ -94,6 +96,9 @@ let darkScheme = {
                          { fg = black    ; bg = green      }
                          { fg = black    ; bg = blue       }
                          { fg = black    ; bg = red        }
+                         { fg = darkRed  ; bg = green      }
+                         { fg = white    ; bg = blue       }
+                         { fg = white    ; bg = red        }
                          |]
 
     mainCursor         = { fg = black    ; bg = white      }
@@ -126,6 +131,9 @@ let lightColorScheme = {
                          { fg = black    ; bg = green      }
                          { fg = black    ; bg = blue       }
                          { fg = black    ; bg = red        }
+                         { fg = darkRed  ; bg = green      }
+                         { fg = white    ; bg = blue       }
+                         { fg = white    ; bg = red        }
                          |]
 
     mainCursor         = { fg = white    ; bg = darkGray   }
