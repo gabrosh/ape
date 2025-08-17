@@ -761,6 +761,20 @@ type TextArea (
         myBuffers.ToPrevBuffer ()
         applyBufferSwitch ()
 
+    member _.ToFirstBuffer () =
+        myBuffers.ToFirstBuffer ()
+        applyBufferSwitch ()
+
+    member _.ToLastBuffer () =
+        myBuffers.ToLastBuffer ()
+        applyBufferSwitch ()
+
+    member _.BufferToBegin () =
+        myBuffers.BufferToBegin ()
+
+    member _.BufferToEnd () =
+        myBuffers.BufferToEnd ()
+
     member _.IsAnyBufferChanged () =
         myBuffers.IsAnyBufferChanged ()
 

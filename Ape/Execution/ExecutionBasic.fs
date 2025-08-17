@@ -224,18 +224,41 @@ let argsMapSpec_bufferDeleteBang = argsMapSpec_bufferDeleteAux
 let execute_bufferDelete     = command_bufferDeleteAux false
 let execute_bufferDeleteBang = command_bufferDeleteAux true
 
-// bufferNext
+// bufferNext, bufferPrev
 
 let argsMapSpec_bufferNext: ArgsMapSpec = (0, [| |])
+let argsMapSpec_bufferPrev: ArgsMapSpec = (0, [| |])
 
 let execute_bufferNext context (_argsMap: ArgsMap) =
     context.textArea.ToNextBuffer ()
     false
 
-// bufferPrev
-
-let argsMapSpec_bufferPrev: ArgsMapSpec = (0, [| |])
-
 let execute_bufferPrev context (_argsMap: ArgsMap) =
     context.textArea.ToPrevBuffer ()
+    false
+
+// bufferFirst, bufferLast
+
+let argsMapSpec_bufferFirst: ArgsMapSpec = (0, [| |])
+let argsMapSpec_bufferLast:  ArgsMapSpec = (0, [| |])
+
+let execute_bufferFirst context (_argsMap: ArgsMap) =
+    context.textArea.ToFirstBuffer ()
+    false
+
+let execute_bufferLast context (_argsMap: ArgsMap) =
+    context.textArea.ToLastBuffer ()
+    false
+
+// bufferBegin, bufferEnd
+
+let argsMapSpec_bufferBegin: ArgsMapSpec = (0, [| |])
+let argsMapSpec_bufferEnd:   ArgsMapSpec = (0, [| |])
+
+let execute_bufferBegin context (_argsMap: ArgsMap) =
+    context.textArea.BufferToBegin ()
+    false
+
+let execute_bufferEnd context (_argsMap: ArgsMap) =
+    context.textArea.BufferToEnd ()
     false

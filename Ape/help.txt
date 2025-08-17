@@ -60,7 +60,8 @@ In Search, Select, Keep and Discard prompts, .NET regular expressions are used.
 Multiline regular expressions specified by (?m) option are supported with a reasonable
 limit as to the count of lines held in the processing buffer.
 In Search, named groups (?<name>...) and (?'name'...) are colored by distinct colors
-according to the first character of group's name.
+according to the first letter of group's name. Colors for a lowercase letter differ
+from those for the corresponding uppercase letter.
 
 
 Normal mode - enter Insert mode:
@@ -339,6 +340,10 @@ bufferDelete!  bd!                               delete buffer, suppressing warn
                                                  (no write since last change)
 bufferNext     bn                                switch to the next buffer
 bufferPrev     bp                                switch to the previous buffer
+bufferFirst    bf                                switch to the first buffer
+bufferLast     bl                                switch to the last buffer
+bufferBegin    bb                                move current buffer to the beginning of the buffers list
+bufferEnd      be                                move current buffer to the end of the buffers list
 set            s      [scope] name value         set setting's value (default scope is "buffer")
 unset          us     [scope] name               unset setting's value (default scope is "buffer")
 get            g      name                       display setting's value in all scopes

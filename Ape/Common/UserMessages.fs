@@ -47,6 +47,10 @@ let INFO_BACK_AT_FIRST_BUFFER =
     InfoMessage    , "Back at the first buffer."
 let INFO_BACK_AT_LAST_BUFFER =
     InfoMessage    , "Back at the last buffer."
+let INFO_ALREADY_AT_FIRST_BUFFER =
+    InfoMessage    , "Already at the first buffer."
+let INFO_ALREADY_AT_LAST_BUFFER =
+    InfoMessage    , "Already at the last buffer."
 
 let INFO_ROTATION_HIT_BOTTOM =
     InfoMessage    , "Rotation hit bottom, continuing at top."
