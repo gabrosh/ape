@@ -17,7 +17,7 @@ It's intended to be used as a Swiss knife for structural text editing and log or
 - Command prompt with its own history
 - Multiple regex prompts with a shared history - "search", "extract", "select", "keep" and "discard"
 - Single-line and multiple-lines regex search
-- Coloring of named groups for "search"
+- Coloring of named groups for "search" and "extract"
 - Simple word (identificator) completion in Insert mode and regex prompts
 - Command name and command arguments completion in command prompt
 - Macro recording and editing
