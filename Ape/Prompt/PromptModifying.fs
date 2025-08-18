@@ -7,10 +7,12 @@ open DataTypes
 open Position
 open Selection
 open TextRangesModifier
+open UserMessages
 
 open ModifyingPerformer
 
 type PromptModifying (
+    myUserMessages: UserMessages,
     inBasicState:   BasicState,
     myLines:        Lines,
     myRegisters:    Registers.Registers,
@@ -118,6 +120,8 @@ type PromptModifying (
                 // Reposition cursor and anchor corresponding to non-empty slot.
                 if lines <> None then
                     this.DelegateCommonCommand (CursorAfterSelection false)
+        else
+            myUserMessages.RegisterMessage ERROR_CONTENT_NOT_PASTABLE_TO_PROMPT
 
     member private this.PerformPasteAfterCommand delegateFun register =
         let lines = myRegisters.GetSlot register 0
@@ -137,6 +141,8 @@ type PromptModifying (
                 this.DelegateCommonCommand CursorAtEol
 
                 this.PerformPasteBeforeCommandAux delegateFun register
+        else
+            myUserMessages.RegisterMessage ERROR_CONTENT_NOT_PASTABLE_TO_PROMPT
 
     member private this.PerformReplaceCommand delegateFun register =
         let lines = myRegisters.GetSlot register 0
@@ -145,6 +151,8 @@ type PromptModifying (
             this.PerformDeleteCommand delegateFun
 
             this.PerformPasteBeforeCommandAux delegateFun register
+        else
+            myUserMessages.RegisterMessage ERROR_CONTENT_NOT_PASTABLE_TO_PROMPT
 
     member private this.PerformPasteBeforeCommandAux delegateFun register =
         this.StartApplyingModifications ()

@@ -83,6 +83,7 @@ type PromptBuffer (
         myDispatcher
     )
     let myModifyingDelegator = PromptDelegators.PromptModifying (
+        inUserMessages,
         myBasicState,
         myLines,
         myRegisters,

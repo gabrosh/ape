@@ -45,7 +45,8 @@ The default register is ", the operating system's clipboard register is '.
 For commands that store selections into register, uppercase register name causes
 the selections to be appended to the register slots. For commands that load content
 from register, uppercase register name causes each of the register slots to give
-the same content - the contents of all register slots joined together.
+the same content - the contents of all register slots joined together using new line
+character.
 
 Symbol registers are treated as uppercase when prefixed with " instead of '.
 

@@ -59,10 +59,15 @@ let INFO_ROTATION_HIT_TOP =
 let ERROR_SELECTIONS_REGISTER_IS_EMPTY =
     ErrorMessage   , "Selections register is empty: '{0}'"
 
+let ERROR_CONTENT_NOT_PASTABLE_TO_PROMPT =
+    ErrorMessage   , "Content not pastable to prompt."
 let ERROR_INVALID_REGISTER_NAME =
     ErrorMessage   , "Invalid register name: '{0}'"
 let ERROR_EMPTY_REGISTER_VALUE =
     ErrorMessage   , "Empty register value: '{0}'"
+
+let WARNING_MATCH_LINES_COUNT_LIMIT_EXCEEDED =
+    WarningMessage , "Match lines count limit exceeded."
 
 let ERROR_NOTHING_TO_SEARCH_FOR =
     ErrorMessage   , "Nothing to search for."
@@ -72,9 +77,6 @@ let INFO_NO_SELECTIONS_DISCARDED =
     InfoMessage    , "No selections discarded."
 let WARNING_ALL_SELECTIONS_DISCARDED =
     WarningMessage , "All selections discarded."
-
-let WARNING_MATCH_LINES_COUNT_LIMIT_EXCEEDED =
-    WarningMessage , "Match lines count limit exceeded."
 
 let WARNING_SEARCH_STOPPED_AT_BOTTOM =
     WarningMessage , "Search stopped at bottom."
