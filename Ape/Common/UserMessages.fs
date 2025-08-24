@@ -166,7 +166,7 @@ let private exceptionToMessage (ex: Exception) =
 
 // rendering
 
-let private getMessageColors (colorScheme: Colors.Scheme) type_ =
+let private getMessageColors (colorScheme: ColorSchemes.Scheme) type_ =
     match type_ with
     | InfoMessage    ->
         colorScheme.statusInfo
@@ -178,7 +178,7 @@ let private getMessageColors (colorScheme: Colors.Scheme) type_ =
 
 /// Returns user message string and colors.
 let getMessageStringAndColors
-    (colorScheme: Colors.Scheme) (message: UserMessage option) fillLength =
+    (colorScheme: ColorSchemes.Scheme) (message: UserMessage option) fillLength =
 
     match message with
     | Some message ->

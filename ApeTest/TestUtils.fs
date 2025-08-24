@@ -5,7 +5,7 @@ open WrappedRef
 
 let makeContextRef windowWidth windowHeight =
     WrappedRef {
-        colorScheme      = Colors.lightColorScheme
+        colorScheme      = DefaultColors.lightScheme
         windowWidth      = windowWidth
         textAreaHeight   = windowHeight - 2
         statusAreaRow    = windowHeight - 2
@@ -27,7 +27,7 @@ let makeContextRef windowWidth windowHeight =
 
 let makeContextRef_wrapLines windowWidth windowHeight wrapAtWord =
     WrappedRef {
-        colorScheme      = Colors.lightColorScheme
+        colorScheme      = DefaultColors.lightScheme
         windowWidth      = windowWidth
         textAreaHeight   = windowHeight - 2
         statusAreaRow    = windowHeight - 2

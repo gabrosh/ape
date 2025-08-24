@@ -42,7 +42,7 @@ let complete_set_value _context (argsMap: ArgsMap) (argInCompl: string) =
 
         match name with
         | Settings.Name.colorScheme ->
-            Colors.schemesArray
+            ColorUtils.schemesArray
             |> keepStartingWith argInCompl
 
         | Settings.Name.encoding    ->

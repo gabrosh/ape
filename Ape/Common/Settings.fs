@@ -135,7 +135,7 @@ let private isInMap values value =
 let specsMap =
     Map [
         Name.colorScheme , Strings (
-            default_ = Colors.defaultScheme, isValid = isInMap Colors.schemesMap
+            default_ = ColorUtils.defaultScheme, isValid = isInMap ColorUtils.schemesMap
         )
 
         Name.encoding    , Strings (

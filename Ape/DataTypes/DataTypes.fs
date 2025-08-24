@@ -3,7 +3,7 @@
 open System
 open System.Collections.Immutable
 
-open Colors
+open ColorSchemes
 
 // custom exceptions
 

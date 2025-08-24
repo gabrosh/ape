@@ -29,11 +29,11 @@ let hasColoredGroups (regexObject: Regex) =
 /// Returns color index for given group name.
 let getColorIndex (s: string) =
     if isMainGroup s then
-        Colors.mainGroupColor
+        ColorSchemes.mainGroupColor
     else
         let c = s[0]
 
-        let setSize = Colors.coloredSetSize
+        let setSize = ColorSchemes.coloredSetSize
 
         if   'a' <= c && c <= 'z' then
             let indexInSet = int (c - 'a') % setSize

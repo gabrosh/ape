@@ -3,7 +3,7 @@
 open System
 open System.Text
 
-open Colors
+open ColorSchemes
 open Common
 open Context
 open DataTypes
@@ -17,11 +17,23 @@ open WrappedRef
 
 type private DisplayRows = ResizeArray<ResizeArray<DisplayChar>>
 
-/// Returns a terminal sequence defining given color.
-let getColorsSequence (colors: Colors.CharColors) =
-    let fg = 30 + int colors.fg
-    let bg = 40 + int colors.bg
-    $"\x1b[{fg};{bg}m"
+let private getFgColor color =
+    match color with
+    | IndColor index ->
+        $"\u001b[{30 + int index}m"
+    | RGBColor (r, g, b) ->
+        $"\u001b[38;2;{r};{g};{b}m"
+
+let private getBgColor color =
+    match color with
+    | IndColor index ->
+        $"\u001b[{40 + int index}m"
+    | RGBColor (r, g, b) ->
+        $"\u001b[48;2;{r};{g};{b}m"
+
+/// Returns a terminal sequence specifying given foreground and background colors.
+let getColorsSequence (colors: CharColors) =
+    getFgColor colors.fg + getBgColor colors.bg
 
 let private getPositionSequence line column =
     $"\x1b[{line+1};{column+1}H"

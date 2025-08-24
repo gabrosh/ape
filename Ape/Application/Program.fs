@@ -270,6 +270,12 @@ let main argv =
     Console.OutputEncoding <- Text.Encoding.UTF8
     Console.CursorVisible  <- false
 
+    match ColorUtils.initResult with
+    | Ok ()   ->
+        ()
+    | Error e ->
+        userMessages.RegisterMessage (makeErrorMessage e)
+
     let options = AppOptions.getAppOptions (argv |> Array.toList)
 
     match options with
@@ -296,7 +302,7 @@ let main argv =
                 tryCall userMessages (fun () ->
                     textArea.EditOrViewFile filePath x.encoding x.strictEncoding x.isReadOnly
                 ) |> ignore
-            | None           ->
+            | None          ->
                 textArea.SetBufferSettings x.encoding x.strictEncoding x.isReadOnly
         | Error _ ->
             ()

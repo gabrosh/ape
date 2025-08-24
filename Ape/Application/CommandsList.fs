@@ -40,6 +40,7 @@ let public commandsList = [
     "unmap"         , "um"  , argsMapSpec_unmap            , execute_unmap            , complete_unmap
     "reg"           , ""    , argsMapSpec_reg              , execute_reg              , complete_reg
     "unreg"         , ""    , argsMapSpec_unreg            , execute_unreg            , complete_unreg
+    "reloadColors"  , "rc"  , argsMapSpec_reloadColors     , execute_reloadColors     , complete_none
 ]
 
 let public commandsListCfg = [

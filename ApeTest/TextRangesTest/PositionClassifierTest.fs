@@ -51,7 +51,7 @@ type PositionClassifierTest () =
         let mainCursor, cursors, selectionRanges =
             mySelections.GetSelectedRangesAndCursors 0 0
         let matchRanges = [|
-            Colors.mainGroupColor, TextRanges ()
+            ColorSchemes.mainGroupColor, TextRanges ()
         |]
 
         Assert.AreEqual (2, cursors.Count)
@@ -79,7 +79,7 @@ type PositionClassifierTest () =
         let mainCursor, cursors, selectionRanges =
             mySelections.GetSelectedRangesAndCursors 0 0
         let matchRanges = [|  
-            Colors.mainGroupColor, TextRanges ()
+            ColorSchemes.mainGroupColor, TextRanges ()
         |]
 
         Assert.AreEqual (2, cursors.Count)
@@ -99,7 +99,7 @@ type PositionClassifierTest () =
         let mainCursor, cursors, selectionRanges =
             mySelections.GetSelectedRangesAndCursors 0 0
         let matchRanges = [|
-            Colors.mainGroupColor, TextRanges ()
+            ColorSchemes.mainGroupColor, TextRanges ()
         |]
 
         Assert.AreEqual (2, cursors.Count)
@@ -121,7 +121,7 @@ type PositionClassifierTest () =
         let mainCursor, cursors, selectionRanges =
             mySelections.GetSelectedRangesAndCursors 0 0
         let matchRanges = [|
-            Colors.mainGroupColor, TextRanges ()
+            ColorSchemes.mainGroupColor, TextRanges ()
         |]
 
         Assert.AreEqual (2, selectionRanges.Count)
@@ -149,7 +149,7 @@ type PositionClassifierTest () =
         let mainCursor, cursors, selectionRanges =
             mySelections.GetSelectedRangesAndCursors 0 0
         let matchRanges = [|
-            Colors.mainGroupColor, TextRanges ()
+            ColorSchemes.mainGroupColor, TextRanges ()
         |]
 
         Assert.AreEqual (2, selectionRanges.Count)
@@ -169,7 +169,7 @@ type PositionClassifierTest () =
         let mainCursor, cursors, selectionRanges =
             mySelections.GetSelectedRangesAndCursors 0 0
         let matchRanges = [|
-            Colors.mainGroupColor, TextRanges ()
+            ColorSchemes.mainGroupColor, TextRanges ()
         |]
 
         Assert.AreEqual (2, selectionRanges.Count)
@@ -190,7 +190,7 @@ type PositionClassifierTest () =
         let mainCursor, cursors, selectionRanges =
             mySelections.GetSelectedRangesAndCursors 0 0
         let matchRanges = [|
-            Colors.mainGroupColor, TextRanges [
+            ColorSchemes.mainGroupColor, TextRanges [
                 match_ (0, 2) (0, 3)
                 match_ (0, 6) (0, 7)
             ]
@@ -220,7 +220,7 @@ type PositionClassifierTest () =
         let mainCursor, cursors, selectionRanges =
             mySelections.GetSelectedRangesAndCursors 0 0
         let matchRanges = [|
-            Colors.mainGroupColor, TextRanges [
+            ColorSchemes.mainGroupColor, TextRanges [
                 match_ (0, 2) (0, 3)
                 match_ (0, 6) (0, 7)
             ]
@@ -242,7 +242,7 @@ type PositionClassifierTest () =
         let mainCursor, cursors, selectionRanges =
             mySelections.GetSelectedRangesAndCursors 0 0
         let matchRanges = [|
-            Colors.mainGroupColor, TextRanges [
+            ColorSchemes.mainGroupColor, TextRanges [
                 match_ (0, 2) (0, 3)
                 match_ (0, 6) (0, 7)
             ]

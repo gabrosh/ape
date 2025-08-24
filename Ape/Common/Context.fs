@@ -10,7 +10,7 @@ type ConsoleContext = {
 }
 
 type SettingsContext = {
-    colorScheme:         Colors.Scheme
+    colorScheme:         ColorSchemes.Scheme
     readOnly:            bool
     reloadAsLogFile:     bool
     maxSavedUndos:       int
@@ -26,7 +26,7 @@ type SettingsContext = {
 }
 
 type MainContext = {
-    colorScheme:         Colors.Scheme
+    colorScheme:         ColorSchemes.Scheme
 
     windowWidth:         int
     textAreaHeight:      int
@@ -53,7 +53,7 @@ type ExtraContext = {
 }
 
 type AreaContext = {
-    colorScheme:         Colors.Scheme
+    colorScheme:         ColorSchemes.Scheme
 
     linesCount:          int
     lineNumbersWidth:    int
@@ -71,7 +71,7 @@ type AreaContext = {
 }
 
 type RenderingContext = {
-    colorScheme:         Colors.Scheme
+    colorScheme:         ColorSchemes.Scheme
     windowWidth:         int
     statusAreaRow:       int
     completionsRow:      int
@@ -82,6 +82,10 @@ type RenderingContext = {
 
 // making various kinds of context
 
+let private getColorScheme colorSchemeName =
+    ColorUtils.schemesMap.TryFind colorSchemeName
+    |> Option.defaultValue DefaultColors.darkScheme
+
 let makeConsoleContext windowSize =
     {
         windowWidth  = windowSize.width
@@ -89,22 +93,20 @@ let makeConsoleContext windowSize =
     }
 
 let private makeSettingsContext (settings: Settings) =
-    let colorSchemeName = getValueString settings Name.colorScheme
-
     {
-        colorScheme      = Colors.schemesMap[colorSchemeName]
-        readOnly         = getValueBool settings Name.readOnly
-        reloadAsLogFile  = getValueBool settings Name.reloadAsLogFile
-        maxSavedUndos    = getValueInt  settings Name.maxSavedUndos
-        reSearchMatching = getValueBool settings Name.reSearchMatching
-        recursionLimit   = getValueInt  settings Name.recursionLimit
-        wrapLines        = getValueBool settings Name.wrapLines
-        wrapAtWord       = getValueBool settings Name.wrapAtWord
-        showLineNumbers  = getValueBool settings Name.showLineNumbers
-        tabStop          = getValueInt  settings Name.tabStop
-        tabBySpaces      = getValueBool settings Name.tabBySpaces
-        scrollOffset     = getValueInt  settings Name.scrollOffset
-        cursorBeforeEol  = getValueBool settings Name.cursorBeforeEol
+        colorScheme      = getValueString settings Name.colorScheme |> getColorScheme
+        readOnly         = getValueBool   settings Name.readOnly
+        reloadAsLogFile  = getValueBool   settings Name.reloadAsLogFile
+        maxSavedUndos    = getValueInt    settings Name.maxSavedUndos
+        reSearchMatching = getValueBool   settings Name.reSearchMatching
+        recursionLimit   = getValueInt    settings Name.recursionLimit
+        wrapLines        = getValueBool   settings Name.wrapLines
+        wrapAtWord       = getValueBool   settings Name.wrapAtWord
+        showLineNumbers  = getValueBool   settings Name.showLineNumbers
+        tabStop          = getValueInt    settings Name.tabStop
+        tabBySpaces      = getValueBool   settings Name.tabBySpaces
+        scrollOffset     = getValueInt    settings Name.scrollOffset
+        cursorBeforeEol  = getValueBool   settings Name.cursorBeforeEol
     }
 
 let makeMainContext (consoleContext: ConsoleContext) (settings: Settings) =

@@ -83,3 +83,16 @@ let execute_get context (argsMap: ArgsMap) =
         context.userMessages.RegisterMessage (makeErrorMessage e)
 
     false
+
+// reloadColors
+
+let argsMapSpec_reloadColors = (0, [||])
+
+let execute_reloadColors context (_argsMap: ArgsMap) =
+    match ColorUtils.reloadColors () with
+    | Ok ()   ->
+        applySettings context
+    | Error e ->
+        context.userMessages.RegisterMessage (makeErrorMessage e)
+
+    false

@@ -11,7 +11,7 @@ let helpFileName   = "help.txt"
 let defaultCfgName = "default"
 let cfgFileExt     = ".cfg"
 
-let cfgFilesDir = AppContext.BaseDirectory
+let cfgFilesDir   = AppContext.BaseDirectory
 
 let getCfgFilePath cfgName =
     IO.Path.Combine (

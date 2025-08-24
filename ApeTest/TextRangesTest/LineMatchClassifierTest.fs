@@ -27,7 +27,7 @@ type LineMatchClassifierTest () =
     [<Test>]
     member _.IsInMatch_FromStart () =
         let matchRanges = [|
-            Colors.mainGroupColor, TextRanges [
+            ColorSchemes.mainGroupColor, TextRanges [
                 match_ (2, 0) (3, 0)
                 match_ (6, 0) (7, 0)
             ]
@@ -51,7 +51,7 @@ type LineMatchClassifierTest () =
     [<Test>]
     member _.IsInMatch_FromMiddle_False () =
         let matchRanges = [|
-            Colors.mainGroupColor, TextRanges [
+            ColorSchemes.mainGroupColor, TextRanges [
                 match_ (2, 0) (3, 0)
                 match_ (6, 0) (7, 0)
             ]
@@ -67,7 +67,7 @@ type LineMatchClassifierTest () =
     [<Test>]
     member _.IsInMatch_FromMiddle_True () =
         let matchRanges = [|
-            Colors.mainGroupColor, TextRanges [
+            ColorSchemes.mainGroupColor, TextRanges [
                 match_ (2, 0) (3, 0)
                 match_ (6, 0) (7, 0)
             ]

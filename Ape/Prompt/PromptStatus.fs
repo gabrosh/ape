@@ -21,7 +21,7 @@ let getPromptModeLength promptType =
     let prefix, _c = getPromptPrefixAndChar promptType
     prefix.Length + 1
 
-let private makeDisplayChars (s: string) c (colorScheme: Colors.Scheme) colors =
+let private makeDisplayChars (s: string) c (colorScheme: ColorSchemes.Scheme) colors =
     let result = ResizeArray<DisplayChar> ()
 
     for c in s do

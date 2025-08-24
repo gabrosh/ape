@@ -330,23 +330,23 @@ type SettingsTest () =
     member _.setValue_String_Valid () =
         let b = makeSettings ()
 
-        Assert.AreEqual (String "dark", getValue b Name.colorScheme)
+        Assert.AreEqual (String "rgbDark" , getValue b Name.colorScheme)
 
-        let result = setValue b (Some Scope.``global``) Name.colorScheme "light"
+        let result = setValue b (Some Scope.``global``) Name.colorScheme "rgbLight"
 
         Assert.IsTrue   (Result.isOk result)
-        Assert.AreEqual (String "light", getValue b Name.colorScheme)
+        Assert.AreEqual (String "rgbLight", getValue b Name.colorScheme)
 
     [<Test>]
     member _.setValue_String_Invalid () =
         let b = makeSettings ()
 
-        Assert.AreEqual (String "dark", getValue b Name.colorScheme)
+        Assert.AreEqual (String "rgbDark", getValue b Name.colorScheme)
 
-        let result = setValue b (Some Scope.``global``) Name.colorScheme "_light_"
+        let result = setValue b (Some Scope.``global``) Name.colorScheme "_rgbLight_"
 
         Assert.IsFalse  (Result.isOk result)
-        Assert.AreEqual (String "dark", getValue b Name.colorScheme)
+        Assert.AreEqual (String "rgbDark", getValue b Name.colorScheme)
 
     // getSettingRepr ----------------------------------------------------------
 

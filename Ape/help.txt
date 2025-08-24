@@ -1,4 +1,4 @@
-Ape 0.15 - modal text editor
+Ape 0.16 - modal text editor
 
 
 Key specifications -------------------------------------------------------------
@@ -354,6 +354,7 @@ unmap          um     [[scope] mode] key         unmap key
                                                  (default scope is "buffer", default mode is "normal")
 reg                   regName line               set register regName to given line
 unreg                 regName                    unset register regName
+reloadColors   rc                                reload colors definition file
 
 
 Command arguments --------------------------------------------------------------
@@ -382,7 +383,10 @@ When unspecified, the command is applied on the most local scope ("buffer" or "e
 
 settings         abbr.  default  valid values
 
-colorScheme      cs     light    light dark      color scheme
+colorScheme      cs     rgbDark  dark            color scheme
+                                 light
+                                 rgbDark
+                                 rgbLight                                                 
 encoding         enc    utf-8    .NET encodings  file encoding
 strictEncoding   se     true     false true      raise an error on invalid bytes read from file
 fileFormat       ff     dos      dos unix mac    format of new line separator used for writing to a file
