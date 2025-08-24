@@ -1,4 +1,4 @@
-﻿module DefaultColorSchemes
+﻿module DefaultColors
 
 open ColorSchemes
 
@@ -56,7 +56,7 @@ let darkScheme = {
     statusError        = { fg = indWhite    ; bg = indDarkRed    }
 }
 
-let lightColorScheme = {
+let lightScheme = {
     normal             = { fg = indBlack    ; bg = indWhite      }
     lineNumber         = { fg = indDarkBlue ; bg = indWhite      }
     lineAfterEof       = { fg = indDarkBlue ; bg = indWhite      }
@@ -145,7 +145,7 @@ let rgbDarkScheme = {
     statusError        = { fg = rgbWhite    ; bg = rgbDarkRed    }
 }
 
-let rgbLightColorScheme = {
+let rgbLightScheme = {
     normal             = { fg = rgbBlack    ; bg = rgbWhite      }
     lineNumber         = { fg = rgbDarkBlue ; bg = rgbWhite      }
     lineAfterEof       = { fg = rgbDarkBlue ; bg = rgbWhite      }
