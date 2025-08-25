@@ -386,7 +386,7 @@ settings         abbr.  default  valid values
 colorScheme      cs     rgbDark  dark            color scheme
                                  light
                                  rgbDark
-                                 rgbLight                                                 
+                                 rgbLight
 encoding         enc    utf-8    .NET encodings  file encoding
 strictEncoding   se     true     false true      raise an error on invalid bytes read from file
 fileFormat       ff     dos      dos unix mac    format of new line separator used for writing to a file
@@ -425,6 +425,22 @@ Examples: a, <c-b>a, <c-B>a, <sc-b>a
 Commands valid also in configuration files -------------------------------------
 
 execCfg set unset map unmap reg unreg
+
+
+colors.json --------------------------------------------------------------------
+
+Basic terminal colors are specified by their names (case insensitive):
+
+black        darkGray
+darkRed      red
+darkGreen    green
+darkYellow   yellow
+darkBlue     blue
+darkMagenta  magenta
+darkCyan     cyan
+gray         white
+
+RGB colors are specified in the hexadecimal format, for example #C50F1F.
 
 
 Application's command line options ---------------------------------------------
