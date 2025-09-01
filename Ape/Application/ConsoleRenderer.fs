@@ -150,14 +150,14 @@ type ConsoleRenderer (
 
     /// Renders content of the first row of status area to the console.
     member private this.RenderFirstStatusRow isRecording =
-        let fileName   = myTextArea.FilePath
+        let bufferName = myTextArea.BufferName
         let isReadOnly = myTextArea.IsReadOnly
         let isModified = myTextArea.IsBufferChanged
         let cursorPos  = myTextArea.GetCursorPosForStatusArea ()
 
         let displayRows = ResizeArray [
             myStatusArea.GetFirstDisplayRow
-                fileName isReadOnly isModified isRecording cursorPos
+                bufferName isReadOnly isModified isRecording cursorPos
         ]
 
         this.RenderRows displayRows (myRenderingContext.statusAreaRow + 0)

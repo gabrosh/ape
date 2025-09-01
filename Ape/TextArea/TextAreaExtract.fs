@@ -1,4 +1,4 @@
-﻿module TextAreaBufferExtract
+﻿module TextAreaExtract
 
 open System
 open System.Collections.Immutable
@@ -13,8 +13,8 @@ open Position
 open Selection
 open Selections
 open SelectionsRegisters
-open TextAreaBuffer
 open TextAreaDelegator
+open TextAreaFileSupport
 open TextRangesModifier
 open UndoProvider
 open UserMessages
@@ -41,17 +41,12 @@ let private getBufferState
     }
 
 [<Sealed>]
-type TextAreaBufferExtract (
-    myParent:          TextAreaBuffer,
-    myContextRef:      IWrappedRef<MainContext>,
-    myUserMessages:    UserMessages,
-    myRegisters:       Registers.Registers,
-    inFilePath:        string,
-    inExtractOnConstr: bool
+type TextAreaExtract (
+    myContextRef:   IWrappedRef<MainContext>,
+    myUserMessages: UserMessages,
+    myRegisters:    Registers.Registers,
+    inFilePath:     string
 ) =
-    // init mechanism
-    let myParentMainForInit = myParent.Main
-
     let mutable myContext = myContextRef.Value
     let handleContextChanged () = myContext <- myContextRef.Value
     let myContextChangedDisposable =
@@ -65,6 +60,7 @@ type TextAreaBufferExtract (
     }
 
     // fields affected by Undo/Redo
+    let myLines           = Lines [Chars.Empty]
     let myLinesExtract    = Lines [Chars.Empty]
     let mySelectionsArray = ResizeArray<Selection> [Selection_Zero]
     let mySelections      = Selections mySelectionsArray
@@ -75,9 +71,12 @@ type TextAreaBufferExtract (
     // reporting a need for Undo registration
     let mutable myHasUndoToRegister = false
 
+    let myFileSupport = new TextAreaFileSupport (
+        myContextRef, myUserMessages, myLines
+    )
+
     let myMatchRanges = MatchRangesExtract (
-        myUserMessages, myParent.Lines, myLinesExtract,
-        myParent.MatchRanges, inExtractOnConstr
+        myUserMessages, myLines, myLinesExtract
     )
 
     let myUndoProvider = UndoProvider (
@@ -133,7 +132,7 @@ type TextAreaBufferExtract (
         and  set value = myBufferName <- value
 
     // also for testing purposes
-    member _.Lines = myLinesExtract
+    member _.Lines = myLines
     member _.Main  = mySelections.Main
 
     // private properties
@@ -148,16 +147,6 @@ type TextAreaBufferExtract (
         with get ()    = myBasicState.prevCommand
         and  set value = myBasicState.prevCommand <- value
 
-    // init mechanism
-
-    /// Initializes the instance after its construction.
-    member this.Init () =
-        mySelections.Main <- myParentMainForInit
-
-        this.WrapExtractAction (
-            fun () -> myMatchRanges.Init ()
-        )
-
     // commands
 
     member this.PerformCommand isNormalMode isExtending command count =
@@ -171,13 +160,13 @@ type TextAreaBufferExtract (
         match command with
         | CommonCommand (CursorToNextMatch isInitial) ->
             let isInitial' = this.ReSearchIfNeeded isInitial
-            let command'   = CommonCommand (CursorToNextMatch isInitial')
+            let command' = CommonCommand (CursorToNextMatch isInitial')
 
             myBasicDelegator.PerformMatchCommand isExtending command' count true
 
         | CommonCommand (CursorToPrevMatch isInitial) ->
             let isInitial' = this.ReSearchIfNeeded isInitial
-            let command'   = CommonCommand (CursorToPrevMatch isInitial')
+            let command' = CommonCommand (CursorToPrevMatch isInitial')
 
             myBasicDelegator.PerformMatchCommand isExtending command' count false
 
@@ -346,16 +335,35 @@ type TextAreaBufferExtract (
 
     // others
 
-    member this.Reload warnIfNoMatchFound =
+    member this.LoadStrings (lines: string seq) =
+        myFileSupport.LoadStrings lines (
+            fun () ->
+                myMatchRanges.Init ()
+                this.ResetState Position_Zero
+                this.ResetUndoState ()
+        )
+
+    member this.LoadFile encoding strictEncoding =
+        myFileSupport.LoadFile this.FilePath encoding strictEncoding (
+            fun () ->
+                myMatchRanges.Init ()
+                this.ResetState Position_Zero
+                this.ResetUndoState ()
+        )
+
+    member this.Reload encoding strictEncoding warnIfNoMatchFound =
         let cursor      = this.Main.Cursor
         let cursorWC    = this.Main.CursorWC
         let displayLine = this.DisplayPos.line
 
-        myMatchRanges.RunWithSetWarnIfNoMatchFound warnIfNoMatchFound (
-            fun () -> this.ResetStateAfterReload cursor cursorWC displayLine
-        )
+        myFileSupport.ReloadFile this.FilePath encoding strictEncoding (
+            fun () ->
+                myMatchRanges.RunWithSetWarnIfNoMatchFound warnIfNoMatchFound (
+                    fun () -> this.ResetStateAfterReload cursor cursorWC displayLine
+                )
 
-        this.ResetUndoState ()
+                this.ResetUndoState ()
+        )
 
     member this.WriteFile encoding fileFormat endWithNewLine =
         FileUtils.writeFile this.FilePath encoding fileFormat endWithNewLine myLinesExtract
@@ -440,7 +448,7 @@ type TextAreaBufferExtract (
             and  set value = this.BufferName <- value
 
         member this.Lines                  = myLinesExtract
-        member this.LinesForCompletion     = myParent.Lines
+        member this.LinesForCompletion     = myLines
         member this.Selections             = mySelections
         member this.IsReadOnly             = this.IsReadOnly
         member this.IsBufferChanged        = false
@@ -473,8 +481,8 @@ type TextAreaBufferExtract (
 
         // others
 
-        member this.Reload _encoding _strictEncoding _warnIfNoMatchFound =
-            invalidOp "not implemented"
+        member this.Reload encoding strictEncoding warnIfNoMatchFound =
+            this.Reload encoding strictEncoding warnIfNoMatchFound
 
         member this.WriteFile encoding fileFormat endWithNewLine =
             this.WriteFile encoding fileFormat endWithNewLine
@@ -485,8 +493,6 @@ type TextAreaBufferExtract (
     // IDisposable
 
     interface IDisposable with
-        member this.Dispose () =
-            myParent.UnregisterChild this
-
+        member _.Dispose () =
             myContextChangedDisposable.Dispose ()
             (myDispatcher :> IDisposable).Dispose ()

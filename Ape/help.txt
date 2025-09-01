@@ -328,14 +328,18 @@ edit!          e!     [[strictEncoding] encoding] filePath
                                                  (buffer already opened, directory not found, file not found)
 view           v      [[strictEncoding] encoding] filePath
                                                  open file for viewing
-view!          v      [[strictEncoding] encoding] filePath
+view!          v!     [[strictEncoding] encoding] filePath
                                                  open file for viewing, suppressing warnings
+                                                 (buffer already opened, directory not found, file not found)
+extract        x      [[strictEncoding] encoding] filePath
+                                                 open file as extract
+extract!       x!     [[strictEncoding] encoding] filePath
+                                                 open file as extract, suppressing warnings
                                                  (buffer already opened, directory not found, file not found)
 reload         r                                 reload file
 reload!        r!                                reload file, suppressing warnings
                                                  (no write since last change)
-extract        x      [filePath]                 create a new extract buffer from the current one
-                                                 (an extract buffer displays only lines with matchings)
+bufferName     nm     bufferName                 change the name of buffer
 bufferDelete   bd                                delete buffer
 bufferDelete!  bd!                               delete buffer, suppressing warnings
                                                  (no write since last change)
@@ -451,8 +455,9 @@ Application's command line options ---------------------------------------------
                      (default is utf-8)
 -se  strictEncoding  raise an error on invalid bytes read from file
                      (default is true)
--v   filePath        open file for viewing
 -e   filePath        open file for editing
+-v   filePath        open file for viewing
+-x   filePath        open file as extract
      filePath        open file for editing
 
 Examples: ape.exe -c mycfg -se false -enc utf-8 a.txt

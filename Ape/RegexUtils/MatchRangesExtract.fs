@@ -47,6 +47,25 @@ type MatchRangesExtract (
     let mutable myIsSearchInExtract =
         false
 
+    new (
+        inUserMessages: UserMessages, inLines: Lines, inLinesExtract: Lines        
+    ) =
+        MatchRangesExtract(
+            inUserMessages, inLines,
+            None, true, makeTextRangesGroups (),
+            inLinesExtract, false
+        )
+
+    new (
+        inUserMessages: UserMessages, inLines: Lines, inLinesExtract: Lines,
+        inMatchRanges: MatchRanges, inExtractOnConstr: bool
+    ) =
+        MatchRangesExtract(
+            inUserMessages, inLines,
+            inMatchRanges.LastRegex, inMatchRanges.IsCleared, inMatchRanges.TextRanges,
+            inLinesExtract, inExtractOnConstr
+        )
+
     // public properties
 
     member _.LastRegexExtract = myLastRegexExtract

@@ -10,9 +10,11 @@ open CompletionUtils
 open ConsoleKeys
 open Context
 open DataTypes
+open ITextAreaBuffer
 open Settings
 open TextAreaBuffer
 open TextAreaBufferExtract
+open TextAreaExtract
 open UserMessages
 open WrappedRef
 
@@ -79,19 +81,25 @@ type TextArea (
     member _.CurrentKeyMappings     = myBuffers.CurrentKeyMappings
     member _.CurrentMainContextRef  = myMainContextRef2 :> IWrappedRef<MainContext>
 
-    member _.FilePath               = myBuffer.FilePath
+    member _.FilePath
+        with get()     = myBuffer.FilePath
+        and  set value = myBuffer.FilePath <- value
+
+    member _.BufferName
+        with get()     = myBuffer.BufferName
+        and  set value = myBuffer.BufferName <- value
+
     member _.Lines                  = myBuffer.Lines
     member _.LinesForCompletion     = myBuffer.LinesForCompletion
     member _.IsReadOnly             = myBuffer.IsReadOnly
     member _.IsBufferChanged        = myBuffer.IsBufferChanged
-    member _.IsOrigBufferChanged    = myBuffer.IsOrigBufferChanged
     member _.HasUndoToRegister      = myBuffer.HasUndoToRegister
     member _.HasUndoLinesToRegister = myBuffer.HasUndoLinesToRegister
 
     member _.GetFirstChildBuffer () = myBuffer.GetFirstChild ()
 
     member _.IsCurrentBufferAnExtract =
-        myBuffer :? TextAreaBufferExtract
+        myBuffer :? TextAreaBufferExtract || myBuffer :? TextAreaExtract
 
     member _.ApplySettings () =
         myBuffers.UpdateCurrentMainContext ()
@@ -475,6 +483,8 @@ type TextArea (
             )
         | :? TextAreaBufferExtract as buffer ->
             buffer.ExtractMatching regex
+        | :? TextAreaExtract as buffer ->
+            buffer.ExtractMatching regex
         | _ ->
             invalidOp ""
 
@@ -485,6 +495,8 @@ type TextArea (
                 fun () -> this.ReExtractMatching ()
             )
         | :? TextAreaBufferExtract as buffer ->
+            buffer.ReExtractMatching ()
+        | :? TextAreaExtract as buffer ->
             buffer.ReExtractMatching ()
         | _ ->
             invalidOp ""
@@ -497,14 +509,16 @@ type TextArea (
             )
         | :? TextAreaBufferExtract as buffer ->
             buffer.ClearExtractMatching ()
+        | :? TextAreaExtract as buffer ->
+            buffer.ClearExtractMatching ()
         | _ ->
             invalidOp ""
 
     member private this.WrapExtractAction (parentBuffer: TextAreaBuffer) action =
         let filePath = this.FilePath + FileUtils.extractFileExt
 
-        if this.HasBufferWithFilePath filePath then
-            this.ToBufferWithFilePath filePath
+        if this.HasBufferWithBufferName filePath then
+            this.ToBufferWithBufferName filePath
             myUserMessages.RegisterMessage (
                 formatMessage WARNING_BUFFER_ALREADY_OPENED filePath
             )
@@ -512,7 +526,7 @@ type TextArea (
             myBuffers.AddTextAreaBufferExtract
                 parentBuffer this.CurrentSettings filePath false
             applyBufferSwitch ()
-            this.SetExtractBufferSettings () |> ignore
+            this.SetBufferExtractSettings () |> ignore
 
             action ()
 
@@ -533,7 +547,7 @@ type TextArea (
     member this.EditFile filePath encoding strictEncoding quite =
         myBuffers.AddTextAreaBuffer filePath
         applyBufferSwitch ()
-        let result = this.SetBufferSettingsAux encoding strictEncoding (Some "false")
+        let result = this.SetBufferSettings encoding strictEncoding (Some "false")
 
         match result with
         | Ok ()   ->
@@ -544,7 +558,7 @@ type TextArea (
     member this.ViewFile filePath encoding strictEncoding quite =
         myBuffers.AddTextAreaBuffer filePath
         applyBufferSwitch ()
-        let result = this.SetBufferSettingsAux encoding strictEncoding (Some "true")
+        let result = this.SetBufferSettings encoding strictEncoding (Some "true")
 
         match result with
         | Ok ()   ->
@@ -552,18 +566,28 @@ type TextArea (
         | Error e ->
             myUserMessages.RegisterMessage (makeErrorMessage e)
 
-    member this.EditOrViewFile filePath encoding strictEncoding isReadOnly =
-        myBuffer.FilePath <- filePath
-
-        let result = this.SetBufferSettingsAux encoding strictEncoding isReadOnly
+    member this.ExtractFile filePath encoding strictEncoding quite =
+        myBuffers.AddTextAreaExtract filePath
+        applyBufferSwitch ()
+        let result = this.SetExtractSettings encoding strictEncoding
 
         match result with
         | Ok ()   ->
-            this.LoadTextAreaBuffer (myBuffer :?> TextAreaBuffer) false
+            this.LoadTextAreaExtract (myBuffer :?> TextAreaExtract) quite
         | Error e ->
             myUserMessages.RegisterMessage (makeErrorMessage e)
 
     member private this.LoadTextAreaBuffer buffer quite =
+        match this.LoadFileAux buffer with
+        | Ok () ->
+            ()
+        | Error e ->
+            if not quite then
+                myUserMessages.RegisterMessage (
+                    UserMessages.makeWarningMessage e
+                )
+
+    member private this.LoadTextAreaExtract buffer quite =
         match this.LoadFileAux buffer with
         | Ok () ->
             ()
@@ -597,33 +621,42 @@ type TextArea (
         | Error e ->
             Error e
 
-    member this.ExtractFile filePath =
-        match myBuffer with
-        | :? TextAreaBuffer as parentBuffer ->
-            myBuffers.AddTextAreaBufferExtract
-                parentBuffer this.CurrentSettings filePath true
-            applyBufferSwitch ()
-            let result = this.SetExtractBufferSettings ()
+    /// Loads file to given TextAreaExtract.
+    member private this.LoadFileAux (buffer: TextAreaExtract)  =
+        let settings = myBuffers.GetBufferSettings buffer
 
-            match result with
-            | Ok ()   ->
-                ()
-            | Error e ->
-                myUserMessages.RegisterMessage (makeErrorMessage e)
-        | _ ->
-            myUserMessages.RegisterMessage ERROR_OP_INVALID_ON_EXTRACT_BUFFER
+        let encoding       = getValueString settings Name.encoding
+        let strictEncoding = getValueBool   settings Name.strictEncoding
 
-    member this.ReloadFile () =
+        match buffer.LoadFile encoding strictEncoding with
+        | Ok (fileFormat, endsWithNewLine) ->
+            let newLineAtEof = if isSingleEmptyLine this.Lines then true else endsWithNewLine
+
+            let fileFormat   = valueToString (FileFormat fileFormat)
+            let newLineAtEof = valueToString (Bool newLineAtEof)
+
+            setValue settings (Some Scope.buffer) Name.fileFormat fileFormat
+                |> ignore
+            setValue settings (Some Scope.buffer) Name.newLineAtEof newLineAtEof
+                |> ignore
+
+            Ok ()
+
+        | Error e ->
+            Error e
+
+    member this.Reload () =
         match myBuffer with
-        | :? TextAreaBuffer as buffer ->
-            this.ReloadTextAreaBuffer buffer
+        | :? TextAreaBuffer
+        | :? TextAreaExtract ->
+            this.ReloadBufferOrExtract myBuffer
         | :? TextAreaBufferExtract as buffer ->
-            this.ReloadTextAreaBufferExtract buffer
+            this.ReloadBufferExtract buffer
         | _ ->
             invalidOp ""
 
-    member private this.ReloadTextAreaBuffer buffer =
-        match this.ReloadFileAux buffer true with
+    member private this.ReloadBufferOrExtract (buffer: ITextAreaBuffer) =
+        match this.ReloadBufferOrExtractAux buffer true with
         | Ok () ->
             ()
         | Error e ->
@@ -631,23 +664,16 @@ type TextArea (
                 UserMessages.makeWarningMessage e
             )
 
-    member private this.ReloadTextAreaBufferExtract buffer =
-        match this.ReloadFileAux buffer.Parent false with
-        | Ok () ->
-            buffer.ReloadFile ()
-        | Error e ->
-            myUserMessages.RegisterMessage (
-                UserMessages.makeWarningMessage e
-            )
+    member private _.ReloadBufferExtract (buffer: TextAreaBufferExtract) =
+        buffer.Reload true
 
-    /// Reloads file to given TextAreaBuffer.
-    member private _.ReloadFileAux (buffer: TextAreaBuffer) warnIfNoMatchFound =
+    member private _.ReloadBufferOrExtractAux (buffer: ITextAreaBuffer) warnIfNoMatchFound =
         let settings = myBuffers.GetBufferSettings buffer
 
         let encoding       = getValueString settings Name.encoding
         let strictEncoding = getValueBool   settings Name.strictEncoding
 
-        match buffer.ReloadFile encoding strictEncoding warnIfNoMatchFound with
+        match buffer.Reload encoding strictEncoding warnIfNoMatchFound with
         | Ok (fileFormat, endsWithNewLine) ->
             let newLineAtEof = if isSingleEmptyLine buffer.Lines then true else endsWithNewLine
 
@@ -697,13 +723,6 @@ type TextArea (
         myBuffer.WriteFile encoding fileFormat endWithNewLine
 
     member this.SetBufferSettings encoding strictEncoding isReadOnly =
-        let result = this.SetBufferSettingsAux encoding strictEncoding isReadOnly
-
-        match result with
-        | Error e -> myUserMessages.RegisterMessage (makeErrorMessage e)
-        | Ok ()   -> ()
-
-    member private this.SetBufferSettingsAux encoding strictEncoding isReadOnly =
         let results = seq {
             strictEncoding |> Option.map (
                 setValue this.CurrentSettings (Some Scope.buffer) Name.strictEncoding
@@ -729,15 +748,43 @@ type TextArea (
         | None   -> this.ApplySettings ()
                     Ok ()
 
-    member private this.SetExtractBufferSettings () =
+    member private this.SetExtractSettings encoding strictEncoding =
         let results = seq {
-            setValueAsFixed this.CurrentSettings (Some Scope.extract) Name.readOnly "true"
+            strictEncoding |> Option.map (
+                setValue this.CurrentSettings (Some Scope.buffer) Name.strictEncoding
+            )
+        ;
+            encoding       |> Option.map (
+                setValue this.CurrentSettings (Some Scope.buffer) Name.encoding
+            )
+        ;
+            Some "true"    |> Option.map (
+                setValueAsFixed this.CurrentSettings (Some Scope.buffer) Name.readOnly
+            )
         }
 
         let firstError = results |> Seq.tryPick (
             function
-                | Error e -> Some e
-                | _       -> None
+                | Some (Error e) -> Some e
+                | _              -> None
+        )
+
+        match firstError with
+        | Some e -> Error e
+        | None   -> this.ApplySettings ()
+                    Ok ()
+
+    member private this.SetBufferExtractSettings () =
+        let results = seq {
+            Some "true" |> Option.map (
+                setValueAsFixed this.CurrentSettings (Some Scope.extract) Name.readOnly
+            )
+        }
+
+        let firstError = results |> Seq.tryPick (
+            function
+                | Some (Error e) -> Some e
+                | _              -> None
         )
 
         match firstError with
@@ -782,11 +829,11 @@ type TextArea (
         myBuffers.ToFirstChanged ()
         applyBufferSwitch ()
 
-    member _.HasBufferWithFilePath filePath =
-        myBuffers.HasBufferWithFilePath filePath
+    member _.HasBufferWithBufferName filePath =
+        myBuffers.HasBufferWithBufferName filePath
 
-    member _.ToBufferWithFilePath filePath =
-        myBuffers.ToBufferWithFilePath filePath
+    member _.ToBufferWithBufferName filePath =
+        myBuffers.ToBufferWithBufferName filePath
         applyBufferSwitch ()
 
     // completions

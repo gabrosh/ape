@@ -297,13 +297,33 @@ let main argv =
         match options with
         | Ok x ->
             match x.filePath with
-            // To open a specific file ?
-            | Some filePath ->
+            // To open a specific file for editing ?
+            | Some filePath when x.edit ->
                 tryCall userMessages (fun () ->
-                    textArea.EditOrViewFile filePath x.encoding x.strictEncoding x.isReadOnly
+                    textArea.EditFile filePath x.encoding x.strictEncoding false
+                    textArea.ToFirstBuffer ()
+                    textArea.DeleteBuffer ()
+                ) |> ignore
+            // To open a specific file for viewing ?
+            | Some filePath when x.view ->
+                tryCall userMessages (fun () ->
+                    textArea.ViewFile filePath x.encoding x.strictEncoding true
+                    textArea.ToFirstBuffer ()
+                    textArea.DeleteBuffer ()
+                ) |> ignore
+            // To open a specific file as extract ?
+            | Some filePath (* when x.extract *) ->
+                tryCall userMessages (fun () ->
+                    textArea.ExtractFile filePath x.encoding x.strictEncoding false
+                    textArea.ToFirstBuffer ()
+                    textArea.DeleteBuffer ()
                 ) |> ignore
             | None          ->
-                textArea.SetBufferSettings x.encoding x.strictEncoding x.isReadOnly
+                let result = textArea.SetBufferSettings x.encoding x.strictEncoding (Some "false")
+                match result with
+                | Error e -> userMessages.RegisterMessage (makeErrorMessage e)
+                | Ok ()   -> ()
+
         | Error _ ->
             ()
 

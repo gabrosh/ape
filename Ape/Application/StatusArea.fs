@@ -98,7 +98,7 @@ type StatusArea (
 
     /// Returns the first display row of the status line.
     member this.GetFirstDisplayRow
-        (filePath: string) isReadOnly isModified isRecording cursorPos =
+        (bufferName: string) isReadOnly isModified isRecording cursorPos =
 
         let displayRow = ResizeArray myRenderingContext.windowWidth
 
@@ -110,11 +110,11 @@ type StatusArea (
 
         let othersLength = isModifiedString.Length + 1 + cursorString.Length
         let filePathMaxLength = myRenderingContext.windowWidth - othersLength
-        let filePathString = this.GetFilePathString filePath filePathMaxLength
+        let bufferNameString = this.GetBufferNameString bufferName filePathMaxLength
 
         this.WriteTo displayRow isModifiedString statusColors
         this.WriteTo displayRow " " isRecordingColors
-        this.WriteTo displayRow filePathString statusColors
+        this.WriteTo displayRow bufferNameString statusColors
         this.WriteTo displayRow cursorString statusColors
 
         displayRow.GetRange (0, myRenderingContext.windowWidth)
@@ -219,11 +219,11 @@ type StatusArea (
 
         s1 + s2 + s3
 
-    member private _.GetFilePathString (filePath: string) fillLength =
-        if filePath.Length <= fillLength then
-            filePath.PadRight fillLength
+    member private _.GetBufferNameString (bufferName: string) fillLength =
+        if bufferName.Length <= fillLength then
+            bufferName.PadRight fillLength
         elif fillLength > 2 then
-            let s = Utils.endSubstring filePath (fillLength - 2)
+            let s = Utils.endSubstring bufferName (fillLength - 2)
             ".." + s
         else
             ".."

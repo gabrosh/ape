@@ -9,12 +9,12 @@ open Context
 open DataTypes
 open ITextAreaBuffer
 open MatchRanges
-open MatchRangesExtract
 open Position
 open Selection
 open Selections
 open SelectionsRegisters
 open TextAreaDelegator
+open TextAreaFileSupport
 open TextRangesModifier
 open UndoProvider
 open UserMessages
@@ -52,6 +52,9 @@ type TextAreaBuffer (
     let myContextChangedDisposable =
         myContextRef.Subscribe handleContextChanged
 
+    let mutable myFilePath   = inFilePath
+    let mutable myBufferName = inFilePath
+
     let myBasicState = {
         displayPos = DisplayPos_Zero; prevCommand = None
     }
@@ -64,11 +67,8 @@ type TextAreaBuffer (
     let mySelsRegisters   = SelectionsRegisters ()
     let myWantedColumns   = Helpers.WantedColumns mySelections
 
-    // LoadFile/ReloadFile/WriteFile mechanism
+    // LoadFile/Reload/WriteFile mechanism
     let mutable myIsBufferChanged = false
-
-    // ReloadFile mechanism
-    let mutable myReloadFileParams: FileUtils.ReloadFileParams option = None
 
     // reporting a need for Undo registration
     let mutable myHasUndoToRegister      = false
@@ -77,7 +77,13 @@ type TextAreaBuffer (
     // registered children (extract buffers)
     let myChildren = ResizeArray<ITextAreaBuffer> ()
 
-    let myMatchRanges = MatchRanges (myUserMessages, myLines)
+    let myFileSupport = new TextAreaFileSupport (
+        myContextRef, myUserMessages, myLines
+    )
+
+    let myMatchRanges = MatchRanges (
+        myUserMessages, myLines
+    )
 
     let myUndoProvider = UndoProvider (
         // the same code as in GetInitialUndoState, which can't be called here
@@ -122,22 +128,28 @@ type TextAreaBuffer (
 
     // public properties
 
-    member val FilePath = inFilePath
-        with get, set
+    member _.FilePath
+        with get ()    = myFilePath
+        and  set value = myFilePath   <- value
+                         myBufferName <- value
 
-    member _.Lines                  = myLines
-    member _.LinesForCompletion     = myLines
-    member _.Selections             = mySelections
-    member _.IsReadOnly             = myContext.readOnly
-    member _.IsBufferChanged        = myIsBufferChanged
-    member _.HasUndoToRegister      = myHasUndoToRegister
-    member _.HasUndoLinesToRegister = myHasUndoLinesToRegister
+    member _.BufferName
+        with get ()    = myBufferName
+        and  set value = myBufferName <- value
+
+    member _.MatchRanges = myMatchRanges
+
+    // also for testing purposes
+    member _.Lines = myLines
+    member _.Main  = mySelections.Main
 
     // only for testing purposes
-    member _.Main             = mySelections.Main
-    member _.ReloadFileParams = myReloadFileParams
+    member _.Selections       = mySelections
+    member _.ReloadFileParams = myFileSupport.ReloadFileParams
 
     // private properties
+
+    member private _.IsReadOnly = myContext.readOnly
 
     member private _.DisplayPos
         with get ()    = myBasicState.displayPos
@@ -264,16 +276,6 @@ type TextAreaBuffer (
     member _.ClearSearchMatching () =
         myMatchRanges.ClearSearch ()
 
-    member _.CreateMatchRangesExtract linesExtract extractOnConstr =
-        myMatchRanges.CreateExtract MatchRangesExtract linesExtract extractOnConstr
-
-    member _.RegisterChild buffer =
-        myChildren.Add buffer
-
-    member _.UnregisterChild buffer =
-        myChildren.Remove buffer
-            |> ignore
-
     member private this.ReSearchIfNeeded isInitial =
         if isInitial then
             true
@@ -335,82 +337,44 @@ type TextAreaBuffer (
         getBufferState lines mySelections mySelsRegisters
             myWantedColumns this.DisplayPos
 
+    // children
+
+    member _.RegisterChild buffer =
+        myChildren.Add buffer
+
+    member _.UnregisterChild buffer =
+        myChildren.Remove buffer
+            |> ignore
+
     // others
 
     member this.LoadStrings (lines: string seq) =
-        myLines.Clear ()
-
-        try
-            this.LoadStringsAux lines myLines
-        finally
-            this.AssureNonZeroLinesCount ()
-            this.ResetState ()
-            this.ResetUndoState ()
+        myFileSupport.LoadStrings lines (
+            fun () ->
+                this.ResetState Position_Zero
+                this.ResetUndoState ()                
+        )
 
     member this.LoadFile encoding strictEncoding =
-        match this.OpenFileForReading encoding with
-        | Ok stream' ->
-            use stream = stream'
+        myFileSupport.LoadFile this.FilePath encoding strictEncoding (
+            fun () ->
+                this.ResetState Position_Zero
+                this.ResetUndoState ()                
+        )
 
-            myLines.Clear ()
+    member this.Reload encoding strictEncoding warnIfNoMatchFound =
+        let cursor      = this.Main.Cursor
+        let cursorWC    = this.Main.CursorWC
+        let displayLine = this.DisplayPos.line
 
-            let reloadFileParams = None
-
-            try
-                let fileFormat, endsWithNewLine, reloadFileParams' =
-                    this.LoadFileAux stream strictEncoding reloadFileParams
-
-                TestMines.checkMine (nameof this.LoadFile)
-
-                myReloadFileParams <- reloadFileParams'
-
-                Ok (fileFormat, endsWithNewLine)
-            finally
-                this.AssureNonZeroLinesCount ()
-                this.ResetState ()
-                this.ResetUndoState ()
-
-        | Error e ->
-            Error e
-
-    member this.ReloadFile encoding strictEncoding warnIfNoMatchFound =
-        match this.OpenFileForReading encoding with
-        | Ok stream' ->
-            use stream = stream'
-
-            let cursor      = this.Main.Cursor
-            let cursorWC    = this.Main.CursorWC
-            let displayLine = this.DisplayPos.line
-
-            if not myContext.reloadAsLogFile then
-                myLines.Clear ()
-
-            let reloadFileParams =
-                if myContext.reloadAsLogFile then
-                    myReloadFileParams
-                else
-                    None
-
-            try
-                let fileFormat, endsWithNewLine, reloadFileParams' =
-                    this.LoadFileAux stream strictEncoding reloadFileParams
-
-                TestMines.checkMine (nameof this.ReloadFile)
-
-                myReloadFileParams <- reloadFileParams'
-
-                Ok (fileFormat, endsWithNewLine)
-            finally
-                this.AssureNonZeroLinesCount ()
-
+        myFileSupport.ReloadFile this.FilePath encoding strictEncoding (
+            fun () ->
                 myMatchRanges.RunWithSetWarnIfNoMatchFound warnIfNoMatchFound (
                     fun () -> this.ResetStateAfterReload cursor cursorWC displayLine
                 )
 
                 this.ResetUndoState ()
-
-        | Error e ->
-            Error e
+        )
 
     member this.WriteFile encoding fileFormat endWithNewLine =
         FileUtils.writeFile this.FilePath encoding fileFormat endWithNewLine myLines
@@ -419,45 +383,13 @@ type TextAreaBuffer (
 
         myIsBufferChanged <- false
 
-    // others - private
-
-    member private _.LoadStringsAux lines result =
-        for line in lines do
-            result.Add (stringToChars line)
-
-    member private this.OpenFileForReading encoding =
-        try
-            Ok (FileUtils.openFileForReading this.FilePath encoding)
-        with
-        | :? System.IO.DirectoryNotFoundException as ex ->
-            Error ex.Message
-        | :? System.IO.FileNotFoundException as ex ->
-            Error ex.Message
-
-    member private this.LoadFileAux stream strictEncoding reloadFileParams =
-        let result = FileUtils.readFile stream reloadFileParams myLines
-
-        if strictEncoding then
-            match result with
-            | _, _, Some reloadFileParams' ->
-                if reloadFileParams'.nonTranslatableBytes then
-                    myUserMessages.RegisterMessage (
-                        UserMessages.formatMessage WARNING_NON_TRANSLATABLE_BYTES this.FilePath
-                    )
-            | _ ->
-                ()
-
-        result
-
-    member private _.AssureNonZeroLinesCount () =
-        if myLines.Count = 0 then
-            myLines.Add Chars.Empty
-
     // auxiliary
 
-    member private this.ResetState () =
+    member private this.ResetState cursor =
         mySelections.Clear ()
-        mySelections.Add Selection_Zero
+        mySelections.Add {
+            Selection_Zero with first = cursor; last = cursor
+        }
         myWantedColumns.SetPendingWCActions []
 
         mySelsRegisters.Clear ()
@@ -528,14 +460,17 @@ type TextAreaBuffer (
             with get ()    = this.FilePath
             and  set value = this.FilePath <- value
 
-        member this.Lines                  = this.Lines
-        member this.LinesForCompletion     = this.LinesForCompletion
-        member this.Selections             = this.Selections
+        member this.BufferName
+            with get ()    = this.BufferName
+            and  set value = this.BufferName <- value
+
+        member this.Lines                  = myLines
+        member this.LinesForCompletion     = myLines
+        member this.Selections             = mySelections
         member this.IsReadOnly             = this.IsReadOnly
-        member this.IsBufferChanged        = this.IsBufferChanged
-        member this.IsOrigBufferChanged    = this.IsBufferChanged
-        member this.HasUndoToRegister      = this.HasUndoToRegister
-        member this.HasUndoLinesToRegister = this.HasUndoLinesToRegister
+        member this.IsBufferChanged        = myIsBufferChanged
+        member this.HasUndoToRegister      = myHasUndoToRegister
+        member this.HasUndoLinesToRegister = myHasUndoLinesToRegister
 
         // commands
 
@@ -563,6 +498,9 @@ type TextAreaBuffer (
 
         // others
 
+        member this.Reload encoding strictEncoding warnIfNoMatchFound =
+            this.Reload encoding strictEncoding warnIfNoMatchFound
+
         member this.WriteFile encoding fileFormat endWithNewLine =
             this.WriteFile encoding fileFormat endWithNewLine
 
@@ -577,4 +515,5 @@ type TextAreaBuffer (
     interface IDisposable with
         member _.Dispose () =
             myContextChangedDisposable.Dispose ()
+            (myFileSupport :> IDisposable).Dispose ()
             (myDispatcher :> IDisposable).Dispose ()

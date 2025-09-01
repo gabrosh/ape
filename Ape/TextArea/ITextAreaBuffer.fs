@@ -14,12 +14,14 @@ type ITextAreaBuffer =
     abstract member FilePath: string
         with get, set
 
+    abstract member BufferName: string
+        with get, set
+
     abstract member Lines:                  Lines
     abstract member LinesForCompletion:     Lines
     abstract member Selections:             Selections
     abstract member IsReadOnly:             bool
     abstract member IsBufferChanged:        bool
-    abstract member IsOrigBufferChanged:    bool
     abstract member HasUndoToRegister:      bool
     abstract member HasUndoLinesToRegister: bool
 
@@ -64,6 +66,10 @@ type ITextAreaBuffer =
         unit -> unit
 
     // others
+
+    abstract member Reload:
+        encoding: string -> strictEncoding: bool -> warnIfNoMatchFound: bool
+     -> Result<FileUtils.FileFormat * bool, string>
 
     abstract member WriteFile:
         encoding: string -> fileFormat: FileUtils.FileFormat -> endWithNewLine: bool

@@ -30,8 +30,8 @@ let execute_help context (_argsMap: ArgsMap) =
         AppContext.BaseDirectory, helpFileName
     )
 
-    if context.textArea.HasBufferWithFilePath filePath then
-        context.textArea.ToBufferWithFilePath filePath
+    if context.textArea.HasBufferWithBufferName filePath then
+        context.textArea.ToBufferWithBufferName filePath
         context.userMessages.RegisterMessage (
             formatMessage WARNING_BUFFER_ALREADY_OPENED filePath
         )
@@ -44,7 +44,7 @@ let execute_help context (_argsMap: ArgsMap) =
 
 let argsMapSpec_quitAux: ArgsMapSpec = (0, [| |])
 
-let command_quitAux quite context (_argsMap: ArgsMap) =
+let execute_quitAux quite context (_argsMap: ArgsMap) =
     if not quite && context.textArea.IsAnyBufferChanged () then
         context.textArea.ToFirstChangedBuffer ()
         context.userMessages.RegisterMessage
@@ -56,20 +56,20 @@ let command_quitAux quite context (_argsMap: ArgsMap) =
 let argsMapSpec_quit     = argsMapSpec_quitAux
 let argsMapSpec_quitBang = argsMapSpec_quitAux
 
-let execute_quit     = command_quitAux false
-let execute_quitBang = command_quitAux true
+let execute_quit     = execute_quitAux false
+let execute_quitBang = execute_quitAux true
 
 // write, write!
 
 let argsMapSpec_writeAux = (0, [| "filePath" |])
 
-let private command_writeAux quite context (argsMap: ArgsMap) =
+let private execute_writeAux quite context (argsMap: ArgsMap) =
     let filePath = argsMap["filePath"]
 
     match filePath with
     | Some filePath ->
-        if context.textArea.HasBufferWithFilePath filePath then
-            context.textArea.ToBufferWithFilePath filePath
+        if context.textArea.HasBufferWithBufferName filePath then
+            context.textArea.ToBufferWithBufferName filePath
             context.userMessages.RegisterMessage (
                 formatMessage WARNING_BUFFER_ALREADY_OPENED filePath
             )
@@ -94,8 +94,8 @@ let private command_writeAux quite context (argsMap: ArgsMap) =
 let argsMapSpec_write     = argsMapSpec_writeAux
 let argsMapSpec_writeBang = argsMapSpec_writeAux
 
-let execute_write     = command_writeAux false
-let execute_writeBang = command_writeAux true
+let execute_write     = execute_writeAux false
+let execute_writeBang = execute_writeAux true
 
 // writeQuit
 
@@ -112,13 +112,13 @@ let execute_writeQuit context (_argsMap: ArgsMap) =
 
 let argsMapSpec_editAux = (1, [| "strictEncoding"; "encoding"; "filePath" |])
 
-let private command_editAux quite context (argsMap: ArgsMap) =
+let private execute_editAux quite context (argsMap: ArgsMap) =
     let strictEncoding = argsMap["strictEncoding"]
     let encoding       = argsMap["encoding"      ]
     let filePath       = argsMap["filePath"      ] |> Option.get
 
-    if context.textArea.HasBufferWithFilePath filePath then
-        context.textArea.ToBufferWithFilePath filePath
+    if context.textArea.HasBufferWithBufferName filePath then
+        context.textArea.ToBufferWithBufferName filePath
         if not quite then
             context.userMessages.RegisterMessage (
                 formatMessage WARNING_BUFFER_ALREADY_OPENED filePath
@@ -131,20 +131,20 @@ let private command_editAux quite context (argsMap: ArgsMap) =
 let argsMapSpec_edit     = argsMapSpec_editAux
 let argsMapSpec_editBang = argsMapSpec_editAux
 
-let execute_edit     = command_editAux false
-let execute_editBang = command_editAux true
+let execute_edit     = execute_editAux false
+let execute_editBang = execute_editAux true
 
 // view
 
 let argsMapSpec_viewAux = (1, [| "strictEncoding"; "encoding"; "filePath" |])
 
-let private command_viewAux quite context (argsMap: ArgsMap) =
+let private execute_viewAux quite context (argsMap: ArgsMap) =
     let strictEncoding = argsMap["strictEncoding"]
     let encoding       = argsMap["encoding"      ]
     let filePath       = argsMap["filePath"      ] |> Option.get
 
-    if context.textArea.HasBufferWithFilePath filePath then
-        context.textArea.ToBufferWithFilePath filePath
+    if context.textArea.HasBufferWithBufferName filePath then
+        context.textArea.ToBufferWithBufferName filePath
         if not quite then
             context.userMessages.RegisterMessage (
                 formatMessage WARNING_BUFFER_ALREADY_OPENED filePath
@@ -157,45 +157,68 @@ let private command_viewAux quite context (argsMap: ArgsMap) =
 let argsMapSpec_view     = argsMapSpec_viewAux
 let argsMapSpec_viewBang = argsMapSpec_viewAux
 
-let execute_view     = command_viewAux false
-let execute_viewBang = command_viewAux true
+let execute_view     = execute_viewAux false
+let execute_viewBang = execute_viewAux true
+
+// extract
+
+let argsMapSpec_extractAux = (1, [| "strictEncoding"; "encoding"; "filePath" |])
+
+let private execute_extractAux quite context (argsMap: ArgsMap) =
+    let strictEncoding = argsMap["strictEncoding"]
+    let encoding       = argsMap["encoding"      ]
+    let filePath       = argsMap["filePath"      ] |> Option.get
+
+    if context.textArea.HasBufferWithBufferName filePath then
+        context.textArea.ToBufferWithBufferName filePath
+        if not quite then
+            context.userMessages.RegisterMessage (
+                formatMessage WARNING_BUFFER_ALREADY_OPENED filePath
+            )
+    else
+        context.textArea.ExtractFile filePath encoding strictEncoding quite
+
+    false
+
+let argsMapSpec_extract     = argsMapSpec_extractAux
+let argsMapSpec_extractBang = argsMapSpec_extractAux
+
+let execute_extract     = execute_extractAux false
+let execute_extractBang = execute_extractAux true
 
 // reload, reload!
 
 let argsMapSpec_reloadAux: ArgsMapSpec = (0, [| |])
 
-let command_reloadAux quite context (_argsMap: ArgsMap) =
-    if not quite && context.textArea.IsOrigBufferChanged then
+let execute_reloadAux quite context (_argsMap: ArgsMap) =
+    if not quite && context.textArea.IsBufferChanged then
         context.userMessages.RegisterMessage
             WARNING_NO_WRITE_SINCE_LAST_CHANGE
     else
-        context.textArea.ReloadFile ()
+        context.textArea.Reload ()
 
     false
 
 let argsMapSpec_reload     = argsMapSpec_reloadAux
 let argsMapSpec_reloadBang = argsMapSpec_reloadAux
 
-let execute_reload     = command_reloadAux false
-let execute_reloadBang = command_reloadAux true
+let execute_reload     = execute_reloadAux false
+let execute_reloadBang = execute_reloadAux true
 
-// extract
+// bufferName
 
-let argsMapSpec_extract = (0, [| "filePath" |])
+let argsMapSpec_bufferName = (1, [| "bufferName" |])
 
-let execute_extract context (argsMap: ArgsMap) =
-    let filePath =
-        argsMap["filePath"] |> Option.defaultWith (
-            fun () -> context.textArea.FilePath + FileUtils.extractFileExt
-        )
+let execute_bufferName context (argsMap: ArgsMap) =
+    let bufferName = argsMap["bufferName"] |> Option.get
 
-    if context.textArea.HasBufferWithFilePath filePath then
-        context.textArea.ToBufferWithFilePath filePath
+    if context.textArea.HasBufferWithBufferName bufferName then
+        context.textArea.ToBufferWithBufferName bufferName
         context.userMessages.RegisterMessage (
-            formatMessage WARNING_BUFFER_ALREADY_OPENED filePath
+            formatMessage WARNING_BUFFER_ALREADY_OPENED bufferName
         )
     else
-        context.textArea.ExtractFile filePath
+        context.textArea.BufferName <- bufferName
 
     false
 
@@ -203,7 +226,7 @@ let execute_extract context (argsMap: ArgsMap) =
 
 let argsMapSpec_bufferDeleteAux: ArgsMapSpec = (0, [| |])
 
-let command_bufferDeleteAux quite context (_argsMap: ArgsMap) =
+let execute_bufferDeleteAux quite context (_argsMap: ArgsMap) =
     match context.textArea.GetFirstChildBuffer () with
     | Some childBuffer ->
         context.textArea.ToBuffer childBuffer
@@ -221,8 +244,8 @@ let command_bufferDeleteAux quite context (_argsMap: ArgsMap) =
 let argsMapSpec_bufferDelete     = argsMapSpec_bufferDeleteAux
 let argsMapSpec_bufferDeleteBang = argsMapSpec_bufferDeleteAux
 
-let execute_bufferDelete     = command_bufferDeleteAux false
-let execute_bufferDeleteBang = command_bufferDeleteAux true
+let execute_bufferDelete     = execute_bufferDeleteAux false
+let execute_bufferDeleteBang = execute_bufferDeleteAux true
 
 // bufferNext, bufferPrev
 

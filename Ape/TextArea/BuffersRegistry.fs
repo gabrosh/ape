@@ -5,6 +5,7 @@ open System
 open Context
 open TextAreaBuffer
 open TextAreaBufferExtract
+open TextAreaExtract
 open UserMessages
 open WrappedRef
 
@@ -16,9 +17,6 @@ type private Item = {
     mainContextRef: WrappedRef<MainContext>
     buffer:         ITextAreaBuffer.ITextAreaBuffer
 }
-
-let private getFullName filePath =
-    (IO.Path.GetFullPath filePath).ToLower ()
 
 [<Sealed>]
 type BuffersRegistry (
@@ -53,6 +51,27 @@ type BuffersRegistry (
         let mainContextRef = WrappedRef (makeMainContext myContextRef.Value bufferSettings)
 
         let buffer = new TextAreaBuffer (
+            mainContextRef, myUserMessages, myRegisters, filePath
+        )
+
+        myCurrentIndex <- myItems.Count
+
+        myItems.Add {
+            settings       = bufferSettings
+            keyMappings    = bufferKeyMappings
+            mainContextRef = mainContextRef
+            buffer         = buffer
+        }
+
+    /// Adds an empty TextAreaExtract at the end of the registry and sets it as the current one.
+    member _.AddTextAreaExtract (filePath: string) =
+        let bufferSettings = Settings.makeBufferSettings myGlobalSettings
+
+        let bufferKeyMappings = KeyMappings.makeBufferKeyMappings myGlobalKeyMappings
+
+        let mainContextRef = WrappedRef (makeMainContext myContextRef.Value bufferSettings)
+
+        let buffer = new TextAreaExtract (
             mainContextRef, myUserMessages, myRegisters, filePath
         )
 
@@ -179,13 +198,13 @@ type BuffersRegistry (
         if index <> -1 then
             myCurrentIndex <- index
 
-    /// Returns true if buffer with given filePath exists.
-    member this.HasBufferWithFilePath filePath =
-        this.GetIndexByFilePath filePath <> -1
+    /// Returns true if buffer with given bufferName exists.
+    member this.HasBufferWithBufferName bufferName =
+        this.GetIndexByBufferName bufferName <> -1
 
-    /// Switches to the buffer with given filePath.
-    member this.ToBufferWithFilePath filePath =
-        let index = this.GetIndexByFilePath filePath
+    /// Switches to the buffer with given bufferName.
+    member this.ToBufferWithBufferName bufferName =
+        let index = this.GetIndexByBufferName bufferName
         if index <> -1 then
             myCurrentIndex <- index
 
@@ -208,12 +227,9 @@ type BuffersRegistry (
             fun item -> item.buffer.IsBufferChanged
         )
 
-    member private _.GetIndexByFilePath filePath =
-        let fullName = getFullName filePath
-
+    member private _.GetIndexByBufferName bufferName = 
         myItems.FindIndex (
-            fun item ->
-                getFullName item.buffer.FilePath = fullName
+            fun item -> item.buffer.BufferName = bufferName
         )
 
     // IDisposable

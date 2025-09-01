@@ -34,7 +34,7 @@ let complete_writeAux: CompleteFun list = [
 let complete_write     = complete_writeAux
 let complete_writeBang = complete_writeAux
 
-// edit, edit!, view, view!
+// edit, edit!, view, view!, extract, extract!
 
 let check_editView (argsMap: ArgsMap) =
     let strictEncoding = argsMap["strictEncoding"]
@@ -50,41 +50,43 @@ let check_editView (argsMap: ArgsMap) =
     | _
         -> true
 
-let complete_editView_strictEncoding _context (argsMap: ArgsMap) (argInCompl: string) =
+let complete_editViewExtract_strictEncoding _context (argsMap: ArgsMap) (argInCompl: string) =
     if check_editView argsMap then
         seq { "false"; "true" }
         |> keepStartingWith argInCompl
     else
         noCompletions
 
-let complete_editView_encoding _context (argsMap: ArgsMap) (argInCompl: string) =
+let complete_editViewExtract_encoding _context (argsMap: ArgsMap) (argInCompl: string) =
     if check_editView argsMap then
         getSuggestedEncodings argInCompl
     else
         noCompletions
 
-let complete_editView_filePath _context (argsMap: ArgsMap) (_argInCompl: string) =
+let complete_editViewExtract_filePath _context (argsMap: ArgsMap) (_argInCompl: string) =
     if check_editView argsMap then
         seq { ListOnly "#filePath" }
     else
         noCompletions
 
-let complete_editView: CompleteFun list = [
-    complete_editView_strictEncoding
-    complete_editView_encoding
-    complete_editView_filePath
+let complete_editViewExtract: CompleteFun list = [
+    complete_editViewExtract_strictEncoding
+    complete_editViewExtract_encoding
+    complete_editViewExtract_filePath
 ]
 
-let complete_edit     = complete_editView
-let complete_editBang = complete_editView
-let complete_view     = complete_editView
-let complete_viewBang = complete_editView
+let complete_edit        = complete_editViewExtract
+let complete_editBang    = complete_editViewExtract
+let complete_view        = complete_editViewExtract
+let complete_viewBang    = complete_editViewExtract
+let complete_extract     = complete_editViewExtract
+let complete_extractBang = complete_editViewExtract
 
-// extract
+// bufferName
 
-let complete_extract_filePath _context (_argsMap: ArgsMap) (_argInCompl: string) =
-    seq { ListOnly "#filePath" }
+let complete_bufferName_bufferName _context (_argsMap: ArgsMap) (_argInCompl: string) =
+    seq { ListOnly "#bufferName" }
 
-let complete_extract: CompleteFun list = [
-    complete_extract_filePath
+let complete_bufferName: CompleteFun list = [
+    complete_bufferName_bufferName
 ]

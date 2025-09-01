@@ -1,4 +1,4 @@
-module TextBufferReloadFileTest
+module TextBufferReloadTest
 
 open NUnit.Framework
 open System
@@ -16,7 +16,7 @@ let contextRef = TestUtils.makeContextRef 80 25
 let testFilePath = Path.GetTempFileName ()
 
 [<TestFixture>]
-type ReloadFileTest () =
+type ReloadTest () =
     let myBuffer = new TextAreaBuffer (contextRef, UserMessages (), Registers (), "")
 
     // initialization
@@ -63,7 +63,7 @@ type ReloadFileTest () =
       (myBuffer :> IDisposable).Dispose ()
       deleteTestFile ()
 
-    // ReloadFile --------------------------------------------------------------
+    // Reload ------------------------------------------------------------------
 
     [<TestCase( [|"a"    ; "\r\nb"    |], [|FileFormat.none; FileFormat.dos |], [|false; false|] )>]  // dos
     [<TestCase( [|"a\r\n"; "b"        |], [|FileFormat.dos ; FileFormat.dos |], [|true ; false|] )>]  // dos
@@ -87,7 +87,7 @@ type ReloadFileTest () =
     [<TestCase( [|"a\n"  ; "b\r"      |], [|FileFormat.unix; FileFormat.dos |], [|true ; true |] )>]  // unix mac
                                                                             
     [<TestCase( [|"a\r"  ; "\nb"      |], [|FileFormat.mac ; FileFormat.dos |], [|true ; false|] )>]  // mac -> dos
-    member _.ReloadFile fileContents expFileFormats expEndsWithNewLines  =
+    member _.Reload fileContents expFileFormats expEndsWithNewLines  =
         let fileContent1       , fileContent2        = toTuple2 fileContents
         let expFileFormat1     , expFileFormat2      = toTuple2 expFileFormats
         let expEndsWithNewLine1, expEndsWithNewLine2 = toTuple2 expEndsWithNewLines
@@ -110,14 +110,14 @@ type ReloadFileTest () =
 
         writeChars (fileContent1 + fileContent2)
 
-        let fileFormat, endsWithNewLine = myBuffer.ReloadFile "utf-8" true true |> resultGet
+        let fileFormat, endsWithNewLine = myBuffer.Reload "utf-8" true true |> resultGet
 
         assertLines  [|"a"; "b"|]
         assertFormat expFileFormat2 fileFormat
         assertEnding expEndsWithNewLine2 endsWithNewLine
 
     [<TestCase( [|"a\n"; "\rb"|], [|FileFormat.unix; FileFormat.dos|], [|true ; false|] )>]  // unix mac
-    member _.ReloadFile_UnixMacJoined fileContents expFileFormats expEndsWithNewLines  =
+    member _.Reload_UnixMacJoined fileContents expFileFormats expEndsWithNewLines  =
         let fileContent1       , fileContent2        = toTuple2 fileContents
         let expFileFormat1     , expFileFormat2      = toTuple2 expFileFormats
         let expEndsWithNewLine1, expEndsWithNewLine2 = toTuple2 expEndsWithNewLines
@@ -134,7 +134,7 @@ type ReloadFileTest () =
 
         writeChars (fileContent1 + fileContent2)
 
-        let fileFormat, endsWithNewLine = myBuffer.ReloadFile "utf-8" true true |> resultGet
+        let fileFormat, endsWithNewLine = myBuffer.Reload "utf-8" true true |> resultGet
 
         assertLines  [|"a"; ""; "b"|]
         assertFormat expFileFormat2 fileFormat
@@ -143,7 +143,7 @@ type ReloadFileTest () =
     [<TestCase( [|"a"    ; "bc"   |], [|"a"      ; "bc"     |], [|false; false|] )>]
     [<TestCase( [|"a"    ; "\xFFc"|], [|"a"      ; "\uFFFDc"|], [|false; true |] )>]
     [<TestCase( [|"a\xFF"; "c"    |], [|"a\uFFFD"; "c"      |], [|true ; true |] )>]
-    member _.ReloadFile_NonTranslatable fileContents expLines expNonTranss =
+    member _.Reload_NonTranslatable fileContents expLines expNonTranss =
         let fileContent1, fileContent2 = toTuple2 fileContents
         let expLine1    , expLine2     = toTuple2 expLines
         let expNonTrans1, expNonTrans2 = toTuple2 expNonTranss
@@ -159,7 +159,7 @@ type ReloadFileTest () =
 
         writeCharsLatin1 (fileContent1 + fileContent2)
 
-        let _fileFormat, _endsWithNewLine = myBuffer.ReloadFile "utf-8" true true |> resultGet
+        let _fileFormat, _endsWithNewLine = myBuffer.Reload "utf-8" true true |> resultGet
 
         assertLines [| expLine1 + expLine2 |]
         assertNonTranslatableByes expNonTrans2
