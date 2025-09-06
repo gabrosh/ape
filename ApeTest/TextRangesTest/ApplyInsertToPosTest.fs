@@ -19,7 +19,7 @@ let defReg = DefaultRegister
 [<TestFixture>]
 type ApplyInsertToPosTest () =
     let myRegisters = Registers ()
-    let myBuffer    = new TextAreaBuffer (contextRef, UserMessages (), myRegisters, "")
+    let myBuffer    = makeTextAreaBuffer (contextRef, UserMessages (), myRegisters, "")
     let myAccessor  = LinesAccessor myBuffer.Lines
 
     // initialization

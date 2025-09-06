@@ -12,7 +12,7 @@ let contextRef = TestUtils.makeContextRef 80 25
 
 [<TestFixture>]
 type CommonModeTest () =
-    let myBuffer = new TextAreaBuffer (contextRef, UserMessages (), Registers (), "")
+    let myBuffer = makeTextAreaBuffer (contextRef, UserMessages (), Registers (), "")
 
     // initialization
 

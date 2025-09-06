@@ -12,7 +12,7 @@ let contextRef = TestUtils.makeContextRef_wrapLines 8 25 true
 
 [<TestFixture>]
 type WrapLinesAtWordTest () =
-    let myBuffer = new TextAreaBuffer (contextRef, UserMessages (), Registers (), "")
+    let myBuffer = makeTextAreaBuffer (contextRef, UserMessages (), Registers (), "")
 
     // initialization
 

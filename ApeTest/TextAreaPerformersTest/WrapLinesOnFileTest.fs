@@ -14,7 +14,7 @@ let filePath = @"Data\scrolling.txt"
 
 [<TestFixture>]
 type WrapLinesOnFileTest () =
-    let myBuffer = new TextAreaBuffer (contextRef, UserMessages (), Registers (), filePath)
+    let myBuffer = makeTextAreaBuffer (contextRef, UserMessages (), Registers (), filePath)
 
     // simple command, repeated command and simple assertions
 

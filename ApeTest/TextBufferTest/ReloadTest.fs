@@ -17,7 +17,7 @@ let testFilePath = Path.GetTempFileName ()
 
 [<TestFixture>]
 type ReloadTest () =
-    let myBuffer = new TextAreaBuffer (contextRef, UserMessages (), Registers (), "")
+    let myBuffer = makeTextAreaBuffer (contextRef, UserMessages (), Registers (), "")
 
     // initialization
 

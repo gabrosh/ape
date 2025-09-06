@@ -17,7 +17,7 @@ let defReg = DefaultRegister
 [<TestFixture>]
 type ModifyingTest () =
     let myRegisters = Registers ()
-    let myBuffer    = new TextAreaBuffer (contextRef, UserMessages (), myRegisters, "")
+    let myBuffer    = makeTextAreaBuffer (contextRef, UserMessages (), myRegisters, "")
 
     // initialization
 

@@ -1,7 +1,6 @@
-﻿module TextAreaBuffer
+module TextAreaBuffer
 
 open System
-open System.Collections.Immutable
 
 open Commands.InCommands
 open Common
@@ -11,245 +10,46 @@ open ITextAreaBuffer
 open MatchRanges
 open Position
 open Selection
-open Selections
-open SelectionsRegisters
-open TextAreaDelegator
+open TextAreaBufferBase
 open TextAreaFileSupport
-open TextRangesModifier
-open UndoProvider
 open UserMessages
 open WrappedRef
 
-let private getBufferState
-    (lines:         Lines option)
-    (selections:    Selections)
-    (selsRegisters: SelectionsRegisters)
-    (wantedColumns: Helpers.WantedColumns)
-    displayPos
-  =
-    let lines = lines |> Option.map ImmutableArray.CreateRange
-
-    {
-        names            = []
-        wasSaved         = false
-        lines            = lines
-        selections       = selections.GetImmutable ()
-        mainIndex        = selections.MainIndex
-        selsRegisters    = selsRegisters.GetAllImmutable ()
-        displayPos       = displayPos
-        pendingWCActions = wantedColumns.GetPendingWCActions ()
-    }
-
-[<Sealed>]
 type TextAreaBuffer (
     myContextRef:   IWrappedRef<MainContext>,
     myUserMessages: UserMessages,
     myRegisters:    Registers.Registers,
-    inFilePath:     string
-) =
-    let mutable myContext = myContextRef.Value
-    let handleContextChanged () = myContext <- myContextRef.Value
-    let myContextChangedDisposable =
-        myContextRef.Subscribe handleContextChanged
+    inFilePath:     string,
+    inLines:        Lines
+) as thisCtor =
+    inherit TextAreaBufferBase (
+        myContextRef, myUserMessages, myRegisters, inFilePath,
+        inLines,
+        MatchRanges (
+            myUserMessages, inLines
+        )
+    )
 
-    let mutable myFilePath   = inFilePath
-    let mutable myBufferName = inFilePath
-
-    let myBasicState = {
-        displayPos = DisplayPos_Zero; prevCommand = None
-    }
-
-    // fields affected by Undo/Redo
-    let myLines           = Lines [Chars.Empty]
-    let mySelectionsArray = ResizeArray<Selection> [Selection_Zero]
-    let mySelections      = Selections mySelectionsArray
-    let mySelsModifier    = TextRangesModifier mySelectionsArray
-    let mySelsRegisters   = SelectionsRegisters ()
-    let myWantedColumns   = Helpers.WantedColumns mySelections
-
-    // LoadFile/Reload/WriteFile mechanism
-    let mutable myIsBufferChanged = false
-
-    // reporting a need for Undo registration
-    let mutable myHasUndoToRegister      = false
-    let mutable myHasUndoLinesToRegister = false
+    let myMatchRanges = thisCtor.MatchRanges
 
     // registered children (extract buffers)
     let myChildren = ResizeArray<ITextAreaBuffer> ()
 
     let myFileSupport = new TextAreaFileSupport (
-        myContextRef, myUserMessages, myLines
+        myContextRef, myUserMessages, inLines
     )
-
-    let myMatchRanges = MatchRanges (
-        myUserMessages, myLines
-    )
-
-    let myUndoProvider = UndoProvider (
-        // the same code as in GetInitialUndoState, which can't be called here
-        getBufferState (Some myLines) mySelections mySelsRegisters
-            myWantedColumns myBasicState.displayPos
-    )
-    let myDispatcher = new TextAreaDispatcher.TextAreaDispatcher (
-        myContextRef,
-        myUserMessages, myLines, myRegisters, mySelections, mySelsRegisters,
-        myWantedColumns, myMatchRanges, myUndoProvider
-    )
-    let myRenderer = TextAreaRenderer.TextAreaRenderer (
-        myLines, mySelections, myMatchRanges, myDispatcher
-    )
-
-    // delegators
-
-    let myBasicDelegator = TextAreaDelegator.TextAreaBasic (
-        myBasicState,
-        mySelections,
-        myWantedColumns, myMatchRanges, myDispatcher
-    )
-    let myModifyingDelegator = TextAreaDelegator.TextAreaModifying (
-        myBasicState,
-        myLines, myRegisters,
-        mySelections, mySelsModifier, mySelsRegisters,
-        myWantedColumns, myDispatcher
-    )
-    let myTextRangesDelegator = TextAreaDelegator.TextAreaTextRanges (
-        myBasicState,
-        mySelections, mySelsModifier, mySelsRegisters,
-        myWantedColumns, myDispatcher
-    )
-    let mySelectionsDelegator = TextAreaDelegator.TextAreaSelections (
-        myBasicState,
-        myWantedColumns, myDispatcher
-    )
-    let myUndoRedoDelegator = TextAreaDelegator.TextAreaUndoRedo (
-        myBasicState,
-        myDispatcher
-    )
-
-    // public properties
-
-    member _.FilePath
-        with get ()    = myFilePath
-        and  set value = myFilePath   <- value
-                         myBufferName <- value
-
-    member _.BufferName
-        with get ()    = myBufferName
-        and  set value = myBufferName <- value
-
-    member _.MatchRanges = myMatchRanges
-
-    // also for testing purposes
-    member _.Lines = myLines
-    member _.Main  = mySelections.Main
 
     // only for testing purposes
-    member _.Selections       = mySelections
     member _.ReloadFileParams = myFileSupport.ReloadFileParams
 
-    // private properties
+    // children
 
-    member private _.IsReadOnly = myContext.readOnly
+    member _.RegisterChild buffer =
+        myChildren.Add buffer
 
-    member private _.DisplayPos
-        with get ()    = myBasicState.displayPos
-        and  set value = myBasicState.displayPos  <- value
-
-    member private _.PrevCommand
-        with get ()    = myBasicState.prevCommand
-        and  set value = myBasicState.prevCommand <- value
-
-    // commands
-
-    member this.PerformCommand isNormalMode isExtending command count =
-        if this.IsReadOnly && isWriteCommand command then
-            myUserMessages.RegisterMessage ERROR_BUFFER_OPENED_AS_READ_ONLY
-        else
-            this.PerformCommandAux isNormalMode isExtending command count
-
-    member private this.PerformCommandAux isNormalMode isExtending command count =
-
-        match command with
-        | CommonCommand (CursorToNextMatch isInitial) ->
-            let isInitial' = this.ReSearchIfNeeded isInitial
-            let command' = CommonCommand (CursorToNextMatch isInitial')
-
-            myBasicDelegator.PerformMatchCommand isExtending command' count true
-
-        | CommonCommand (CursorToPrevMatch isInitial) ->
-            let isInitial' = this.ReSearchIfNeeded isInitial
-            let command' = CommonCommand (CursorToPrevMatch isInitial')
-
-            myBasicDelegator.PerformMatchCommand isExtending command' count false
-
-        | CommonCommand _ ->
-            myBasicDelegator.PerformOnAllSelections isExtending command count
-
-        | WrapLinesDepCommand ScrollPageUp
-        | WrapLinesDepCommand ScrollPageDown     ->
-            myBasicDelegator.PerformOnMainSelection isExtending command count
-        | WrapLinesDepCommand CenterVertically
-        | WrapLinesDepCommand CenterHorizontally
-        | WrapLinesDepCommand AdaptDisplayPos    ->
-            myBasicDelegator.PerformViewCommand     isExtending command count
-        | WrapLinesDepCommand _                  ->
-            myBasicDelegator.PerformOnAllSelections isExtending command count
-
-        | ModifyingCommand    x ->
-            let isLinesModified = ref false
-
-            myModifyingDelegator.PerformModifyingCommand isNormalMode x count isLinesModified
-
-            if isLinesModified.Value then
-                this.ReSearchOrClearMatching()
-                myIsBufferChanged        <- true
-                myHasUndoLinesToRegister <- true
-
-        | TextRangesCommand   x ->
-            let isLinesModified = ref false
-
-            myTextRangesDelegator.PerformTextRangesCommand x count isLinesModified
-
-            if isLinesModified.Value then
-                this.ReSearchOrClearMatching()
-                myIsBufferChanged        <- true
-                myHasUndoLinesToRegister <- true
-
-        | SelectionsCommand   x ->
-            mySelectionsDelegator.PerformSelectionsCommand x count
-
-        | UndoRedoCommand     x ->
-            let isLinesApplied = ref false
-
-            myUndoRedoDelegator.PerformUndoRedoCommand x count isLinesApplied
-
-            if isLinesApplied.Value then
-                this.ReSearchOrClearMatching()
-                myIsBufferChanged <- not (
-                    myUndoProvider.IsCurrentStateSaved
-                )
-
-        mySelections.Sort ()
-
-        myHasUndoToRegister <- myHasUndoToRegister ||
-            match command with
-            | WrapLinesDepCommand AdaptDisplayPos
-            | UndoRedoCommand     _               -> false
-            | _                                   -> true
-
-        myDispatcher.ApplyChangedLinesCountIfNeeded ()
-
-        let first, last = mySelections.GetSelectionsSpan ()
-        myDispatcher.DisplayRenderer.TrimLinesCacheIfNeeded
-            first.line last.line
-
-    // rendering
-
-    member this.GetDisplayRows () =
-        myRenderer.GetDisplayRows this.DisplayPos
-
-    member _.GetCursorPosForStatusArea () =
-        myRenderer.GetCursorPosForStatusArea ()
+    member _.UnregisterChild buffer =
+        myChildren.Remove buffer
+            |> ignore
 
     // search matching
 
@@ -276,7 +76,7 @@ type TextAreaBuffer (
     member _.ClearSearchMatching () =
         myMatchRanges.ClearSearch ()
 
-    member private this.ReSearchIfNeeded isInitial =
+    override this.ReSearchIfNeeded isInitial =
         if isInitial then
             true
         else
@@ -286,8 +86,8 @@ type TextAreaBuffer (
             else
                 false
 
-    member private _.ReSearchOrClearMatching () =
-        if myContext.reSearchMatching then
+    override this.ReSearchOrClearMatching () =
+        if this.Context.reSearchMatching then
             if not myMatchRanges.IsCleared then
                 myMatchRanges.ReSearch ()
         else
@@ -295,56 +95,16 @@ type TextAreaBuffer (
 
     // Undo/Redo
 
-    member this.RegisterUndo isStateVolatile =
-        myUndoProvider.RegisterState
-            (this.GetUndoState myHasUndoLinesToRegister) isStateVolatile
-
-        myHasUndoToRegister      <- false
-        myHasUndoLinesToRegister <- false
-
-    member _.ClearIsLastUndoVolatile () =
-        myUndoProvider.ClearIsLastStateVolatile ()
-
     member this.UndoCorruptedState () =
-        myDispatcher.UndoRedoPerformer.UndoCorruptedState ()
+        this.Dispatcher.UndoRedoPerformer.UndoCorruptedState ()
 
-        myHasUndoToRegister      <- false
-        myHasUndoLinesToRegister <- false
+        this.HasUndoToRegister      <- false
+        this.HasUndoLinesToRegister <- false
 
         this.ClearSearchMatching()
 
-        myDispatcher.ApplyChangedLinesCountIfNeeded ()
-        myDispatcher.DisplayRenderer.ResetLinesCache ()
-
-    member private this.ResetUndoState () =
-        myUndoProvider.Reset (this.GetInitialUndoState ())
-
-        myHasUndoToRegister      <- false
-        myHasUndoLinesToRegister <- false
-
-    member private this.GetInitialUndoState () =
-        // the same code as in myUndoProvider initialization
-        getBufferState (Some myLines) mySelections mySelsRegisters
-            myWantedColumns this.DisplayPos
-
-    member private this.GetUndoState withLines =
-        let lines =
-            if withLines then
-                Some myLines
-            else
-                None
-
-        getBufferState lines mySelections mySelsRegisters
-            myWantedColumns this.DisplayPos
-
-    // children
-
-    member _.RegisterChild buffer =
-        myChildren.Add buffer
-
-    member _.UnregisterChild buffer =
-        myChildren.Remove buffer
-            |> ignore
+        this.Dispatcher.ApplyChangedLinesCountIfNeeded ()
+        this.Dispatcher.DisplayRenderer.ResetLinesCache ()
 
     // others
 
@@ -352,14 +112,14 @@ type TextAreaBuffer (
         myFileSupport.LoadStrings lines (
             fun () ->
                 this.ResetState Position_Zero
-                this.ResetUndoState ()                
+                this.ResetUndoState ()
         )
 
     member this.LoadFile encoding strictEncoding =
         myFileSupport.LoadFile this.FilePath encoding strictEncoding (
             fun () ->
                 this.ResetState Position_Zero
-                this.ResetUndoState ()                
+                this.ResetUndoState ()
         )
 
     member this.Reload encoding strictEncoding warnIfNoMatchFound =
@@ -376,23 +136,17 @@ type TextAreaBuffer (
                 this.ResetUndoState ()
         )
 
-    member this.WriteFile encoding fileFormat endWithNewLine =
-        FileUtils.writeFile this.FilePath encoding fileFormat endWithNewLine myLines
-
-        myUndoProvider.SetCurrentStateAsSaved myContext.maxSavedUndos
-
-        myIsBufferChanged <- false
-
     // auxiliary
 
     member private this.ResetState cursor =
-        mySelections.Clear ()
-        mySelections.Add {
+        this.Selections.Clear ()
+        this.Selections.Add {
             Selection_Zero with first = cursor; last = cursor
         }
-        myWantedColumns.SetPendingWCActions []
+        this.WantedColumns.SetPendingWCActions [
+        ]
 
-        mySelsRegisters.Clear ()
+        this.SelsRegisters.Clear ()
 
         myMatchRanges.ClearSearch ()
 
@@ -400,10 +154,10 @@ type TextAreaBuffer (
 
         this.PrevCommand <- None
 
-        myDispatcher.ApplyChangedLinesCountIfNeeded ()
-        myDispatcher.DisplayRenderer.ResetLinesCache ()
+        this.Dispatcher.ApplyChangedLinesCountIfNeeded ()
+        this.Dispatcher.DisplayRenderer.ResetLinesCache ()
 
-        myIsBufferChanged <- false
+        this.IsBufferChanged <- false
 
     member private this.ResetStateAfterReload cursor cursorWC displayLine =
         // Remember any message from failed reload.
@@ -419,14 +173,14 @@ type TextAreaBuffer (
         | None ->
             ()
 
-        mySelections.Clear ()
+        this.Selections.Clear ()
         let newCursor = this.GetValidCursorPos cursor
-        mySelections.Add {
+        this.Selections.Add {
             Selection_Zero with first   = newCursor ; last   = newCursor
                                 firstWC = cursorWC  ; lastWC = cursorWC
         }
 
-        mySelsRegisters.Clear ()
+        this.SelsRegisters.Clear ()
 
         let newDisplayLine = this.GetValidDisplayLine displayLine
 
@@ -436,19 +190,10 @@ type TextAreaBuffer (
 
         this.PrevCommand <- None
 
-        myDispatcher.ApplyChangedLinesCountIfNeeded ()
-        myDispatcher.DisplayRenderer.ResetLinesCache ()
+        this.Dispatcher.ApplyChangedLinesCountIfNeeded ()
+        this.Dispatcher.DisplayRenderer.ResetLinesCache ()
 
-        myIsBufferChanged <- false
-
-    member private _.GetValidCursorPos cursor =
-        let line  = min (myLines.Count - 1) cursor.line
-        let char_ = min myLines[line].Length cursor.char
-
-        { line = line; char = char_ }
-
-    member private _.GetValidDisplayLine displayLine =
-        min (myLines.Count - 1) displayLine
+        this.IsBufferChanged <- false
 
     // ITextAreaBuffer
 
@@ -464,13 +209,13 @@ type TextAreaBuffer (
             with get ()    = this.BufferName
             and  set value = this.BufferName <- value
 
-        member this.Lines                  = myLines
-        member this.LinesForCompletion     = myLines
-        member this.Selections             = mySelections
+        member this.Lines                  = inLines
+        member this.LinesForCompletion     = inLines
+        member this.Selections             = this.Selections
         member this.IsReadOnly             = this.IsReadOnly
-        member this.IsBufferChanged        = myIsBufferChanged
-        member this.HasUndoToRegister      = myHasUndoToRegister
-        member this.HasUndoLinesToRegister = myHasUndoLinesToRegister
+        member this.IsBufferChanged        = this.IsBufferChanged
+        member this.HasUndoToRegister      = this.HasUndoToRegister
+        member this.HasUndoLinesToRegister = this.HasUndoLinesToRegister
 
         // commands
 
@@ -512,8 +257,20 @@ type TextAreaBuffer (
 
     // IDisposable
 
-    interface IDisposable with
-        member _.Dispose () =
-            myContextChangedDisposable.Dispose ()
-            (myFileSupport :> IDisposable).Dispose ()
-            (myDispatcher :> IDisposable).Dispose ()
+    override _.Dispose () =
+        (myFileSupport :> IDisposable).Dispose ()
+        base.Dispose ()
+
+let makeTextAreaBuffer (
+    contextRef:   IWrappedRef<MainContext>,
+    userMessages: UserMessages,
+    registers:    Registers.Registers,
+    filePath:     string
+) =
+    new TextAreaBuffer (
+        contextRef,
+        userMessages,
+        registers,
+        filePath,
+        Lines [Chars.Empty]
+    )

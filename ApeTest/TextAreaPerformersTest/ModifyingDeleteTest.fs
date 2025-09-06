@@ -16,7 +16,7 @@ let defReg = DefaultRegister
 
 [<TestFixture>]
 type ModifyingDeleteTest () =
-    let myBuffer = new TextAreaBuffer (contextRef, UserMessages (), Registers (), "")
+    let myBuffer = makeTextAreaBuffer (contextRef, UserMessages (), Registers (), "")
 
     // initialization
 

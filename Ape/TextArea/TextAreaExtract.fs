@@ -1,7 +1,6 @@
 ﻿module TextAreaExtract
 
 open System
-open System.Collections.Immutable
 
 open Commands.InCommands
 open Common
@@ -11,217 +10,32 @@ open ITextAreaBuffer
 open MatchRangesExtract
 open Position
 open Selection
-open Selections
-open SelectionsRegisters
-open TextAreaDelegator
+open TextAreaBufferBase
 open TextAreaFileSupport
-open TextRangesModifier
-open UndoProvider
 open UserMessages
 open WrappedRef
 
-let private getBufferState
-    (lines:         Lines option)
-    (selections:    Selections)
-    (selsRegisters: SelectionsRegisters)
-    (wantedColumns: Helpers.WantedColumns)
-    displayPos
-  =
-    let lines = lines |> Option.map ImmutableArray.CreateRange
-
-    {
-        names            = []
-        wasSaved         = false
-        lines            = lines
-        selections       = selections.GetImmutable ()
-        mainIndex        = selections.MainIndex
-        selsRegisters    = selsRegisters.GetAllImmutable ()
-        displayPos       = displayPos
-        pendingWCActions = wantedColumns.GetPendingWCActions ()
-    }
-
-[<Sealed>]
 type TextAreaExtract (
     myContextRef:   IWrappedRef<MainContext>,
     myUserMessages: UserMessages,
     myRegisters:    Registers.Registers,
-    inFilePath:     string
-) =
-    let mutable myContext = myContextRef.Value
-    let handleContextChanged () = myContext <- myContextRef.Value
-    let myContextChangedDisposable =
-        myContextRef.Subscribe handleContextChanged
+    inFilePath:     string,
+    myLinesSource:  Lines,
+    myLinesExtract: Lines
+) as thisCtor =
+    inherit TextAreaBufferBase (
+        myContextRef, myUserMessages, myRegisters, inFilePath,
+        myLinesExtract,
+        MatchRangesExtract (
+            myUserMessages, myLinesSource, myLinesExtract
+        )
+    )
 
-    let mutable myFilePath   = inFilePath
-    let mutable myBufferName = inFilePath
-
-    let myBasicState = {
-        displayPos = DisplayPos_Zero; prevCommand = None
-    }
-
-    // fields affected by Undo/Redo
-    let myLines           = Lines [Chars.Empty]
-    let myLinesExtract    = Lines [Chars.Empty]
-    let mySelectionsArray = ResizeArray<Selection> [Selection_Zero]
-    let mySelections      = Selections mySelectionsArray
-    let mySelsModifier    = TextRangesModifier mySelectionsArray
-    let mySelsRegisters   = SelectionsRegisters ()
-    let myWantedColumns   = Helpers.WantedColumns mySelections
-
-    // reporting a need for Undo registration
-    let mutable myHasUndoToRegister = false
+    let myMatchRanges = thisCtor.MatchRanges :?> MatchRangesExtract
 
     let myFileSupport = new TextAreaFileSupport (
-        myContextRef, myUserMessages, myLines
+        myContextRef, myUserMessages, myLinesSource
     )
-
-    let myMatchRanges = MatchRangesExtract (
-        myUserMessages, myLines, myLinesExtract
-    )
-
-    let myUndoProvider = UndoProvider (
-        // the same code as in GetInitialUndoState, which can't be called here
-        getBufferState (Some myLinesExtract) mySelections mySelsRegisters
-            myWantedColumns myBasicState.displayPos
-    )
-    let myDispatcher = new TextAreaDispatcher.TextAreaDispatcher (
-        myContextRef,
-        myUserMessages, myLinesExtract, myRegisters, mySelections, mySelsRegisters,
-        myWantedColumns, myMatchRanges, myUndoProvider
-    )
-    let myRenderer = TextAreaRenderer.TextAreaRenderer (
-        myLinesExtract, mySelections, myMatchRanges, myDispatcher
-    )
-
-    // delegators
-
-    let myBasicDelegator = TextAreaDelegator.TextAreaBasic (
-        myBasicState,
-        mySelections,
-        myWantedColumns, myMatchRanges, myDispatcher
-    )
-    let myModifyingDelegator = TextAreaDelegator.TextAreaModifying (
-        myBasicState,
-        myLinesExtract, myRegisters,
-        mySelections, mySelsModifier, mySelsRegisters,
-        myWantedColumns, myDispatcher
-    )
-    let myTextRangesDelegator = TextAreaDelegator.TextAreaTextRanges (
-        myBasicState,
-        mySelections, mySelsModifier, mySelsRegisters,
-        myWantedColumns, myDispatcher
-    )
-    let mySelectionsDelegator = TextAreaDelegator.TextAreaSelections (
-        myBasicState,
-        myWantedColumns, myDispatcher
-    )
-    let myUndoRedoDelegator = TextAreaDelegator.TextAreaUndoRedo (
-        myBasicState,
-        myDispatcher
-    )
-
-    // public properties
-
-    member _.FilePath
-        with get ()    = myFilePath
-        and  set value = myFilePath   <- value
-                         myBufferName <- value
-
-    member _.BufferName
-        with get ()    = myBufferName
-        and  set value = myBufferName <- value
-
-    // also for testing purposes
-    member _.Lines = myLines
-    member _.Main  = mySelections.Main
-
-    // private properties
-
-    member private _.IsReadOnly = myContext.readOnly
-
-    member private _.DisplayPos
-        with get ()    = myBasicState.displayPos
-        and  set value = myBasicState.displayPos  <- value
-
-    member private _.PrevCommand
-        with get ()    = myBasicState.prevCommand
-        and  set value = myBasicState.prevCommand <- value
-
-    // commands
-
-    member this.PerformCommand isNormalMode isExtending command count =
-        if this.IsReadOnly && isWriteCommand command then
-            myUserMessages.RegisterMessage ERROR_BUFFER_OPENED_AS_READ_ONLY
-        else
-            this.PerformCommandAux isNormalMode isExtending command count
-
-    member private this.PerformCommandAux isNormalMode isExtending command count =
-
-        match command with
-        | CommonCommand (CursorToNextMatch isInitial) ->
-            let isInitial' = this.ReSearchIfNeeded isInitial
-            let command' = CommonCommand (CursorToNextMatch isInitial')
-
-            myBasicDelegator.PerformMatchCommand isExtending command' count true
-
-        | CommonCommand (CursorToPrevMatch isInitial) ->
-            let isInitial' = this.ReSearchIfNeeded isInitial
-            let command' = CommonCommand (CursorToPrevMatch isInitial')
-
-            myBasicDelegator.PerformMatchCommand isExtending command' count false
-
-        | CommonCommand _ ->
-            myBasicDelegator.PerformOnAllSelections isExtending command count
-
-        | WrapLinesDepCommand ScrollPageUp
-        | WrapLinesDepCommand ScrollPageDown     ->
-            myBasicDelegator.PerformOnMainSelection isExtending command count
-        | WrapLinesDepCommand CenterVertically
-        | WrapLinesDepCommand CenterHorizontally
-        | WrapLinesDepCommand AdaptDisplayPos    ->
-            myBasicDelegator.PerformViewCommand     isExtending command count
-        | WrapLinesDepCommand _                  ->
-            myBasicDelegator.PerformOnAllSelections isExtending command count
-
-        | ModifyingCommand    x ->
-            let isLinesModified = ref false
-
-            myModifyingDelegator.PerformModifyingCommand isNormalMode x count isLinesModified
-
-        | TextRangesCommand   x ->
-            let isLinesModified = ref false
-
-            myTextRangesDelegator.PerformTextRangesCommand x count isLinesModified
-
-        | SelectionsCommand   x ->
-            mySelectionsDelegator.PerformSelectionsCommand x count
-
-        | UndoRedoCommand     x ->
-            let isLinesApplied = ref false
-
-            myUndoRedoDelegator.PerformUndoRedoCommand x count isLinesApplied
-
-        mySelections.Sort ()
-
-        myHasUndoToRegister <- myHasUndoToRegister ||
-            match command with
-            | WrapLinesDepCommand AdaptDisplayPos
-            | UndoRedoCommand     _               -> false
-            | _                                   -> true
-
-        myDispatcher.ApplyChangedLinesCountIfNeeded ()
-
-        let first, last = mySelections.GetSelectionsSpan ()
-        myDispatcher.DisplayRenderer.TrimLinesCacheIfNeeded
-            first.line last.line
-
-    // rendering
-
-    member this.GetDisplayRows () =
-        myRenderer.GetDisplayRows this.DisplayPos
-
-    member _.GetCursorPosForStatusArea () =
-        myRenderer.GetCursorPosForStatusArea ()
 
     // search matching
 
@@ -264,7 +78,7 @@ type TextAreaExtract (
         )
 
     member private this.WrapExtractAction action =
-        let lineCurrent = mySelections.Main.Cursor.line
+        let lineCurrent = this.Selections.Main.Cursor.line
 
         let lineOrig =
             if myMatchRanges.IsClearedExtract then
@@ -289,7 +103,7 @@ type TextAreaExtract (
 
         this.ResetUndoState ()
 
-    member private this.ReSearchIfNeeded isInitial =
+    override this.ReSearchIfNeeded isInitial =
         if isInitial then
             true
         else
@@ -299,16 +113,10 @@ type TextAreaExtract (
             else
                 false
 
+    override _.ReSearchOrClearMatching () =
+        ()
+
     // Undo/Redo
-
-    member this.RegisterUndo isStateVolatile =
-        myUndoProvider.RegisterState
-            (this.GetUndoState ()) isStateVolatile
-
-        myHasUndoToRegister <- false
-
-    member _.ClearIsLastUndoVolatile () =
-        myUndoProvider.ClearIsLastStateVolatile ()
 
     member this.UndoCorruptedState () =
         myMatchRanges.ClearSearch ()
@@ -318,20 +126,6 @@ type TextAreaExtract (
 
         this.ResetState cursorNew
         this.ResetUndoState ()
-
-    member private this.ResetUndoState () =
-        myUndoProvider.Reset (this.GetInitialUndoState ())
-
-        myHasUndoToRegister <- false
-
-    member private this.GetInitialUndoState () =
-        // the same code as in myUndoProvider initialization
-        getBufferState (Some myLinesExtract) mySelections mySelsRegisters
-            myWantedColumns this.DisplayPos
-
-    member private this.GetUndoState () =
-        getBufferState None mySelections mySelsRegisters
-            myWantedColumns this.DisplayPos
 
     // others
 
@@ -365,30 +159,27 @@ type TextAreaExtract (
                 this.ResetUndoState ()
         )
 
-    member this.WriteFile encoding fileFormat endWithNewLine =
-        FileUtils.writeFile this.FilePath encoding fileFormat endWithNewLine myLinesExtract
-
-        myUndoProvider.SetCurrentStateAsSaved myContext.maxSavedUndos
-
     // auxiliary
 
     member private this.ResetState cursor =
-        mySelections.Clear ()
-        mySelections.Add {
+        this.Selections.Clear ()
+        this.Selections.Add {
             Selection_Zero with first = cursor; last = cursor
         }
-        myWantedColumns.SetPendingWCActions [
+        this.WantedColumns.SetPendingWCActions [
             SetHardWantedColumn; SetSoftWantedColumn
         ]
 
-        mySelsRegisters.Clear ()
+        this.SelsRegisters.Clear ()
 
         this.DisplayPos <- DisplayPos_Zero
 
         this.PrevCommand <- None
 
-        myDispatcher.ApplyChangedLinesCountIfNeeded ()
-        myDispatcher.DisplayRenderer.ResetLinesCache ()
+        this.Dispatcher.ApplyChangedLinesCountIfNeeded ()
+        this.Dispatcher.DisplayRenderer.ResetLinesCache ()
+
+        this.IsBufferChanged <- false
 
     member private this.ResetStateAfterReload cursor cursorWC displayLine =
         // Remember any message from failed reload.
@@ -404,14 +195,14 @@ type TextAreaExtract (
         | None ->
             ()
 
-        mySelections.Clear ()
+        this.Selections.Clear ()
         let newCursor = this.GetValidCursorPos cursor
-        mySelections.Add {
+        this.Selections.Add {
             Selection_Zero with first   = newCursor ; last   = newCursor
                                 firstWC = cursorWC  ; lastWC = cursorWC
         }
 
-        mySelsRegisters.Clear ()
+        this.SelsRegisters.Clear ()
 
         let newDisplayLine = this.GetValidDisplayLine displayLine
 
@@ -421,17 +212,10 @@ type TextAreaExtract (
 
         this.PrevCommand <- None
 
-        myDispatcher.ApplyChangedLinesCountIfNeeded ()
-        myDispatcher.DisplayRenderer.ResetLinesCache ()
+        this.Dispatcher.ApplyChangedLinesCountIfNeeded ()
+        this.Dispatcher.DisplayRenderer.ResetLinesCache ()
 
-    member private _.GetValidCursorPos cursor =
-        let line  = min (myLinesExtract.Count - 1) cursor.line
-        let char_ = min myLinesExtract[line].Length cursor.char
-
-        { line = line; char = char_ }
-
-    member private _.GetValidDisplayLine displayLine =
-        min (myLinesExtract.Count - 1) displayLine
+        this.IsBufferChanged <- false
 
     // ITextAreaBuffer
 
@@ -448,12 +232,12 @@ type TextAreaExtract (
             and  set value = this.BufferName <- value
 
         member this.Lines                  = myLinesExtract
-        member this.LinesForCompletion     = myLines
-        member this.Selections             = mySelections
+        member this.LinesForCompletion     = myLinesSource
+        member this.Selections             = this.Selections
         member this.IsReadOnly             = this.IsReadOnly
-        member this.IsBufferChanged        = false
-        member this.HasUndoToRegister      = myHasUndoToRegister
-        member this.HasUndoLinesToRegister = false
+        member this.IsBufferChanged        = this.IsBufferChanged
+        member this.HasUndoToRegister      = this.HasUndoToRegister
+        member this.HasUndoLinesToRegister = this.HasUndoLinesToRegister
 
         // commands
 
@@ -492,7 +276,21 @@ type TextAreaExtract (
 
     // IDisposable
 
-    interface IDisposable with
-        member _.Dispose () =
-            myContextChangedDisposable.Dispose ()
-            (myDispatcher :> IDisposable).Dispose ()
+    override _.Dispose () =
+        (myFileSupport :> IDisposable).Dispose ()
+        base.Dispose ()
+
+let makeTextAreaExtract (
+    contextRef:   IWrappedRef<MainContext>,
+    userMessages: UserMessages,
+    registers:    Registers.Registers,
+    filePath:     string
+) =
+    new TextAreaExtract (
+        contextRef,
+        userMessages,
+        registers,
+        filePath,
+        Lines [Chars.Empty],
+        Lines [Chars.Empty]
+    )

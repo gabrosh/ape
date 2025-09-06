@@ -3,6 +3,7 @@
 open System
 
 open Context
+open DataTypes
 open TextAreaBuffer
 open TextAreaBufferExtract
 open TextAreaExtract
@@ -50,7 +51,7 @@ type BuffersRegistry (
 
         let mainContextRef = WrappedRef (makeMainContext myContextRef.Value bufferSettings)
 
-        let buffer = new TextAreaBuffer (
+        let buffer = makeTextAreaBuffer (
             mainContextRef, myUserMessages, myRegisters, filePath
         )
 
@@ -71,7 +72,7 @@ type BuffersRegistry (
 
         let mainContextRef = WrappedRef (makeMainContext myContextRef.Value bufferSettings)
 
-        let buffer = new TextAreaExtract (
+        let buffer = makeTextAreaExtract (
             mainContextRef, myUserMessages, myRegisters, filePath
         )
 
@@ -95,7 +96,7 @@ type BuffersRegistry (
 
         let mainContextRef = WrappedRef (makeMainContext myContextRef.Value bufferSettings)
 
-        let buffer = new TextAreaBufferExtract (
+        let buffer = makeTextAreaBufferExtract (
             parentBuffer, mainContextRef, myUserMessages, myRegisters, fileName, extractOnConstr
         )
         buffer.Init ()
