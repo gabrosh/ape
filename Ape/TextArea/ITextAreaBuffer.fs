@@ -24,6 +24,7 @@ type ITextAreaBuffer =
     abstract member IsBufferChanged:        bool
     abstract member HasUndoToRegister:      bool
     abstract member HasUndoLinesToRegister: bool
+    abstract member StatusChar:             char
 
     // commands
 

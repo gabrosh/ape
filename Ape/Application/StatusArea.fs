@@ -98,27 +98,27 @@ type StatusArea (
 
     /// Returns the first display row of the status line.
     member this.GetFirstDisplayRow
-        (bufferName: string) isReadOnly isModified isRecording cursorPos =
+        (bufferName: string) (statusChar: char) isRecording cursorPos =
 
         let displayRow = ResizeArray myRenderingContext.windowWidth
 
         let statusColors = myRenderingContext.colorScheme.status
 
-        let isModifiedString: string = this.GetIsModifiedString isReadOnly isModified
+        let statusString: string = statusChar.ToString ()
         let isRecordingColors = this.GetIsRecordingColors isRecording
         let cursorString: string = this.GetCursorString cursorPos
-
-        let othersLength = isModifiedString.Length + 1 + cursorString.Length
+        
+        let othersLength = statusString.Length + 1 + cursorString.Length
         let filePathMaxLength = myRenderingContext.windowWidth - othersLength
         let bufferNameString = this.GetBufferNameString bufferName filePathMaxLength
-
-        this.WriteTo displayRow isModifiedString statusColors
+        
+        this.WriteTo displayRow statusString statusColors
         this.WriteTo displayRow " " isRecordingColors
         this.WriteTo displayRow bufferNameString statusColors
         this.WriteTo displayRow cursorString statusColors
 
         displayRow.GetRange (0, myRenderingContext.windowWidth)
-
+    
     /// Returns the second display row of the status line.
     member this.GetSecondDisplayRow mode keyPrefix message =
         let colorScheme = myRenderingContext.colorScheme
@@ -175,12 +175,6 @@ type StatusArea (
         displayRow.GetRange (0, windowWidth)
 
     // auxiliary
-
-    member private _.GetIsModifiedString isReadOnly isModified =
-        if isReadOnly then
-            if isModified then "+" else "-"
-        else
-            if isModified then "*" else " "
 
     member private _.GetIsRecordingColors isRecording =
         if isRecording then

@@ -95,6 +95,7 @@ type TextArea (
     member _.IsBufferChanged        = myBuffer.IsBufferChanged
     member _.HasUndoToRegister      = myBuffer.HasUndoToRegister
     member _.HasUndoLinesToRegister = myBuffer.HasUndoLinesToRegister
+    member _.StatusChar             = myBuffer.StatusChar
 
     member _.GetFirstChildBuffer () = myBuffer.GetFirstChild ()
 

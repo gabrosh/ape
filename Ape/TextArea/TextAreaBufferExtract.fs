@@ -224,6 +224,9 @@ type TextAreaBufferExtract (
         member this.HasUndoToRegister      = this.HasUndoToRegister
         member this.HasUndoLinesToRegister = this.HasUndoLinesToRegister
 
+        member this.StatusChar =
+            if myMatchRanges.IsClearedExtract then 'o' else '.'
+            
         // commands
 
         member this.PerformCommand isNormalMode isExtending command count =

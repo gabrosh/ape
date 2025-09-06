@@ -1,0 +1,1 @@
+- Disallow undo/redo with lines modifications on a read-only buffer

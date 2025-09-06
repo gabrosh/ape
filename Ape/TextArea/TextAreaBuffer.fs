@@ -217,6 +217,12 @@ type TextAreaBuffer (
         member this.HasUndoToRegister      = this.HasUndoToRegister
         member this.HasUndoLinesToRegister = this.HasUndoLinesToRegister
 
+        member this.StatusChar =
+            if this.IsReadOnly then
+                if this.IsBufferChanged then '+' else '-'
+            else
+                if this.IsBufferChanged then '*' else ' '
+            
         // commands
 
         member this.PerformCommand isNormalMode isExtending command count =
