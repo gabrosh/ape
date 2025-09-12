@@ -525,7 +525,7 @@ type TextArea (
             )
         else
             myBuffers.AddTextAreaBufferExtract
-                parentBuffer this.CurrentSettings filePath false
+                filePath parentBuffer this.CurrentSettings
             applyBufferSwitch ()
             this.SetBufferExtractSettings () |> ignore
 

@@ -65,7 +65,9 @@ type BuffersRegistry (
         }
 
     /// Adds an empty TextAreaExtract at the end of the registry and sets it as the current one.
-    member _.AddTextAreaExtract (filePath: string) =
+    member _.AddTextAreaExtract
+        (filePath: string)
+      =
         let bufferSettings = Settings.makeBufferSettings myGlobalSettings
 
         let bufferKeyMappings = KeyMappings.makeBufferKeyMappings myGlobalKeyMappings
@@ -87,8 +89,7 @@ type BuffersRegistry (
 
     /// Adds an empty TextAreaBufferExtract at the end of the registry and sets it as the current one.
     member _.AddTextAreaBufferExtract
-        (parentBuffer: TextAreaBuffer) (parentSettings: Settings.Settings)
-        (fileName: string) (extractOnConstr: bool)
+        (filePath: string) (parentBuffer: TextAreaBuffer) (parentSettings: Settings.Settings)
       =
         let bufferSettings = Settings.makeBufferExtractSettings parentSettings
 
@@ -97,9 +98,8 @@ type BuffersRegistry (
         let mainContextRef = WrappedRef (makeMainContext myContextRef.Value bufferSettings)
 
         let buffer = makeTextAreaBufferExtract (
-            parentBuffer, mainContextRef, myUserMessages, myRegisters, fileName, extractOnConstr
+            parentBuffer, mainContextRef, myUserMessages, myRegisters, filePath
         )
-        buffer.Init ()
 
         parentBuffer.RegisterChild buffer
 

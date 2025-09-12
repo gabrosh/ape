@@ -55,14 +55,6 @@ type MatchRanges (
         finally
             myWarnIfNoMatchFound <- prevValue
 
-    /// Creates an extract version of this instance using constructor constr.
-    member _.CreateExtract constr (linesExtract: Lines) (extractOnConstr: bool) =
-        constr (
-            myUserMessages, myLines,
-            myLastRegex, myIsCleared, myTextRanges,
-            linesExtract, extractOnConstr
-        )
-
     /// Returns count of text ranges in the main group.
     member _.GetMainGroupCount () =
         myTextRanges[mainGroupName].Count

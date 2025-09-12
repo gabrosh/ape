@@ -14,32 +14,26 @@ open UserMessages
 open WrappedRef
 
 type TextAreaBufferExtract (
-    myParent:          TextAreaBuffer,
-    myContextRef:      IWrappedRef<MainContext>,
-    myUserMessages:    UserMessages,
-    myRegisters:       Registers.Registers,
-    inFilePath:        string,
-    inExtractOnConstr: bool,
-    myLinesExtract:    Lines
+    myParent:       TextAreaBuffer,
+    myContextRef:   IWrappedRef<MainContext>,
+    myUserMessages: UserMessages,
+    myRegisters:    Registers.Registers,
+    inFilePath:     string,
+    myLinesExtract: Lines
 ) as thisCtor =
     inherit TextAreaBufferBase (
         myContextRef, myUserMessages, myRegisters, inFilePath,
         myLinesExtract,
         MatchRangesExtract (
             myUserMessages, myParent.Lines, myLinesExtract,
-            myParent.MatchRanges, inExtractOnConstr
+            myParent.MatchRanges
         )
     )
 
     let myMatchRanges = thisCtor.MatchRanges :?> MatchRangesExtract
 
-    /// Initializes the instance after its construction.
-    member this.Init () =
-        this.Selections.Main <- myParent.Main
-
-        this.WrapExtractAction (
-            fun () -> myMatchRanges.Init ()
-        )
+    do
+        thisCtor.Selections.Main <- myParent.Main
 
     // search matching
 
@@ -269,12 +263,11 @@ type TextAreaBufferExtract (
         base.Dispose ()
 
 let makeTextAreaBufferExtract (
-    parent:          TextAreaBuffer,
-    contextRef:      IWrappedRef<MainContext>,
-    userMessages:    UserMessages,
-    registers:       Registers.Registers,
-    filePath:        string,
-    extractOnConstr: bool
+    parent:       TextAreaBuffer,
+    contextRef:   IWrappedRef<MainContext>,
+    userMessages: UserMessages,
+    registers:    Registers.Registers,
+    filePath:     string
 ) =
     new TextAreaBufferExtract (
         parent,
@@ -282,6 +275,5 @@ let makeTextAreaBufferExtract (
         userMessages,
         registers,
         filePath,
-        extractOnConstr,
-        Lines [Chars.Empty]
+        Lines []  // lines added in MatchRangesExtract constructor
     )

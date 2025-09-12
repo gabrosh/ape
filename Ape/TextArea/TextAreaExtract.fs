@@ -132,7 +132,7 @@ type TextAreaExtract (
     member this.LoadStrings (lines: string seq) =
         myFileSupport.LoadStrings lines (
             fun () ->
-                myMatchRanges.Init ()
+                myMatchRanges.UpdateAfterReload ()
                 this.ResetState Position_Zero
                 this.ResetUndoState ()
         )
@@ -140,7 +140,7 @@ type TextAreaExtract (
     member this.LoadFile encoding strictEncoding =
         myFileSupport.LoadFile this.FilePath encoding strictEncoding (
             fun () ->
-                myMatchRanges.Init ()
+                myMatchRanges.UpdateAfterReload ()
                 this.ResetState Position_Zero
                 this.ResetUndoState ()
         )
@@ -295,5 +295,5 @@ let makeTextAreaExtract (
         registers,
         filePath,
         Lines [Chars.Empty],
-        Lines [Chars.Empty]
+        Lines []              // lines added in MatchRangesExtract constructor
     )

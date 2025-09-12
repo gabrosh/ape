@@ -49,15 +49,9 @@ type MatchRangesExtractTest () =
             |> Seq.map stringToChars
             |> Lines
 
-        let linesExtract =
-            [| |]
-            |> Seq.map stringToChars
-            |> Lines
+        let linesExtract = Lines []
 
-        let matchRanges = MatchRanges (myUserMessages, lines)
-
-        let matchRangesExtract = matchRanges.CreateExtract MatchRangesExtract linesExtract true
-        matchRangesExtract.Init ()
+        let matchRangesExtract = MatchRangesExtract (myUserMessages, lines, linesExtract)
 
         matchRangesExtract.Search "abc"
 
@@ -87,26 +81,20 @@ type MatchRangesExtractTest () =
             textRange (2, 0) (2, 2)
         |]
 
-    // Search, CreateExtract, Extract ------------------------------------------
+    // CreateExtract, Extract --------------------------------------------------
 
     [<Test>]
-    member _.Search_CreateExtract () =
+    member _.CreateExtract_Extract () =
         let lines =
             [|"abc"; "def"; "abc"|]
             |> Seq.map stringToChars
             |> Lines
 
-        let linesExtract =
-            [| |]
-            |> Seq.map stringToChars
-            |> Lines
+        let linesExtract = Lines []
 
-        let matchRanges = MatchRanges (myUserMessages, lines)
+        let matchRangesExtract = MatchRangesExtract (myUserMessages, lines, linesExtract)
 
-        matchRanges.Search "abc"
-
-        let matchRangesExtract = matchRanges.CreateExtract MatchRangesExtract linesExtract true
-        matchRangesExtract.Init ()
+        matchRangesExtract.Extract "abc"
 
         assertLines linesExtract [|
             "abc"; "abc"
@@ -116,24 +104,24 @@ type MatchRangesExtractTest () =
             textRange (1, 0) (1, 2)
         |]
 
+    // Search, CreateExtract, ReExtract ----------------------------------------
+
     [<Test>]
-    member _.CreateExtract_Extract () =
+    member _.Search_CreateExtract () =
         let lines =
             [|"abc"; "def"; "abc"|]
             |> Seq.map stringToChars
             |> Lines
 
-        let linesExtract =
-            [| |]
-            |> Seq.map stringToChars
-            |> Lines
+        let linesExtract = Lines []
 
         let matchRanges = MatchRanges (myUserMessages, lines)
 
-        let matchRangesExtract = matchRanges.CreateExtract MatchRangesExtract linesExtract true
-        matchRangesExtract.Init ()
+        matchRanges.Search "abc"
 
-        matchRangesExtract.Extract "abc"
+        let matchRangesExtract = MatchRangesExtract (myUserMessages, lines, linesExtract, matchRanges)
+
+        matchRangesExtract.ReExtract ()
 
         assertLines linesExtract [|
             "abc"; "abc"
@@ -152,15 +140,9 @@ type MatchRangesExtractTest () =
             |> Seq.map stringToChars
             |> Lines
 
-        let linesExtract =
-            [| |]
-            |> Seq.map stringToChars
-            |> Lines
+        let linesExtract = Lines []
 
-        let matchRanges = MatchRanges (myUserMessages, lines)
-
-        let matchRangesExtract = matchRanges.CreateExtract MatchRangesExtract linesExtract true
-        matchRangesExtract.Init ()
+        let matchRangesExtract = MatchRangesExtract (myUserMessages, lines, linesExtract)
 
         matchRangesExtract.Extract "abc"
 
@@ -197,15 +179,9 @@ type MatchRangesExtractTest () =
             |> Seq.map stringToChars
             |> Lines
 
-        let linesExtract =
-            [| |]
-            |> Seq.map stringToChars
-            |> Lines
+        let linesExtract = Lines []
 
-        let matchRanges = MatchRanges (myUserMessages, lines)
-
-        let matchRangesExtract = matchRanges.CreateExtract MatchRangesExtract linesExtract true
-        matchRangesExtract.Init ()
+        let matchRangesExtract = MatchRangesExtract (myUserMessages, lines, linesExtract)
 
         matchRangesExtract.Extract "abc"
 
@@ -243,15 +219,9 @@ type MatchRangesExtractTest () =
             |> Seq.map stringToChars
             |> Lines
 
-        let linesExtract =
-            [| |]
-            |> Seq.map stringToChars
-            |> Lines
+        let linesExtract = Lines []
 
-        let matchRanges = MatchRanges (myUserMessages, lines)
-
-        let matchRangesExtract = matchRanges.CreateExtract MatchRangesExtract linesExtract true
-        matchRangesExtract.Init ()
+        let matchRangesExtract = MatchRangesExtract (myUserMessages, lines, linesExtract)
 
         matchRangesExtract.Extract "abc"
 
@@ -291,15 +261,9 @@ type MatchRangesExtractTest () =
             |> Seq.map stringToChars
             |> Lines
 
-        let linesExtract =
-            [| |]
-            |> Seq.map stringToChars
-            |> Lines
+        let linesExtract = Lines []
 
-        let matchRanges = MatchRanges (myUserMessages, lines)
-
-        let matchRangesExtract = matchRanges.CreateExtract MatchRangesExtract linesExtract true
-        matchRangesExtract.Init ()
+        let matchRangesExtract = MatchRangesExtract (myUserMessages, lines, linesExtract)
 
         assertLines linesExtract [|
             "abc"; "abc"; "abc"
@@ -309,6 +273,9 @@ type MatchRangesExtractTest () =
 
         matchRangesExtract.UpdateAfterReload ()
 
+        assertLines linesExtract [|
+            "abc"; "abc"; "abc"
+        |]
         assertTextRanges matchRangesExtract [|
         |]
 
@@ -319,15 +286,9 @@ type MatchRangesExtractTest () =
             |> Seq.map stringToChars
             |> Lines
 
-        let linesExtract =
-            [| |]
-            |> Seq.map stringToChars
-            |> Lines
+        let linesExtract = Lines []
 
-        let matchRanges = MatchRanges (myUserMessages, lines)
-
-        let matchRangesExtract = matchRanges.CreateExtract MatchRangesExtract linesExtract true
-        matchRangesExtract.Init ()
+        let matchRangesExtract = MatchRangesExtract (myUserMessages, lines, linesExtract)
 
         matchRangesExtract.Extract @"(?m)(?<=abc\n)abc"
 
@@ -356,15 +317,9 @@ type MatchRangesExtractTest () =
             |> Seq.map stringToChars
             |> Lines
 
-        let linesExtract =
-            [| |]
-            |> Seq.map stringToChars
-            |> Lines
+        let linesExtract = Lines []
 
-        let matchRanges = MatchRanges (myUserMessages, lines)
-
-        let matchRangesExtract = matchRanges.CreateExtract MatchRangesExtract linesExtract true
-        matchRangesExtract.Init ()
+        let matchRangesExtract = MatchRangesExtract (myUserMessages, lines, linesExtract)
 
         matchRangesExtract.Extract @"(?m)(?<=abc\n)abc"
 

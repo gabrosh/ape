@@ -23,14 +23,13 @@ let private lineToExtractLine (lineExtractToLine: ResizeArray<int>) line =
     | _      -> lineExtractToLine.Count - 1
 
 type MatchRangesExtract (
-    myUserMessages:    UserMessages,
-    myLines:           Lines,
-    inLastRegex:       string option,
-    inIsCleared:       bool,
-    inTextRanges:      Dictionary<string, TextRanges>,
-    myLinesExtract:    Lines,
-    inExtractOnConstr: bool
-) as this =
+    myUserMessages: UserMessages,
+    myLines:        Lines,
+    inLastRegex:    string option,
+    inIsCleared:    bool,
+    inTextRanges:   Dictionary<string, TextRanges>,
+    myLinesExtract: Lines
+) as thisCtor =
     inherit MatchRanges (
         myUserMessages, myLines, inLastRegex, inIsCleared, inTextRanges
     )
@@ -38,44 +37,36 @@ type MatchRangesExtract (
     /// Translates index in myLinesExtract to index in myLines.
     let myLineExtractToLine = ResizeArray<int> ()
 
-    let mutable myLastRegexExtract =
-        if inExtractOnConstr then this.LastRegex else None
+    let mutable myLastRegexExtract  = None
+    let mutable myIsClearedExtract  = true
+    let mutable myIsSearchInExtract = false
 
-    let mutable myIsClearedExtract =
-        if inExtractOnConstr then this.IsCleared else true
-
-    let mutable myIsSearchInExtract =
-        false
+    do
+        thisCtor.Update ()
 
     new (
-        inUserMessages: UserMessages, inLines: Lines, inLinesExtract: Lines        
+        inUserMessages: UserMessages, inLines: Lines, inLinesExtract: Lines
     ) =
         MatchRangesExtract(
             inUserMessages, inLines,
             None, true, makeTextRangesGroups (),
-            inLinesExtract, false
+            inLinesExtract
         )
 
     new (
         inUserMessages: UserMessages, inLines: Lines, inLinesExtract: Lines,
-        inMatchRanges: MatchRanges, inExtractOnConstr: bool
+        inMatchRanges: MatchRanges
     ) =
         MatchRangesExtract(
             inUserMessages, inLines,
             inMatchRanges.LastRegex, inMatchRanges.IsCleared, inMatchRanges.TextRanges,
-            inLinesExtract, inExtractOnConstr
+            inLinesExtract
         )
 
     // public properties
 
     member _.LastRegexExtract = myLastRegexExtract
     member _.IsClearedExtract = myIsClearedExtract
-
-    // init mechanism
-
-    /// Initializes the instance after its construction.
-    member this.Init () =
-        this.Update ()
 
     // virtual
 
