@@ -250,8 +250,8 @@ type TextAreaBufferExtract (
         member this.Reload _encoding _strictEncoding _warnIfNoMatchFound =
             invalidOp "not implemented"
 
-        member this.WriteFile encoding fileFormat endWithNewLine =
-            this.WriteFile encoding fileFormat endWithNewLine
+        member this.WriteFile filePath encoding fileFormat endWithNewLine =
+            this.WriteFile filePath encoding fileFormat endWithNewLine
 
         member _.GetFirstChild () =
             None

@@ -90,6 +90,9 @@ type TextAreaFileSupport (
         | Error e ->
             Error e
 
+    member this.WriteFile filePath encoding fileFormat endWithNewLine lines =
+        this.WriteFileAux filePath encoding fileFormat endWithNewLine lines
+
     // others - private
 
     member private _.LoadStringsAux lines result =
@@ -103,6 +106,8 @@ type TextAreaFileSupport (
         | :? System.IO.DirectoryNotFoundException as ex ->
             Error ex.Message
         | :? System.IO.FileNotFoundException as ex ->
+            Error ex.Message
+        | :? System.UnauthorizedAccessException as ex ->
             Error ex.Message
 
     member private _.LoadFileAux filePath stream strictEncoding reloadFileParams =
@@ -120,6 +125,15 @@ type TextAreaFileSupport (
 
         result
 
+    member private _.WriteFileAux filePath encoding fileFormat endWithNewLine lines =
+        try
+            Ok (FileUtils.writeFile filePath encoding fileFormat endWithNewLine lines)
+        with
+        | :? System.IO.DirectoryNotFoundException as ex ->
+            Error ex.Message
+        | :? System.UnauthorizedAccessException as ex ->
+            Error ex.Message
+            
     member private _.AssureNonZeroLinesCount () =
         if myLines.Count = 0 then
             myLines.Add Chars.Empty

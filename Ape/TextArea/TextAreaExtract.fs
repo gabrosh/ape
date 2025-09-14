@@ -33,10 +33,6 @@ type TextAreaExtract (
 
     let myMatchRanges = thisCtor.MatchRanges :?> MatchRangesExtract
 
-    let myFileSupport = new TextAreaFileSupport (
-        myContextRef, myUserMessages, myLinesSource
-    )
-
     // search matching
 
     member this.SearchMatching regex isForward isExtending =
@@ -130,7 +126,7 @@ type TextAreaExtract (
     // others
 
     member this.LoadStrings (lines: string seq) =
-        myFileSupport.LoadStrings lines (
+        this.FileSupport.LoadStrings lines (
             fun () ->
                 myMatchRanges.UpdateAfterReload ()
                 this.ResetState Position_Zero
@@ -138,7 +134,7 @@ type TextAreaExtract (
         )
 
     member this.LoadFile encoding strictEncoding =
-        myFileSupport.LoadFile this.FilePath encoding strictEncoding (
+        this.FileSupport.LoadFile this.FilePath encoding strictEncoding (
             fun () ->
                 myMatchRanges.UpdateAfterReload ()
                 this.ResetState Position_Zero
@@ -150,7 +146,7 @@ type TextAreaExtract (
         let cursorWC    = this.Main.CursorWC
         let displayLine = this.DisplayPos.line
 
-        myFileSupport.ReloadFile this.FilePath encoding strictEncoding (
+        this.FileSupport.ReloadFile this.FilePath encoding strictEncoding (
             fun () ->
                 myMatchRanges.RunWithSetWarnIfNoMatchFound warnIfNoMatchFound (
                     fun () -> this.ResetStateAfterReload cursor cursorWC displayLine
@@ -271,8 +267,8 @@ type TextAreaExtract (
         member this.Reload encoding strictEncoding warnIfNoMatchFound =
             this.Reload encoding strictEncoding warnIfNoMatchFound
 
-        member this.WriteFile encoding fileFormat endWithNewLine =
-            this.WriteFile encoding fileFormat endWithNewLine
+        member this.WriteFile filePath encoding fileFormat endWithNewLine =
+            this.WriteFile filePath encoding fileFormat endWithNewLine
 
         member _.GetFirstChild () =
             None
@@ -280,7 +276,6 @@ type TextAreaExtract (
     // IDisposable
 
     override _.Dispose () =
-        (myFileSupport :> IDisposable).Dispose ()
         base.Dispose ()
 
 let makeTextAreaExtract (

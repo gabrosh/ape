@@ -13,6 +13,7 @@ open Selection
 open Selections
 open SelectionsRegisters
 open TextAreaDelegator
+open TextAreaFileSupport
 open TextRangesModifier
 open UndoProvider
 open UserMessages
@@ -58,6 +59,10 @@ type TextAreaBufferBase (
     let myBasicState = {
         displayPos = DisplayPos_Zero; prevCommand = None
     }
+
+    let myFileSupport = new TextAreaFileSupport (
+        myContextRef, myUserMessages, myLines
+    )
 
     // fields affected by Undo/Redo
     let mySelectionsArray = ResizeArray<Selection> [Selection_Zero]
@@ -136,6 +141,7 @@ type TextAreaBufferBase (
         and  set value = myBasicState.prevCommand <- value
 
     member internal _.Context       = myContext
+    member internal _.FileSupport   = myFileSupport
     member internal _.SelsRegisters = mySelsRegisters
     member internal _.WantedColumns = myWantedColumns
     member internal _.UndoProvider  = myUndoProvider
@@ -288,12 +294,18 @@ type TextAreaBufferBase (
 
     // others
 
-    member this.WriteFile encoding fileFormat endWithNewLine =
-        FileUtils.writeFile myFilePath encoding fileFormat endWithNewLine myLines
+    member this.WriteFile filePath encoding fileFormat endWithNewLine =
+        let result =
+            myFileSupport.WriteFile filePath encoding fileFormat endWithNewLine myLines
 
-        myUndoProvider.SetCurrentStateAsSaved myContext.maxSavedUndos
+        match result with
+        | Ok ()   ->
+            myUndoProvider.SetCurrentStateAsSaved myContext.maxSavedUndos
+            this.IsBufferChanged <- false
+            Ok ()
 
-        this.IsBufferChanged <- false
+        | Error e ->
+            Error e
 
     // auxiliary
 
@@ -312,7 +324,8 @@ type TextAreaBufferBase (
 
     default _.Dispose () =
         myContextChangedDisposable.Dispose ()
-        (myDispatcher :> IDisposable).Dispose ()
+        (myFileSupport :> IDisposable).Dispose ()
+        (myDispatcher  :> IDisposable).Dispose ()
 
     interface IDisposable with
         member this.Dispose () =

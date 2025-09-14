@@ -658,7 +658,7 @@ type TextArea (
 
     member private this.ReloadBufferOrExtract (buffer: ITextAreaBuffer) =
         match this.ReloadBufferOrExtractAux buffer true with
-        | Ok () ->
+        | Ok ()   ->
             ()
         | Error e ->
             myUserMessages.RegisterMessage (
@@ -706,7 +706,15 @@ type TextArea (
         if readOnly then
             myUserMessages.RegisterMessage ERROR_BUFFER_OPENED_AS_READ_ONLY
         else
-            myBuffer.WriteFile encoding fileFormat endWithNewLine
+            let result = myBuffer.WriteFile myBuffer.FilePath encoding fileFormat endWithNewLine
+
+            match result with
+            | Ok ()   ->
+                ()
+            | Error e ->
+                myUserMessages.RegisterMessage (
+                    UserMessages.makeErrorMessage e
+                )
 
     member this.WriteFileAs filePath =
         let encoding     = getValueString     this.CurrentSettings Name.encoding
@@ -719,9 +727,15 @@ type TextArea (
             else
                 newLineAtEof
 
-        myBuffer.FilePath <- filePath
+        let result = myBuffer.WriteFile filePath encoding fileFormat endWithNewLine
 
-        myBuffer.WriteFile encoding fileFormat endWithNewLine
+        match result with
+        | Ok ()   ->
+            myBuffer.FilePath <- filePath
+        | Error e ->
+            myUserMessages.RegisterMessage (
+                UserMessages.makeErrorMessage e
+            )
 
     member this.SetBufferSettings encoding strictEncoding isReadOnly =
         let results = seq {

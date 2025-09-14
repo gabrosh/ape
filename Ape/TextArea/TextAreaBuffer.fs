@@ -35,12 +35,8 @@ type TextAreaBuffer (
     // registered children (extract buffers)
     let myChildren = ResizeArray<ITextAreaBuffer> ()
 
-    let myFileSupport = new TextAreaFileSupport (
-        myContextRef, myUserMessages, inLines
-    )
-
     // only for testing purposes
-    member _.ReloadFileParams = myFileSupport.ReloadFileParams
+    member _.ReloadFileParams = thisCtor.FileSupport.ReloadFileParams
 
     // children
 
@@ -109,14 +105,14 @@ type TextAreaBuffer (
     // others
 
     member this.LoadStrings (lines: string seq) =
-        myFileSupport.LoadStrings lines (
+        this.FileSupport.LoadStrings lines (
             fun () ->
                 this.ResetState Position_Zero
                 this.ResetUndoState ()
         )
 
     member this.LoadFile encoding strictEncoding =
-        myFileSupport.LoadFile this.FilePath encoding strictEncoding (
+        this.FileSupport.LoadFile this.FilePath encoding strictEncoding (
             fun () ->
                 this.ResetState Position_Zero
                 this.ResetUndoState ()
@@ -127,7 +123,7 @@ type TextAreaBuffer (
         let cursorWC    = this.Main.CursorWC
         let displayLine = this.DisplayPos.line
 
-        myFileSupport.ReloadFile this.FilePath encoding strictEncoding (
+        this.FileSupport.ReloadFile this.FilePath encoding strictEncoding (
             fun () ->
                 myMatchRanges.RunWithSetWarnIfNoMatchFound warnIfNoMatchFound (
                     fun () -> this.ResetStateAfterReload cursor cursorWC displayLine
@@ -252,8 +248,8 @@ type TextAreaBuffer (
         member this.Reload encoding strictEncoding warnIfNoMatchFound =
             this.Reload encoding strictEncoding warnIfNoMatchFound
 
-        member this.WriteFile encoding fileFormat endWithNewLine =
-            this.WriteFile encoding fileFormat endWithNewLine
+        member this.WriteFile filePath encoding fileFormat endWithNewLine =
+            this.WriteFile filePath encoding fileFormat endWithNewLine
 
         member _.GetFirstChild () =
             if myChildren.Count <> 0 then
@@ -264,7 +260,6 @@ type TextAreaBuffer (
     // IDisposable
 
     override _.Dispose () =
-        (myFileSupport :> IDisposable).Dispose ()
         base.Dispose ()
 
 let makeTextAreaBuffer (

@@ -73,8 +73,8 @@ type ITextAreaBuffer =
      -> Result<FileUtils.FileFormat * bool, string>
 
     abstract member WriteFile:
-        encoding: string -> fileFormat: FileUtils.FileFormat -> endWithNewLine: bool
-     -> unit
+        filePath: string -> encoding: string -> fileFormat: FileUtils.FileFormat -> endWithNewLine: bool
+     -> Result<unit, string>
 
     abstract member GetFirstChild:
         unit
