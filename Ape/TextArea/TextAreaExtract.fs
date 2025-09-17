@@ -1,7 +1,5 @@
 ﻿module TextAreaExtract
 
-open System
-
 open Commands.InCommands
 open Common
 open Context
@@ -11,23 +9,23 @@ open MatchRangesExtract
 open Position
 open Selection
 open TextAreaBufferBase
-open TextAreaFileSupport
 open UserMessages
 open WrappedRef
 
 type TextAreaExtract (
-    myContextRef:   IWrappedRef<MainContext>,
-    myUserMessages: UserMessages,
-    myRegisters:    Registers.Registers,
-    inFilePath:     string,
-    myLinesSource:  Lines,
-    myLinesExtract: Lines
+    myContextRef:    IWrappedRef<MainContext>,
+    myUserMessages:  UserMessages,
+    myRegisters:     Registers.Registers,
+    inFilePath:      string,
+    myLinesFromFile: Lines,
+    myLinesExtract:  Lines
 ) as thisCtor =
     inherit TextAreaBufferBase (
         myContextRef, myUserMessages, myRegisters, inFilePath,
+        myLinesFromFile,
         myLinesExtract,
         MatchRangesExtract (
-            myUserMessages, myLinesSource, myLinesExtract
+            myUserMessages, myLinesFromFile, myLinesExtract
         )
     )
 
@@ -228,7 +226,7 @@ type TextAreaExtract (
             and  set value = this.BufferName <- value
 
         member this.Lines                  = myLinesExtract
-        member this.LinesForCompletion     = myLinesSource
+        member this.LinesForCompletion     = myLinesFromFile
         member this.Selections             = this.Selections
         member this.IsReadOnly             = this.IsReadOnly
         member this.IsBufferChanged        = this.IsBufferChanged

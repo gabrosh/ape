@@ -23,6 +23,7 @@ type TextAreaBufferExtract (
 ) as thisCtor =
     inherit TextAreaBufferBase (
         myContextRef, myUserMessages, myRegisters, inFilePath,
+        Lines (),  // this child class doesn't load from a file
         myLinesExtract,
         MatchRangesExtract (
             myUserMessages, myParent.Lines, myLinesExtract,

@@ -41,12 +41,13 @@ let private getBufferState
 
 [<AbstractClass>]
 type TextAreaBufferBase (
-    myContextRef:   IWrappedRef<MainContext>,
-    myUserMessages: UserMessages,
-    myRegisters:    Registers.Registers,
-    inFilePath:     string,
-    myLines:        Lines,
-    myMatchRanges:  MatchRanges
+    myContextRef:    IWrappedRef<MainContext>,
+    myUserMessages:  UserMessages,
+    myRegisters:     Registers.Registers,
+    inFilePath:      string,
+    myLinesFromFile: Lines,
+    myLines:         Lines,
+    myMatchRanges:   MatchRanges
 ) =
     let mutable myContext = myContextRef.Value
     let handleContextChanged () = myContext <- myContextRef.Value
@@ -61,7 +62,7 @@ type TextAreaBufferBase (
     }
 
     let myFileSupport = new TextAreaFileSupport (
-        myContextRef, myUserMessages, myLines
+        myContextRef, myUserMessages, myLinesFromFile
     )
 
     // fields affected by Undo/Redo

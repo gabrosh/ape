@@ -1,7 +1,5 @@
 module TextAreaBuffer
 
-open System
-
 open Commands.InCommands
 open Common
 open Context
@@ -11,22 +9,22 @@ open MatchRanges
 open Position
 open Selection
 open TextAreaBufferBase
-open TextAreaFileSupport
 open UserMessages
 open WrappedRef
 
 type TextAreaBuffer (
-    myContextRef:   IWrappedRef<MainContext>,
-    myUserMessages: UserMessages,
-    myRegisters:    Registers.Registers,
-    inFilePath:     string,
-    inLines:        Lines
+    myContextRef:    IWrappedRef<MainContext>,
+    myUserMessages:  UserMessages,
+    myRegisters:     Registers.Registers,
+    inFilePath:      string,
+    myLinesFromFile: Lines
 ) as thisCtor =
     inherit TextAreaBufferBase (
         myContextRef, myUserMessages, myRegisters, inFilePath,
-        inLines,
+        myLinesFromFile,
+        myLinesFromFile,
         MatchRanges (
-            myUserMessages, inLines
+            myUserMessages, myLinesFromFile
         )
     )
 
@@ -205,8 +203,8 @@ type TextAreaBuffer (
             with get ()    = this.BufferName
             and  set value = this.BufferName <- value
 
-        member this.Lines                  = inLines
-        member this.LinesForCompletion     = inLines
+        member this.Lines                  = myLinesFromFile
+        member this.LinesForCompletion     = myLinesFromFile
         member this.Selections             = this.Selections
         member this.IsReadOnly             = this.IsReadOnly
         member this.IsBufferChanged        = this.IsBufferChanged
