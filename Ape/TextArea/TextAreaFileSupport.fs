@@ -133,7 +133,7 @@ type TextAreaFileSupport (
             Error ex.Message
         | :? System.UnauthorizedAccessException as ex ->
             Error ex.Message
-            
+
     member private _.AssureNonZeroLinesCount () =
         if myLines.Count = 0 then
             myLines.Add Chars.Empty

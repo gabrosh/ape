@@ -61,7 +61,8 @@ type PromptBuffer (
 
     let myMatchRanges = MatchRanges.MatchRanges (inUserMessages, myLines)
 
-    let myUndoProvider = UndoProvider (
+    let myUndoProvider = new UndoProvider (
+        inContextRef, inUserMessages,
         // the same code as in GetInitialUndoState, which can't be called here
         getBufferState (Some myLines) mySelections mySelsRegisters
             myWantedColumns myBasicState.displayPos
@@ -253,4 +254,5 @@ type PromptBuffer (
 
     interface IDisposable with
         member _.Dispose () =
-            (myDispatcher :> IDisposable).Dispose ()
+            (myUndoProvider :> IDisposable).Dispose ()
+            (myDispatcher   :> IDisposable).Dispose ()

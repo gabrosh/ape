@@ -32,6 +32,8 @@ let WARNING_NON_TRANSLATABLE_BYTES =
 
 let WARNING_BUFFER_ALREADY_OPENED =
     WarningMessage , "Buffer already opened: '{0}'"
+let WARNING_BUFFER_OPENED_AS_READ_ONLY =
+    WarningMessage , "Buffer opened as read-only."
 let ERROR_BUFFER_OPENED_AS_READ_ONLY =
     ErrorMessage   , "Buffer opened as read-only."
 let WARNING_NO_WRITE_SINCE_LAST_CHANGE =

@@ -1,10 +1,14 @@
 ﻿module UndoProvider
 
+open System
 open System.Collections.Immutable
 
 open Common
+open Context
 open DataTypes
 open Selection
+open UserMessages
+open WrappedRef
 
 type BufferState = {
     names:            char list
@@ -16,6 +20,11 @@ type BufferState = {
     displayPos:       DisplayPos
     pendingWCActions: WantedColumnsAction list
 }
+
+let private compareFun a b =
+    if   a < b then -1
+    elif a > b then +1
+    else 0
 
 let private isSelectionMatchingTo (a: Selection, b: Selection) =
        a.first     = b.first
@@ -74,7 +83,16 @@ let rec findDifferentLines (states: ResizeArray<BufferState>) i delta =
 /// also maintains information about which undo state is the the last state saved
 /// to the file.
 
-type UndoProvider (state: BufferState) =
+type UndoProvider (
+    myContextRef:   IWrappedRef<MainContext>,
+    myUserMessages: UserMessages,
+    state:          BufferState
+) =
+    let mutable myContext = myContextRef.Value
+    let handleContextChanged () = myContext <- myContextRef.Value
+    let myContextChangedDisposable =
+        myContextRef.Subscribe handleContextChanged
+
     // myStates[...].lines and mySavedLines are always Some.
     let myStates = ResizeArray<BufferState> [state]
     let mutable myIsLastStateVolatile = false
@@ -89,7 +107,7 @@ type UndoProvider (state: BufferState) =
         myIsLastStateVolatile <- false
         myCurrent <- 0
 
-        this.SetCurrentStateAsSaved IntType.MaxValue
+        this.SetCurrentStateAsSaved ()
 
     /// Clears myIsLastStateVolatile flag.
     member _.ClearIsLastStateVolatile () =
@@ -107,7 +125,7 @@ type UndoProvider (state: BufferState) =
 
         if toAddState then
             let state =
-                // If there are no lines provided, take the latest ones.
+                // If there are no lines provided, take the current ones.
                 if state.lines = None then
                     { state with lines = myStates[myCurrent].lines }
                 else
@@ -128,18 +146,18 @@ type UndoProvider (state: BufferState) =
         myIsLastStateVolatile <- false
 
         if myCurrent > 0 then
-            this.SwitchAndGetState (myCurrent - 1)
+            this.TrySwitchAndGetState true (myCurrent - 1)
         else
             None
 
-    /// Returns the first state with different lines before the current state
-    /// or the first state in myStates collection if it precedes the current state
+    /// Returns the first state with different lines before the current state,
+    /// or the first state in myStates collection if it precedes the current state,
     /// or None if there is no such state.
     member this.GetUndoStateFast () =
         myIsLastStateVolatile <- false
 
         if myCurrent > 0 then
-            this.SwitchAndGetState (
+            this.TrySwitchAndGetState true (
                 findDifferentLines myStates myCurrent -1
             )
         else
@@ -151,18 +169,18 @@ type UndoProvider (state: BufferState) =
         myIsLastStateVolatile <- false
 
         if myCurrent < myStates.Count - 1 then
-            this.SwitchAndGetState (myCurrent + 1)
+            this.TrySwitchAndGetState true (myCurrent + 1)
         else
             None
 
-    /// Returns the first state with different lines after the current state
-    /// or the last state in myStates collection if it precedes the current state
+    /// Returns the first state with different lines after the current state,
+    /// or the last state in myStates collection if it follows the current state,
     /// or None if there is no such state.
     member this.GetRedoStateFast () =
         myIsLastStateVolatile <- false
 
         if myCurrent < myStates.Count - 1 then
-            this.SwitchAndGetState (
+            this.TrySwitchAndGetState true (
                 findDifferentLines myStates myCurrent +1
             )
         else
@@ -177,25 +195,25 @@ type UndoProvider (state: BufferState) =
                 state with names = name :: state.names
             }
 
-    /// Returns the first named state equal to or following the current state
+    /// Returns the first named state equal to or following the current state,
     /// or None if there is no such state.
     member this.GetNamedStateForward name =
         myIsLastStateVolatile <- false
 
         match this.FindNamedStateForward name with
         | Some index ->
-            this.SwitchAndGetState index
+            this.TrySwitchAndGetState false index
         | None       ->
             None
 
-    /// Returns the first named state equal to or preceding the current state
+    /// Returns the first named state equal to or preceding the current state,
     /// or None if there is no such state.
     member this.GetNamedStateBackward name =
         myIsLastStateVolatile <- false
 
         match this.FindNamedStateBackward name with
         | Some index ->
-            this.SwitchAndGetState index
+            this.TrySwitchAndGetState false index
         | None       ->
             None
 
@@ -221,9 +239,7 @@ type UndoProvider (state: BufferState) =
                 let newSelsRegisters =
                     if withRemoved <> lastWithRemoved then
                         lastWithRemoved <- withRemoved
-                        withRemoved
-                    else
-                        lastWithRemoved
+                    lastWithRemoved
 
                 newStates[i] <- {
                     state with selsRegisters = newSelsRegisters
@@ -235,55 +251,74 @@ type UndoProvider (state: BufferState) =
         myStates.AddRange newStates
 
     member private _.FindNamedStateForward name =
-        let fromCurrentUp =
-               Seq.init myStates.Count id
-            |> Seq.skip myCurrent
+        let fromCurrentUp = seq {
+            for i = myCurrent to myStates.Count - 1 do i
+        }
 
         fromCurrentUp |> Seq.tryFind (
             fun i -> myStates[i].names |> List.contains name
         )
 
     member private _.FindNamedStateBackward name =
-        let fromCurrentDown =
-               Seq.init myStates.Count id
-            |> Seq.take (myCurrent + 1)
-            |> Seq.rev
+        let fromCurrentDown = seq {
+            for i = myCurrent downto 0 do i
+        }
 
         fromCurrentDown |> Seq.tryFind (
             fun i -> myStates[i].names |> List.contains name
         )
 
-    member private _.SwitchAndGetState newCurrent =
+    member private _.TrySwitchAndGetState toSwitchLoosely newCurrent =
         let oldState = myStates[myCurrent]
-        myCurrent <- newCurrent
-        let newState = myStates[myCurrent]
+        let newState = myStates[newCurrent]
 
-        // Don't provide lines if they are the same.
-        if areLinesTheSame newState.lines oldState.lines then
-            Some { newState with lines = None }
+        let areLinesTheSame' = areLinesTheSame newState.lines oldState.lines
+
+        if myContext.readOnly && not areLinesTheSame' then
+            if toSwitchLoosely then
+                myUserMessages.RegisterMessage WARNING_BUFFER_OPENED_AS_READ_ONLY
+
+                // delta is either -1 or +1, it's never 0.
+                let delta = compareFun newCurrent myCurrent
+                let newCurrent' = newCurrent - delta
+                let newState' = myStates[newCurrent']
+
+                if newCurrent' <> myCurrent then
+                    myCurrent <- newCurrent'
+                    // Don't provide lines as they are the same.
+                    Some { newState' with lines = None }
+                else
+                    None
+            else
+                myUserMessages.RegisterMessage ERROR_BUFFER_OPENED_AS_READ_ONLY
+
+                None
         else
-            Some newState
+            myCurrent <- newCurrent
+            if areLinesTheSame' then
+                // Don't provide lines as they are the same.
+                Some { newState with lines = None }
+            else
+                Some newState
 
     /// Returns the current state.
     member _.GetCurrentState () =
         myStates[myCurrent]
 
     /// Sets the current state as saved to the file.
-    /// Removes old saved states beyond maxSavedUndos.
-    member this.SetCurrentStateAsSaved maxSavedUndos =
+    member this.SetCurrentStateAsSaved () =
         myStates[myCurrent] <- {
             myStates[myCurrent] with wasSaved = true
         }
 
         mySavedLines <- myStates[myCurrent].lines
 
-        this.RemoveOldStates maxSavedUndos
-
-    member private _.RemoveOldStates savedToRetain =
+    /// Removes old saved states beyond maxSavedUndos.
+    member _.RemoveOldStates maxSavedUndos =
         let mutable savedUndos = 0
         let mutable i = myCurrent
 
-        while i > 0 && savedUndos < savedToRetain do
+        while i > 0 && savedUndos < maxSavedUndos do
             i <- i - 1
             if myStates[i].wasSaved then
                 savedUndos <- savedUndos + 1
@@ -295,3 +330,9 @@ type UndoProvider (state: BufferState) =
     member _.IsCurrentStateSaved =
         areLinesTheSame
             mySavedLines myStates[myCurrent].lines
+
+    // IDisposable
+
+    interface IDisposable with
+        member _.Dispose () =
+            myContextChangedDisposable.Dispose ()

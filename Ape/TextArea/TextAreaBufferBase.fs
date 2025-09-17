@@ -71,7 +71,8 @@ type TextAreaBufferBase (
     let mySelsRegisters   = SelectionsRegisters ()
     let myWantedColumns   = Helpers.WantedColumns mySelections
 
-    let myUndoProvider = UndoProvider (
+    let myUndoProvider = new UndoProvider (
+        myContextRef, myUserMessages,
         // the same code as in GetInitialUndoState, which can't be called here
         getBufferState (Some myLines) mySelections mySelsRegisters
             myWantedColumns myBasicState.displayPos
@@ -300,7 +301,8 @@ type TextAreaBufferBase (
 
         match result with
         | Ok ()   ->
-            myUndoProvider.SetCurrentStateAsSaved myContext.maxSavedUndos
+            myUndoProvider.SetCurrentStateAsSaved ()
+            myUndoProvider.RemoveOldStates myContext.maxSavedUndos
             this.IsBufferChanged <- false
             Ok ()
 
@@ -324,8 +326,9 @@ type TextAreaBufferBase (
 
     default _.Dispose () =
         myContextChangedDisposable.Dispose ()
-        (myFileSupport :> IDisposable).Dispose ()
-        (myDispatcher  :> IDisposable).Dispose ()
+        (myFileSupport  :> IDisposable).Dispose ()
+        (myUndoProvider :> IDisposable).Dispose ()
+        (myDispatcher   :> IDisposable).Dispose ()
 
     interface IDisposable with
         member this.Dispose () =
