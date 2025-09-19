@@ -1,5 +1,7 @@
 module TextAreaBuffer
 
+open System
+
 open Commands.InCommands
 open Common
 open Context
@@ -9,6 +11,7 @@ open MatchRanges
 open Position
 open Selection
 open TextAreaBufferBase
+open TextAreaFileSupport
 open UserMessages
 open WrappedRef
 
@@ -22,10 +25,13 @@ type TextAreaBuffer (
     inherit TextAreaBufferBase (
         myContextRef, myUserMessages, myRegisters, inFilePath,
         myLinesFromFile,
-        myLinesFromFile,
         MatchRanges (
             myUserMessages, myLinesFromFile
         )
+    )
+
+    let myFileSupport = new TextAreaFileSupport (
+        myContextRef, myUserMessages, myLinesFromFile
     )
 
     let myMatchRanges = thisCtor.MatchRanges
@@ -34,7 +40,7 @@ type TextAreaBuffer (
     let myChildren = ResizeArray<ITextAreaBuffer> ()
 
     // only for testing purposes
-    member _.ReloadFileParams = thisCtor.FileSupport.ReloadFileParams
+    member _.ReloadFileParams = myFileSupport.ReloadFileParams
 
     // children
 
@@ -103,14 +109,14 @@ type TextAreaBuffer (
     // others
 
     member this.LoadStrings (lines: string seq) =
-        this.FileSupport.LoadStrings lines (
+        myFileSupport.LoadStrings lines (
             fun () ->
                 this.ResetState Position_Zero
                 this.ResetUndoState ()
         )
 
     member this.LoadFile encoding strictEncoding =
-        this.FileSupport.LoadFile this.FilePath encoding strictEncoding (
+        myFileSupport.LoadFile this.FilePath encoding strictEncoding (
             fun () ->
                 this.ResetState Position_Zero
                 this.ResetUndoState ()
@@ -121,7 +127,7 @@ type TextAreaBuffer (
         let cursorWC    = this.Main.CursorWC
         let displayLine = this.DisplayPos.line
 
-        this.FileSupport.ReloadFile this.FilePath encoding strictEncoding (
+        myFileSupport.ReloadFile this.FilePath encoding strictEncoding (
             fun () ->
                 myMatchRanges.RunWithSetWarnIfNoMatchFound warnIfNoMatchFound (
                     fun () -> this.ResetStateAfterReload cursor cursorWC displayLine
@@ -258,6 +264,7 @@ type TextAreaBuffer (
     // IDisposable
 
     override _.Dispose () =
+        (myFileSupport :> IDisposable).Dispose ()
         base.Dispose ()
 
 let makeTextAreaBuffer (

@@ -41,13 +41,12 @@ let private getBufferState
 
 [<AbstractClass>]
 type TextAreaBufferBase (
-    myContextRef:    IWrappedRef<MainContext>,
-    myUserMessages:  UserMessages,
-    myRegisters:     Registers.Registers,
-    inFilePath:      string,
-    myLinesFromFile: Lines,
-    myLines:         Lines,
-    myMatchRanges:   MatchRanges
+    myContextRef:   IWrappedRef<MainContext>,
+    myUserMessages: UserMessages,
+    myRegisters:    Registers.Registers,
+    inFilePath:     string,
+    myLines:        Lines,
+    myMatchRanges:  MatchRanges
 ) =
     let mutable myContext = myContextRef.Value
     let handleContextChanged () = myContext <- myContextRef.Value
@@ -60,10 +59,6 @@ type TextAreaBufferBase (
     let myBasicState = {
         displayPos = DisplayPos_Zero; prevCommand = None
     }
-
-    let myFileSupport = new TextAreaFileSupport (
-        myContextRef, myUserMessages, myLinesFromFile
-    )
 
     // fields affected by Undo/Redo
     let mySelectionsArray = ResizeArray<Selection> [Selection_Zero]
@@ -143,7 +138,6 @@ type TextAreaBufferBase (
         and  set value = myBasicState.prevCommand <- value
 
     member internal _.Context       = myContext
-    member internal _.FileSupport   = myFileSupport
     member internal _.SelsRegisters = mySelsRegisters
     member internal _.WantedColumns = myWantedColumns
     member internal _.UndoProvider  = myUndoProvider
@@ -298,7 +292,7 @@ type TextAreaBufferBase (
 
     member this.WriteFile filePath encoding fileFormat endWithNewLine =
         let result =
-            myFileSupport.WriteFile filePath encoding fileFormat endWithNewLine myLines
+            TextAreaFileSupport.WriteFile filePath encoding fileFormat endWithNewLine myLines
 
         match result with
         | Ok ()   ->
@@ -327,7 +321,6 @@ type TextAreaBufferBase (
 
     default _.Dispose () =
         myContextChangedDisposable.Dispose ()
-        (myFileSupport  :> IDisposable).Dispose ()
         (myUndoProvider :> IDisposable).Dispose ()
         (myDispatcher   :> IDisposable).Dispose ()
 
