@@ -39,13 +39,13 @@ let complete_mapUnmap_mode _context (argsMap: ArgsMap) (argInCompl: string) =
 
 let complete_mapUnmap_key _context (argsMap: ArgsMap) (_argInCompl: string) =
     if check_mapUnmap argsMap then
-        seq { ListOnly "#key" }
+        seq { ForList "#key" }
     else
         noCompletions
 
 let complete_map_keySeq _context (argsMap: ArgsMap) (_argInCompl: string) =
     if check_mapUnmap argsMap then
-        seq { ListOnly "#keySeq"}
+        seq { ForList "#keySeq"}
     else
         noCompletions
 

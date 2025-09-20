@@ -1,0 +1,2 @@
+- Add some tests for the #filePath completion
+- Check whether file being opened is not a directory

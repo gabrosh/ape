@@ -57,9 +57,9 @@ let complete_set_value _context (argsMap: ArgsMap) (argInCompl: string) =
                 FileUtils.fileFormatsArray
                 |> keepStartingWith argInCompl
             | Settings.Ints    _ ->
-                seq { ListOnly "#int" }
+                seq { ForList "#int" }
             | Settings.Strings _ ->
-                seq { ListOnly "#str" }
+                seq { ForList "#str" }
                 
     else
         noCompletions

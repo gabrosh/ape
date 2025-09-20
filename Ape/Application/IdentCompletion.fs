@@ -114,7 +114,7 @@ let private getIdentCompletions
     let result = ResizeArray<Completion> stringsSet.Count
 
     for s in stringsSet do
-        result.Add (Complete s)
+        result.Add (Completed s)
     result.Sort ()
 
     result

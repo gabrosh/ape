@@ -55,57 +55,57 @@ type CommandCompletionsTest () =
 
     [<Test>]
     member _.GetNext_GetPrevious_atEndOfLine () =
-        init "e t" 3
+        init "m g" 3
 
         assertNotInCompletion ()
 
-        assertResult (Some (1, "true")) (myCompletions.GetNext     ())
+        assertResult (Some (1, "global")) (myCompletions.GetNext     ())
 
         assertInCompletion    ()
 
-        assertResult (Some (4, "t"   )) (myCompletions.GetNext     ())
-        assertResult (None            ) (myCompletions.GetNext     ())
+        assertResult (Some (6, "g"     )) (myCompletions.GetNext     ())
+        assertResult (None              ) (myCompletions.GetNext     ())
 
         assertInCompletion    ()
 
-        assertResult (Some (1, "true")) (myCompletions.GetPrevious ())
+        assertResult (Some (1, "global")) (myCompletions.GetPrevious ())
 
         assertInCompletion    ()
 
-        assertResult (Some (4, "t"   )) (myCompletions.GetPrevious ())
+        assertResult (Some (6, "g"     )) (myCompletions.GetPrevious ())
 
         assertNotInCompletion ()
 
-        assertResult (None            ) (myCompletions.GetPrevious ())
+        assertResult (None              ) (myCompletions.GetPrevious ())
 
     [<Test>]
     member _.GetNext_GetPrevious_insideLine () =
-        init "e t x" 3
+        init "m g x" 3
 
         assertNotInCompletion ()
 
-        assertResult (Some (1, "true")) (myCompletions.GetNext     ())
+        assertResult (Some (1, "global")) (myCompletions.GetNext     ())
 
         assertInCompletion    ()
 
-        assertResult (Some (4, "t"   )) (myCompletions.GetNext     ())
-        assertResult (None            ) (myCompletions.GetNext     ())
+        assertResult (Some (6, "g"     )) (myCompletions.GetNext     ())
+        assertResult (None              ) (myCompletions.GetNext     ())
 
         assertInCompletion    ()
 
-        assertResult (Some (1, "true")) (myCompletions.GetPrevious ())
+        assertResult (Some (1, "global")) (myCompletions.GetPrevious ())
 
         assertInCompletion    ()
 
-        assertResult (Some (4, "t"   )) (myCompletions.GetPrevious ())
+        assertResult (Some (6, "g"     )) (myCompletions.GetPrevious ())
 
         assertNotInCompletion ()
 
-        assertResult (None            ) (myCompletions.GetPrevious ())
+        assertResult (None              ) (myCompletions.GetPrevious ())
 
     [<Test>]
     member _.GetPrevious_without_GetNext () =
-        init "e t" 3
+        init "m g" 3
 
         assertResult None (myCompletions.GetPrevious ())
 
@@ -113,7 +113,7 @@ type CommandCompletionsTest () =
 
     [<Test>]
     member _.GetNext_atInvalidChar () =
-        init "e" 0
+        init "m" 0
 
         assertResult None (myCompletions.GetNext     ())
 
@@ -123,29 +123,29 @@ type CommandCompletionsTest () =
 
     [<Test>]
     member _.GetCompletionsRow () =
-        init "e t" 3
+        init "m g" 3
 
         myCompletions.GetNext () |> ignore
 
         let s, offset, length = myCompletions.GetCompletionsRow ()
 
-        Assert.AreEqual ("true #filePath", s)
+        Assert.AreEqual ("global #key", s)
         Assert.AreEqual (0, offset)
-        Assert.AreEqual (4, length)
+        Assert.AreEqual (6, length)
 
         myCompletions.GetNext () |> ignore
 
         let s, offset, length = myCompletions.GetCompletionsRow ()
 
-        Assert.AreEqual ("true #filePath", s)
-        Assert.AreEqual (5, offset)
-        Assert.AreEqual (9, length)
+        Assert.AreEqual ("global #key", s)
+        Assert.AreEqual (7, offset)
+        Assert.AreEqual (4, length)
 
     // Clear -------------------------------------------------------------------
 
     [<Test>]
     member _.Clear () =
-        init "e t" 3
+        init "m g" 3
 
         myCompletions.GetNext () |> ignore
 

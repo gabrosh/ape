@@ -22,12 +22,12 @@ let keepStartingWith (value: string) (seq: string seq) =
     |> Seq.filter (
         fun s -> s.ToLower().StartsWith(value, StringComparison.OrdinalIgnoreCase)
     )
-    |> Seq.map Complete
+    |> Seq.map Completed
 
 /// Returns a new sequence with all strings, wrapped in Complete.
 let wrapInComplete (seq: string seq) =
     seq
-    |> Seq.map Complete
+    |> Seq.map Completed
 
 /// Returns suggested encodings according to argInCompl.
 let getSuggestedEncodings (argInCompl: string) =

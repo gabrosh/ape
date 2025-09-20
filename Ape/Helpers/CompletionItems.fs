@@ -20,7 +20,7 @@ type CompletionItems (
     let mutable myItems        = ResizeArray ()
     let mutable myItemsString  = ""
     let mutable myItemsIndices = ResizeArray<(int * int)> ()
-    let mutable myCurrent      = 0
+    let mutable myCurrent      = (0, 0)
 
     let handleContextChanged () =
         if myItems.Count <> 0 then
@@ -35,13 +35,13 @@ type CompletionItems (
                 invalidOp "TrySet not preceded by Clear"
 
             match myGetCompletionsFun itemsToComplete with
-            | Ok (prefixToComplete, completions) -> 
+            | Ok (prefixToComplete, completions) ->
                 myItems <- ResizeArray (seq {
-                    yield  (Complete prefixToComplete)
+                    yield  (Completed prefixToComplete)
                     yield! completions
                 })
                 this.SetItemsStringAndIndices ()
-                myCurrent <- 0
+                myCurrent <- (0, 0)
             | Error e ->
                 myUserMessages.RegisterMessage (makeErrorMessage e)
 
@@ -49,33 +49,57 @@ type CompletionItems (
             myItems        <- ResizeArray ()
             myItemsString  <- ""
             myItemsIndices <- ResizeArray ()
-            myCurrent      <- 0
+            myCurrent      <- (0, 0)
 
         member _.IsInCompletion () =
-            myCurrent <> 0
+            myCurrent <> (0, 0)
 
         member this.GetNext () =
-            if myCurrent < myItems.Count - 1 then
+            let current, subCurrent = myCurrent
+
+            if myItems.Count = 0 then
+                None
+
+            elif subCurrent < getSubItemsCount myItems[current] - 1 then
                 let previous = myCurrent
-                myCurrent <- myCurrent + 1
+                myCurrent <- (current, subCurrent + 1)
                 Some (this.GetResultLine previous)
+
+            elif current < myItems.Count - 1 then
+                let previous = myCurrent
+                let next = current + 1
+                myCurrent <- (next, 0)
+                Some (this.GetResultLine previous)
+
             else
                 None
 
         member this.GetPrevious () =
-            if myCurrent > 0 then
+            let current, subCurrent = myCurrent
+
+            if myItems.Count = 0 then
+                None
+
+            elif subCurrent > 0 then
                 let previous = myCurrent
-                myCurrent <- myCurrent - 1
+                myCurrent <- (current, subCurrent - 1)
                 Some (this.GetResultLine previous)
+
+            elif current > 0 then
+                let previous = myCurrent
+                let next = current - 1
+                myCurrent <- (next, getSubItemsCount myItems[next] - 1)
+                Some (this.GetResultLine previous)
+
             else
                 None
 
         member _.GetCompletionsRow () =
-            if myCurrent = 0 then
+            if fst myCurrent = 0 then
                 invalidOp ""
 
             let width = myContextRef.Value.windowWidth
-            let offset, length = myItemsIndices[myCurrent - 1]
+            let offset, length = myItemsIndices[fst myCurrent - 1]
             let lineOffset = offset - offset % width
 
             let sLength = min width (myItemsString.Length - lineOffset)
@@ -92,7 +116,7 @@ type CompletionItems (
         myItemsString  <- strings
         myItemsIndices <- indices
 
-    member private this.GetResultLine (previous: int) =
+    member private this.GetResultLine (previous: int * int) =
         let toDelete = this.GetStringForComplete previous
         let toInsert = this.GetStringForComplete myCurrent
 
@@ -101,10 +125,11 @@ type CompletionItems (
             toInsert = stringToChars toInsert
         }
 
-    member private _.GetStringForComplete (itemIndex: int) : string =
-        match myItems[itemIndex] with
-        | Complete x -> x
-        | ListOnly _ -> getStringFromComplete myItems[0]
+    member private this.GetStringForComplete (itemIndex: int * int) : string =
+        match myItems[fst itemIndex] with
+        | ForList   _       -> this.GetStringForComplete (0, 0)
+        | Completed x       -> x
+        | Both      (_x, y) -> y[snd itemIndex]
 
     // IDisposable
 

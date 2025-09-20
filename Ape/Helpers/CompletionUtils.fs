@@ -6,8 +6,9 @@ open DataTypes
 open Position
 
 type Completion =
-    | Complete of string  // use the string to complete given input
-    | ListOnly of string  // only include the string in completion list
+    | ForList   of string                 // string for completion list
+    | Completed of string                 // completed string
+    | Both      of string * string array  // string for completion list and completed strings
 
 let noCompletions = ResizeArray<Completion> ()
 
@@ -16,15 +17,17 @@ type GetCompletionsFun =
     (Chars * Position) seq
         -> Result<string * ResizeArray<Completion>, string>
 
+let getSubItemsCount completion =
+    match completion with
+    | ForList   _x      -> 1
+    | Completed _x      -> 1
+    | Both      (_x, y) -> y.Length
+
 let getStringForCompletionList completion =
     match completion with
-    | Complete x -> x
-    | ListOnly x -> x
-
-let getStringFromComplete completion =
-    match completion with
-    | Complete x -> x
-    | ListOnly _ -> invalidOp "Must be Completion.Complete"
+    | ForList   x       -> x
+    | Completed x       -> x
+    | Both      (x, _y) -> x
 
 let private appendSpaces (sb: StringBuilder) (n: int) =
     for _ = 0 to n - 1 do

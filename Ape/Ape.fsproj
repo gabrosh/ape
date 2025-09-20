@@ -26,6 +26,7 @@
     <Compile Include="Utils\ConsoleInterop_Windows.fs" />
     <Compile Include="Utils\ConsoleInterop_Specific.fs" />
     <Compile Include="Utils\FileUtils.fs" />
+    <Compile Include="Utils\FilePathUtils.fs" />
     <Compile Include="Utils\ColorSchemes.fs" />
     <Compile Include="Utils\DefaultColors.fs" />
     <Compile Include="Utils\ColorUtils.fs" />

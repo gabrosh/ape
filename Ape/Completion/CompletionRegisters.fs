@@ -19,13 +19,13 @@ let check_regUnreg (argsMap: ArgsMap) =
 
 let complete_regUnreg_regName _context (argsMap: ArgsMap) (_argInCompl: string) =
     if check_regUnreg argsMap then
-        seq { ListOnly "#regName"}
+        seq { ForList "#regName"}
     else
         noCompletions
 
 let complete_reg_line _context (argsMap: ArgsMap) (_argInCompl: string) =
     if check_regUnreg argsMap then
-        seq { ListOnly "#line"}
+        seq { ForList "#line"}
     else
         noCompletions
 
