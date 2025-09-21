@@ -55,7 +55,7 @@ type IdentCompletionsTextAreaTest () =
     // teardown
 
     [<TearDown>]
-    member _.OneTimeTearDown () =
+    member _.TearDown () =
         myCompletions.Clear ()
 
     // GetNext, GetPrevious, IsInCompletion ------------------------------------

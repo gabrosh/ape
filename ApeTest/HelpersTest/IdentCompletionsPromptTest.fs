@@ -54,7 +54,7 @@ type IdentCompletionsPromptTest () =
     // teardown
 
     [<TearDown>]
-    member _.OneTimeTearDown () =
+    member _.OneTearDown () =
         myCompletions.Clear ()
 
     // GetNext, GetPrevious, IsInCompletion ------------------------------------

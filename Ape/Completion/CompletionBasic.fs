@@ -23,18 +23,23 @@ let private transformEnumerateEntry (dirNameIsEmpty: bool) (entry: string) =
 /// Returns the filePath completion taking into account all files and directories
 /// matching given pattern.
 let private getFilePathCompletions (argInCompl: string) =
-    let pattern = argInCompl + "*"
+    let fileName = IO.Path.GetFileName argInCompl
+
+    let pattern =
+        if fileName.Contains "*" || fileName.Contains "?" then
+            argInCompl
+        else
+            argInCompl + "*"
     
     let dirName' = IO.Path.GetDirectoryName pattern
     // When argInCompl starts with \\, dirName' = null - it's a root directory.
-    let dirName = if dirName' = null then argInCompl else dirName'
+    let dirName = if dirName' = null then pattern else dirName'
     let dirNameIsEmpty = (dirName = "")
 
     let path = getPathForEnumerate dirNameIsEmpty dirName
+    let searchPattern = IO.Path.GetFileName pattern
 
     try
-        let searchPattern = IO.Path.GetFileName pattern
-
         let filePaths =
             IO.Directory.EnumerateFileSystemEntries (path, searchPattern)
             |> Seq.map (transformEnumerateEntry dirNameIsEmpty)

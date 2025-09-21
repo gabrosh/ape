@@ -240,11 +240,11 @@ type ICompletionItems =
     abstract member IsInCompletion:
         unit -> bool
 
-    /// Returns the next line from the completion sequence.
+    /// Returns the next item from the completion sequence.
     abstract member GetNext:
         unit -> CompletionAction option
 
-    /// Returns the previous line from the completion sequence.
+    /// Returns the previous item from the completion sequence.
     abstract member GetPrevious:
         unit -> CompletionAction option
 

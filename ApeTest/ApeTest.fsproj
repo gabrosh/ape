@@ -21,6 +21,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Include="Data\FilePathCompletion\abx.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\FilePathCompletion\aby.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Data\scrolling.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
