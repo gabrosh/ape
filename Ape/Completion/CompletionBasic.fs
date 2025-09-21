@@ -55,7 +55,9 @@ let private getFilePathCompletions (argInCompl: string) =
         else
             let commonPrefix = getCommonPrefix filePaths
 
-            if equalsWithPlatformCase commonPrefix argInCompl then
+            if equalsWithPlatformCase commonPrefix argInCompl ||
+               equalsWithPlatformCase commonPrefix filePaths[0]
+            then
                 let completed = filePaths
                 seq { Both ($"#filePath:{n}", completed) }
             else

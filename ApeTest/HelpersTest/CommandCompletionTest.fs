@@ -49,7 +49,7 @@ type CommandCompletionsTest () =
     let assertRowStr expectedStr =
         let s, _offset, _length = myCompletions.GetCompletionsRow ()
 
-        Assert.AreEqual (expectedStr, s) 
+        Assert.AreEqual (expectedStr, s)
 
     // setup. teardown
 
@@ -64,12 +64,12 @@ type CommandCompletionsTest () =
         System.IO.Directory.SetCurrentDirectory(
             IO.Path.Combine("Data", "FilePathCompletion")
         )
-        
+
     [<OneTimeTearDown>]
     member _.OneTimeTearDown () =
         System.IO.Directory.SetCurrentDirectory
             CommandCompletionsTest.PrevCurrentDirectory
-        
+
     [<TearDown>]
     member _.TearDown () =
         myCompletions.Clear ()
@@ -176,9 +176,10 @@ type CommandCompletionsTest () =
         init "e true utf-8 " 13
 
         assertResult (Some (0, "ab"     )) (myCompletions.GetNext ())
-        assertRowStr "#filePath:+2"
+        assertRowStr "#filePath:+3"
         assertResult (Some (2, "abx.txt")) (myCompletions.GetNext ())
-        assertResult (Some (7, "aby.txt")) (myCompletions.GetNext ())
+        assertResult (Some (7, "aby.tx" )) (myCompletions.GetNext ())
+        assertResult (Some (6, "aby.txt")) (myCompletions.GetNext ())
         assertResult (None               ) (myCompletions.GetNext ())
 
     [<Test>]
@@ -186,26 +187,40 @@ type CommandCompletionsTest () =
         init "e true utf-8 a" 14
 
         assertResult (Some (1, "ab"     )) (myCompletions.GetNext ())
-        assertRowStr "#filePath:+2"
+        assertRowStr "#filePath:+3"
         assertResult (Some (2, "abx.txt")) (myCompletions.GetNext ())
-        assertResult (Some (7, "aby.txt")) (myCompletions.GetNext ())
+        assertResult (Some (7, "aby.tx" )) (myCompletions.GetNext ())
+        assertResult (Some (6, "aby.txt")) (myCompletions.GetNext ())
         assertResult (None               ) (myCompletions.GetNext ())
 
     [<Test>]
     member _.GetNext_GetPrevious_filePath_4 () =
         init "e true utf-8 ab" 15
 
+        // equalsWithPlatformCase commonPrefix argInCompl = true
         assertResult (Some (2, "abx.txt")) (myCompletions.GetNext ())
-        assertRowStr "#filePath:2"
-        assertResult (Some (7, "aby.txt")) (myCompletions.GetNext ())
+        assertRowStr "#filePath:3"
+        assertResult (Some (7, "aby.tx" )) (myCompletions.GetNext ())
+        assertResult (Some (6, "aby.txt")) (myCompletions.GetNext ())
         assertResult (None               ) (myCompletions.GetNext ())
 
     [<Test>]
     member _.GetNext_GetPrevious_filePath_5 () =
         init "e true utf-8 abx" 16
 
+        // filePaths.Length = 1
         assertResult (Some (3, "abx.txt")) (myCompletions.GetNext ())
         assertRowStr "#filePath:1"
+        assertResult (None               ) (myCompletions.GetNext ())
+
+    [<Test>]
+    member _.GetNext_GetPrevious_filePath_6 () =
+        init "e true utf-8 aby" 16
+
+        // equalsWithPlatformCase commonPrefix filePaths[0] = true
+        assertResult (Some (3, "aby.tx" )) (myCompletions.GetNext ())
+        assertRowStr "#filePath:2"
+        assertResult (Some (6, "aby.txt")) (myCompletions.GetNext ())
         assertResult (None               ) (myCompletions.GetNext ())
 
     [<Test>]
