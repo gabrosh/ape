@@ -116,9 +116,9 @@ let private readColorsFile () =
         jsonDocument.RootElement
     with
         | :? FileNotFoundException as ex ->
-            raise (ColorException $"Can't read color definitions file '{colorsFileName}'")
+            raise (ColorException $"Can't read color definitions file: '{colorsFileName}'")
         | :? JsonException ->
-            raise (ColorException $"Wrong format of color definitions file '{colorsFileName}'")
+            raise (ColorException $"Wrong format of color definitions file: '{colorsFileName}'")
             
 /// Loads colors definition file and sets module's variables
 /// schemesArray, defaultScheme and schemesMap if succeeded.
