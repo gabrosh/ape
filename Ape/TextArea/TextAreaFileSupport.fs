@@ -7,6 +7,15 @@ open DataTypes
 open UserMessages
 open WrappedRef
 
+let private isDirectory (path: string) =
+    try
+        let attrs = IO.File.GetAttributes path
+        let isDirectory = IO.FileAttributes.Directory
+        attrs &&& isDirectory = isDirectory
+    with
+        | :? System.IO.FileNotFoundException ->
+            false
+
 [<Sealed>]
 type TextAreaFileSupport (
     myContextRef:   IWrappedRef<MainContext>,
@@ -101,7 +110,10 @@ type TextAreaFileSupport (
 
     member private _.OpenFileForReading filePath encoding =
         try
-            Ok (FileUtils.openFileForReading filePath encoding)
+            if isDirectory filePath then
+                Error "The specified path is a directory."
+            else
+                Ok (FileUtils.openFileForReading filePath encoding)
         with
         | :? System.IO.DirectoryNotFoundException as ex ->
             Error ex.Message
@@ -131,7 +143,10 @@ type TextAreaFileSupport (
 
     static member private WriteFileAux filePath encoding fileFormat endWithNewLine lines =
         try
-            Ok (FileUtils.writeFile filePath encoding fileFormat endWithNewLine lines)
+            if isDirectory filePath then
+                Error "The specified path is a directory."
+            else
+                Ok (FileUtils.writeFile filePath encoding fileFormat endWithNewLine lines)
         with
         | :? System.IO.DirectoryNotFoundException as ex ->
             Error ex.Message
