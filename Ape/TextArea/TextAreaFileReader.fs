@@ -1,4 +1,4 @@
-﻿module TextAreaFileSupport
+﻿module TextAreaFileReader
 
 open System
 
@@ -7,17 +7,8 @@ open DataTypes
 open UserMessages
 open WrappedRef
 
-let private isDirectory (path: string) =
-    try
-        let attrs = IO.File.GetAttributes path
-        let isDirectory = IO.FileAttributes.Directory
-        attrs &&& isDirectory = isDirectory
-    with
-        | :? System.IO.FileNotFoundException ->
-            false
-
 [<Sealed>]
-type TextAreaFileSupport (
+type TextAreaFileReader (
     myContextRef:   IWrappedRef<MainContext>,
     myUserMessages: UserMessages,
     myLines:        Lines
@@ -32,8 +23,6 @@ type TextAreaFileSupport (
 
     // only for testing purposes
     member _.ReloadFileParams = myReloadFileParams
-
-    // others
 
     member this.LoadStrings (lines: string seq) resetFun =
         myLines.Clear ()
@@ -99,10 +88,7 @@ type TextAreaFileSupport (
         | Error e ->
             Error e
 
-    static member WriteFile filePath encoding fileFormat endWithNewLine lines =
-        TextAreaFileSupport.WriteFileAux filePath encoding fileFormat endWithNewLine lines
-
-    // others - private
+    // private
 
     member private _.LoadStringsAux lines result =
         for line in lines do
@@ -110,7 +96,7 @@ type TextAreaFileSupport (
 
     member private _.OpenFileForReading filePath encoding =
         try
-            if isDirectory filePath then
+            if FileUtils.isDirectory filePath then
                 Error "The specified path is a directory."
             else
                 Ok (FileUtils.openFileForReading filePath encoding)
@@ -140,18 +126,6 @@ type TextAreaFileSupport (
     member private _.AssureNonZeroLinesCount () =
         if myLines.Count = 0 then
             myLines.Add Chars.Empty
-
-    static member private WriteFileAux filePath encoding fileFormat endWithNewLine lines =
-        try
-            if isDirectory filePath then
-                Error "The specified path is a directory."
-            else
-                Ok (FileUtils.writeFile filePath encoding fileFormat endWithNewLine lines)
-        with
-        | :? System.IO.DirectoryNotFoundException as ex ->
-            Error ex.Message
-        | :? System.UnauthorizedAccessException as ex ->
-            Error ex.Message
 
     // IDisposable
 

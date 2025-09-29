@@ -272,3 +272,13 @@ let writeFile
 /// Returns true if file with given path already exists.
 let fileExists (filePath: string) =
     IO.File.Exists filePath
+
+/// Returns true if entry with given path is a directory.
+let isDirectory (path: string) =
+    try
+        let attrs = IO.File.GetAttributes path
+        let isDirectory = IO.FileAttributes.Directory
+        attrs &&& isDirectory = isDirectory
+    with
+        | :? System.IO.FileNotFoundException ->
+            false

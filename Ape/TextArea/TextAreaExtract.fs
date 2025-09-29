@@ -11,7 +11,7 @@ open MatchRangesExtract
 open Position
 open Selection
 open TextAreaBufferBase
-open TextAreaFileSupport
+open TextAreaFileReader
 open UserMessages
 open WrappedRef
 
@@ -31,7 +31,7 @@ type TextAreaExtract (
         )
     )
 
-    let myFileSupport = new TextAreaFileSupport (
+    let myFileReader = new TextAreaFileReader (
         myContextRef, myUserMessages, myLinesFromFile
     )
 
@@ -130,7 +130,7 @@ type TextAreaExtract (
     // others
 
     member this.LoadStrings (lines: string seq) =
-        myFileSupport.LoadStrings lines (
+        myFileReader.LoadStrings lines (
             fun () ->
                 myMatchRanges.UpdateAfterReload ()
                 this.ResetState Position_Zero
@@ -138,7 +138,7 @@ type TextAreaExtract (
         )
 
     member this.LoadFile encoding strictEncoding =
-        myFileSupport.LoadFile this.FilePath encoding strictEncoding (
+        myFileReader.LoadFile this.FilePath encoding strictEncoding (
             fun () ->
                 myMatchRanges.UpdateAfterReload ()
                 this.ResetState Position_Zero
@@ -150,7 +150,7 @@ type TextAreaExtract (
         let cursorWC    = this.Main.CursorWC
         let displayLine = this.DisplayPos.line
 
-        myFileSupport.ReloadFile this.FilePath encoding strictEncoding (
+        myFileReader.ReloadFile this.FilePath encoding strictEncoding (
             fun () ->
                 myMatchRanges.RunWithSetWarnIfNoMatchFound warnIfNoMatchFound (
                     fun () -> this.ResetStateAfterReload cursor cursorWC displayLine
@@ -280,7 +280,7 @@ type TextAreaExtract (
     // IDisposable
 
     override _.Dispose () =
-        (myFileSupport :> IDisposable).Dispose ()
+        (myFileReader :> IDisposable).Dispose ()
         base.Dispose ()
 
 let makeTextAreaExtract (

@@ -11,7 +11,7 @@ open MatchRanges
 open Position
 open Selection
 open TextAreaBufferBase
-open TextAreaFileSupport
+open TextAreaFileReader
 open UserMessages
 open WrappedRef
 
@@ -30,7 +30,7 @@ type TextAreaBuffer (
         )
     )
 
-    let myFileSupport = new TextAreaFileSupport (
+    let myFileReader = new TextAreaFileReader (
         myContextRef, myUserMessages, myLinesFromFile
     )
 
@@ -40,7 +40,7 @@ type TextAreaBuffer (
     let myChildren = ResizeArray<ITextAreaBuffer> ()
 
     // only for testing purposes
-    member _.ReloadFileParams = myFileSupport.ReloadFileParams
+    member _.ReloadFileParams = myFileReader.ReloadFileParams
 
     // children
 
@@ -109,14 +109,14 @@ type TextAreaBuffer (
     // others
 
     member this.LoadStrings (lines: string seq) =
-        myFileSupport.LoadStrings lines (
+        myFileReader.LoadStrings lines (
             fun () ->
                 this.ResetState Position_Zero
                 this.ResetUndoState ()
         )
 
     member this.LoadFile encoding strictEncoding =
-        myFileSupport.LoadFile this.FilePath encoding strictEncoding (
+        myFileReader.LoadFile this.FilePath encoding strictEncoding (
             fun () ->
                 this.ResetState Position_Zero
                 this.ResetUndoState ()
@@ -127,7 +127,7 @@ type TextAreaBuffer (
         let cursorWC    = this.Main.CursorWC
         let displayLine = this.DisplayPos.line
 
-        myFileSupport.ReloadFile this.FilePath encoding strictEncoding (
+        myFileReader.ReloadFile this.FilePath encoding strictEncoding (
             fun () ->
                 myMatchRanges.RunWithSetWarnIfNoMatchFound warnIfNoMatchFound (
                     fun () -> this.ResetStateAfterReload cursor cursorWC displayLine
@@ -264,7 +264,7 @@ type TextAreaBuffer (
     // IDisposable
 
     override _.Dispose () =
-        (myFileSupport :> IDisposable).Dispose ()
+        (myFileReader :> IDisposable).Dispose ()
         base.Dispose ()
 
 let makeTextAreaBuffer (

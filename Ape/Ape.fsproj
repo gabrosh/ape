@@ -91,7 +91,8 @@
     <Compile Include="TextArea\TextAreaSelections.fs" />
     <Compile Include="TextArea\TextAreaUndoRedo.fs" />
     <Compile Include="TextArea\ITextAreaBuffer.fs" />
-    <Compile Include="TextArea\TextAreaFileSupport.fs" />
+    <Compile Include="TextArea\TextAreaFileReader.fs" />
+    <Compile Include="TextArea\TextAreaFileWriter.fs" />
     <Compile Include="TextArea\TextAreaBufferBase.fs" />
     <Compile Include="TextArea\TextAreaBuffer.fs" />
     <Compile Include="TextArea\TextAreaExtract.fs" />

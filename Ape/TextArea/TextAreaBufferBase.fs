@@ -13,7 +13,7 @@ open Selection
 open Selections
 open SelectionsRegisters
 open TextAreaDelegator
-open TextAreaFileSupport
+open TextAreaFileWriter
 open TextRangesModifier
 open UndoProvider
 open UserMessages
@@ -292,7 +292,7 @@ type TextAreaBufferBase (
 
     member this.WriteFile filePath encoding fileFormat endWithNewLine =
         let result =
-            TextAreaFileSupport.WriteFile filePath encoding fileFormat endWithNewLine myLines
+            TextAreaFileWriter.WriteFile filePath encoding fileFormat endWithNewLine myLines
 
         match result with
         | Ok ()   ->
