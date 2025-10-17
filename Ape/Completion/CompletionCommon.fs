@@ -4,36 +4,54 @@ open System
 
 open CommandArgs
 open CompletionUtils
+open StringInCompl
 
 // empty context
 type CompletionContext = unit
 
 type CompleteFun =
-    // context -> argsMap -> argInCompl -> completions
-    CompletionContext -> ArgsMap -> string
+    // context -> argsMap -> stringInCompl -> completions
+    CompletionContext -> ArgsMap -> StringInCompl
         -> Completion seq
 
+/// Indicates that completion is not available for the command.
 let complete_none: CompleteFun list =
     []
 
-/// Returns a new sequence with strings starting with value (ignoring case), wrapped in Complete.
-let keepStartingWith (value: string) (seq: string seq) =
+/// Returns a new sequence with strings starting with commandInCompl (ignoring case), wrapped in Completed.
+let keepCommandsStartingWith (commandInCompl: string) (seq: string seq) : Completion seq =
     seq
     |> Seq.filter (
-        fun s -> s.ToLower().StartsWith(value, StringComparison.OrdinalIgnoreCase)
+        fun s -> s.ToLower().StartsWith(commandInCompl, StringComparison.OrdinalIgnoreCase)
     )
     |> Seq.map Completed
 
-/// Returns a new sequence with all strings, wrapped in Complete.
-let wrapInComplete (seq: string seq) =
+/// Returns a new sequence with strings starting with argInCompl.unescaped (ignoring case), adjusted and wrapped in Both.
+let keepArgsStartingWith (argInCompl: StringInCompl) (seq: string seq) : Completion seq =
     seq
-    |> Seq.map Completed
+    |> Seq.filter (
+        fun s -> s.ToLower().StartsWith(argInCompl.unescaped, StringComparison.OrdinalIgnoreCase)
+    )
+    |> Seq.map (
+        fun s -> Both (
+            s, [| s |> adjustCompleted argInCompl.quoteType |]
+        )
+    )
+
+/// Returns a new sequence with all strings, adjusted and wrapped in Both.
+let private wrapInBoth (argInCompl: StringInCompl) (seq: string seq) =
+    seq
+    |> Seq.map (
+        fun s -> Both (
+            s, [| s |> adjustCompleted argInCompl.quoteType |]
+        )
+    )
 
 /// Returns suggested encodings according to argInCompl.
-let getSuggestedEncodings (argInCompl: string) =
-    if argInCompl.Length <> 0 then
+let getSuggestedEncodings (argInCompl: StringInCompl) =
+    if argInCompl.unescaped.Length <> 0 then
         FileUtils.encodingsArray
-        |> keepStartingWith argInCompl
+        |> keepArgsStartingWith argInCompl
     else
         FileUtils.suggestedEncodings
-        |> wrapInComplete
+        |> wrapInBoth argInCompl

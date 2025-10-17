@@ -3,6 +3,7 @@ module CompletionKeyMappings
 open CommandArgs
 open CompletionCommon
 open CompletionUtils
+open StringInCompl
 
 // map, unmap
 
@@ -23,27 +24,27 @@ let check_mapUnmap (argsMap: ArgsMap) =
     | _
         -> true
 
-let complete_mapUnmap_scope _context (argsMap: ArgsMap) (argInCompl: string) =
+let complete_mapUnmap_scope _context (argsMap: ArgsMap) (argInCompl: StringInCompl) =
     if check_mapUnmap argsMap then
         KeyMappings.scopeStrings
-        |> keepStartingWith argInCompl
+        |> keepArgsStartingWith argInCompl
     else
         noCompletions
 
-let complete_mapUnmap_mode _context (argsMap: ArgsMap) (argInCompl: string) =
+let complete_mapUnmap_mode _context (argsMap: ArgsMap) (argInCompl: StringInCompl) =
     if check_mapUnmap argsMap then
         KeyMappings.modeStrings
-        |> keepStartingWith argInCompl
+        |> keepArgsStartingWith argInCompl
     else
         noCompletions
 
-let complete_mapUnmap_key _context (argsMap: ArgsMap) (_argInCompl: string) =
+let complete_mapUnmap_key _context (argsMap: ArgsMap) (_argInCompl: StringInCompl) =
     if check_mapUnmap argsMap then
         seq { ForList "#key" }
     else
         noCompletions
 
-let complete_map_keySeq _context (argsMap: ArgsMap) (_argInCompl: string) =
+let complete_map_keySeq _context (argsMap: ArgsMap) (_argInCompl: StringInCompl) =
     if check_mapUnmap argsMap then
         seq { ForList "#keySeq"}
     else

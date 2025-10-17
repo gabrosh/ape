@@ -3,6 +3,7 @@ module CompletionRegisters
 open CommandArgs
 open CompletionCommon
 open CompletionUtils
+open StringInCompl
 
 // reg, unreg
 
@@ -17,13 +18,13 @@ let check_regUnreg (argsMap: ArgsMap) =
     | _
         -> true
 
-let complete_regUnreg_regName _context (argsMap: ArgsMap) (_argInCompl: string) =
+let complete_regUnreg_regName _context (argsMap: ArgsMap) (_argInCompl: StringInCompl) =
     if check_regUnreg argsMap then
         seq { ForList "#regName"}
     else
         noCompletions
 
-let complete_reg_line _context (argsMap: ArgsMap) (_argInCompl: string) =
+let complete_reg_line _context (argsMap: ArgsMap) (_argInCompl: StringInCompl) =
     if check_regUnreg argsMap then
         seq { ForList "#line"}
     else

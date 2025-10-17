@@ -2,7 +2,6 @@
 
 open NUnit.Framework
 
-open Common
 open CompletionItems
 open DataTypes
 open Position
@@ -15,7 +14,7 @@ type IdentCompletionsTextAreaTest () =
 
     let mutable myLines = ResizeArray<Chars> ()
 
-    let myCompletions: ICompletionItems = new CompletionItems (
+    let myCompletions = new CompletionItems (
         contextRef, UserMessages (),
         IdentCompletion.getCompletions false (fun () -> myLines)
     )

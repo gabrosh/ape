@@ -3,6 +3,7 @@ module CompletionSettings
 open CommandArgs
 open CompletionCommon
 open CompletionUtils
+open StringInCompl
 
 // set, unset
 
@@ -20,21 +21,21 @@ let check_setUnset (argsMap: ArgsMap) =
     | _
         -> true
 
-let complete_setUnset_scope _context (argsMap: ArgsMap) (argInCompl: string) =
+let complete_setUnset_scope _context (argsMap: ArgsMap) (argInCompl: StringInCompl) =
     if check_setUnset argsMap then
         Settings.scopeStrings
-        |> keepStartingWith argInCompl
+        |> keepArgsStartingWith argInCompl
     else
         noCompletions
 
-let complete_setUnset_name _context (argsMap: ArgsMap) (argInCompl: string) =
+let complete_setUnset_name _context (argsMap: ArgsMap) (argInCompl: StringInCompl) =
     if check_setUnset argsMap then
         Settings.nameStrings
-        |> keepStartingWith argInCompl
+        |> keepArgsStartingWith argInCompl
     else
         noCompletions
 
-let complete_set_value _context (argsMap: ArgsMap) (argInCompl: string) =
+let complete_set_value _context (argsMap: ArgsMap) (argInCompl: StringInCompl) =
     if check_setUnset argsMap then
         let nameString = argsMap["name"] |> Option.get
         let nameResult = Settings.parseName nameString
@@ -43,7 +44,7 @@ let complete_set_value _context (argsMap: ArgsMap) (argInCompl: string) =
         match name with
         | Settings.Name.colorScheme ->
             ColorUtils.schemesArray
-            |> keepStartingWith argInCompl
+            |> keepArgsStartingWith argInCompl
 
         | Settings.Name.encoding    ->
             getSuggestedEncodings argInCompl
@@ -52,10 +53,10 @@ let complete_set_value _context (argsMap: ArgsMap) (argInCompl: string) =
             match Settings.specsMap[name] with
             | Settings.Bools   _ ->
                 seq { "false"; "true" }
-                |> keepStartingWith argInCompl
+                |> keepArgsStartingWith argInCompl
             | Settings.FileFormats _ ->
                 FileUtils.fileFormatsArray
-                |> keepStartingWith argInCompl
+                |> keepArgsStartingWith argInCompl
             | Settings.Ints    _ ->
                 seq { ForList "#int" }
             | Settings.Strings _ ->
@@ -77,9 +78,9 @@ let complete_unset: CompleteFun list = [
 
 // get
 
-let complete_get_name _context (_argsMap: ArgsMap) (argInCompl: string) =
+let complete_get_name _context (_argsMap: ArgsMap) (argInCompl: StringInCompl) =
     Settings.nameStrings
-    |> keepStartingWith argInCompl
+    |> keepArgsStartingWith argInCompl
 
 let complete_get: CompleteFun list = [
     complete_get_name

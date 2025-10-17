@@ -33,6 +33,7 @@
     <Compile Include="Utils\ConsoleKeys.fs" />
     <Compile Include="Utils\ConsoleInputSource.fs" />
     <Compile Include="Utils\KeysStrings.fs" />
+    <Compile Include="Utils\StringInCompl.fs" />
     <Compile Include="Utils\CommandArgs.fs" />
     <Compile Include="Utils\Parsing.fs" />
     <Compile Include="Utils\TestMines.fs" />

@@ -1,6 +1,6 @@
 ﻿module CommandArgs
 
-open System.Text
+open StringInCompl
 
 type private Regex = System.Text.RegularExpressions.Regex
 type private Match = System.Text.RegularExpressions.Match
@@ -15,7 +15,7 @@ type ArgsMapResult =
     Result<ArgsMap, string>
 
 type ArgsForCompl =
-    string array * string
+    string array * StringInCompl
 
 type ArgsForComplResult =
     Result<ArgsForCompl, string>
@@ -24,68 +24,46 @@ let ARGUMENTS_PARSING_ERROR = "Arguments parsing error"
 let NOT_ENOUGH_ARGUMENTS    = "Not enough arguments"
 let TOO_MANY_ARGUMENTS      = "Too many arguments"
 
-/// Replaces every pair of \<char> with <char>, with the
-/// exception of \t, which is replaced by tab character.
-let private unescapeBackslash (s: string) =
-    let sb = StringBuilder ()
-
-    let mutable toEscape = false
-
-    for c in s do
-        if toEscape then
-            if c = 't'
-            then sb.Append '\t' |> ignore
-            else sb.Append c    |> ignore
-
-            toEscape <- false
-        elif c = '\\' then
-            toEscape <- true
-        else
-            sb.Append c |> ignore
-
-    sb.ToString ()
-
-/// Replaces every pair of "<char> with <char>.
-let private unescapeDoubleQuote (s: string) =
-    let sb = StringBuilder ()
-
-    let mutable toEscape = false
-
-    for c in s do
-        if toEscape then
-            sb.Append c |> ignore
-
-            toEscape <- false
-        elif c = '"' then
-            toEscape <- true
-        else
-            sb.Append c |> ignore
-
-    sb.ToString ()
-
+/// If given string is quoted, it removes the quotations
+/// at the beginning and end of it and unescapes it.
 let private adjustArg (s: string) =
     if s.StartsWith('"') && s.EndsWith('"') then
-        unescapeBackslash (
+        unescapeQuoted (
             s.Substring (1, s.Length - 2)
         )
     elif s.StartsWith("@\"") && s.EndsWith('"') then
-        unescapeDoubleQuote (
+        unescapeAtQuoted (
             s.Substring (2, s.Length - 3)
         )
     else
         s
 
-let private adjustArgIncompl (s: string) =
+/// If given string to be completed is quoted, it removes the quotation
+/// at the beginning of it and unescapes it. Returns also the quotation type
+/// and the original string.
+let private adjustArgInCompl (s: string) =
     if s.StartsWith('"') then
-        unescapeBackslash (
-            s.Substring (1, s.Length - 1)
-        )
+        {
+            quoteType = Quoted
+            orig      = s
+            unescaped = unescapeQuoted (
+                s.Substring (1, s.Length - 1)
+            )
+        }
     elif s.StartsWith("@\"") then
-        unescapeDoubleQuote (
-            s.Substring (2, s.Length - 2)
-        )
+        {
+            quoteType = AtQuoted
+            orig      = s
+            unescaped = unescapeAtQuoted (
+                s.Substring (2, s.Length - 2)
+            )
+        }
     else
-        s
+        {
+            quoteType = NotQuoted
+            orig      = s
+            unescaped = s
+        }
 
 [<Literal>]
 let quoted          = """("(\\[\\"t]|[^\\"])*")"""
@@ -149,7 +127,7 @@ let private splitArgsStringForCompl (args: string) =
 
         let argsIncompl =
             oneArgIncompl'
-            |> Seq.map (fun x -> adjustArgIncompl x.Value)
+            |> Seq.map (fun x -> adjustArgInCompl x.Value)
             |> Seq.toArray
 
         Ok (argsCompl, argsIncompl[0])
@@ -198,7 +176,7 @@ let getArgsMapRight args mandatoryCount (names: string array) : ArgsMapResult =
         Error e
 
 let private getArgsForComplAux
-    (argsCompl: string array) (argInCompl: string) maxCount =
+    (argsCompl: string array) (argInCompl: StringInCompl) maxCount =
 
     if argsCompl.Length + 1 > maxCount then
         Error TOO_MANY_ARGUMENTS
@@ -211,7 +189,6 @@ let getArgsForCompl args maxCount : ArgsForComplResult =
     if not (maxCount >= 0) then
         invalidOp "Invalid arguments: maxCount < 0"
 
-    let args = args |> Option.defaultValue ""
     let result = splitArgsStringForCompl args
 
     match result with

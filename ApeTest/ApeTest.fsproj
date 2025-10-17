@@ -40,7 +40,7 @@
     <Compile Include="UtilsTest\KeyStringsTest.fs" />
     <Compile Include="HelpersTest\PromptHistoryTest.fs" />
     <Compile Include="HelpersTest\CompletionUtilsTest.fs" />
-    <Compile Include="HelpersTest\CommandCompletionTest.fs" />
+    <Compile Include="HelpersTest\CommandCompletionsTest.fs" />
     <Compile Include="HelpersTest\IdentCompletionsTextAreaTest.fs" />
     <Compile Include="HelpersTest\IdentCompletionsPromptTest.fs" />
     <Compile Include="TextRangesTest\ApplyInsertToPosTest.fs" />

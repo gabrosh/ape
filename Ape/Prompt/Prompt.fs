@@ -65,7 +65,7 @@ type Prompt (
         inConsoleContextRef, inUserMessages, inGetIdentCompletionsFun
     )
 
-    let mutable myCompletions: ICompletionItems option = None
+    let mutable myCompletions: CompletionItems option = None
 
     member _.Line                   = myBuffer.Line
     member _.HasUndoToRegister      = myBuffer.HasUndoToRegister

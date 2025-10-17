@@ -4,25 +4,31 @@ open System.Text
 
 open DataTypes
 open Position
+open StringInCompl
+
+/// Completion represents one item in a completion list.
 
 type Completion =
     | ForList   of string                 // string for completion list
     | Completed of string                 // completed string
     | Both      of string * string array  // string for completion list and completed strings
 
+/// Indicates that there are no possible completions.
 let noCompletions = ResizeArray<Completion> ()
 
 type GetCompletionsFun =
-    // itemsToComplete -> (prefixToComplete * completions)/error
+    // itemsToComplete -> (stringInCompl * completions)/error
     (Chars * Position) seq
-        -> Result<string * ResizeArray<Completion>, string>
+        -> Result<StringInCompl * ResizeArray<Completion>, string>
 
+/// Returns the count of completed strings from completion.
 let getSubItemsCount completion =
     match completion with
     | ForList   _x      -> 1
     | Completed _x      -> 1
     | Both      (_x, y) -> y.Length
 
+/// Returns the string for the completion list from completion.
 let getStringForCompletionList completion =
     match completion with
     | ForList   x       -> x

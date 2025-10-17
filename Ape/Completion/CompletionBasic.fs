@@ -7,6 +7,7 @@ open CompletionCommon
 open CompletionUtils
 open ExecutionCommon
 open FilePathUtils
+open StringInCompl
 
 let private getPathForEnumerate (dirNameIsEmpty: bool) (dirName: string) =
     if dirNameIsEmpty then
@@ -20,16 +21,19 @@ let private transformEnumerateEntry (dirNameIsEmpty: bool) (entry: string) =
     else
         entry
 
+let private adjustFilePaths (argInCompl: StringInCompl) (filePaths: string array) =
+    filePaths |> Array.map (adjustCompleted argInCompl.quoteType)
+
 /// Returns the filePath completion taking into account all files and directories
 /// matching given pattern.
-let private getFilePathCompletions (argInCompl: string) =
-    let fileName = IO.Path.GetFileName argInCompl
+let private getFilePathCompletions (argInCompl: StringInCompl) =
+    let fileName = IO.Path.GetFileName argInCompl.unescaped
 
     let pattern =
         if fileName.Contains "*" || fileName.Contains "?" then
-            argInCompl
+            argInCompl.unescaped
         else
-            argInCompl + "*"
+            argInCompl.unescaped + "*"
     
     let dirName' = IO.Path.GetDirectoryName pattern
     // When argInCompl starts with \\, dirName' = null - it's a root directory.
@@ -50,18 +54,19 @@ let private getFilePathCompletions (argInCompl: string) =
         if n = 0 then
             seq { ForList "#filePath" }
         elif n = 1 then
-            let completed = filePaths
+            let completed = filePaths |> adjustFilePaths argInCompl
             seq { Both ($"#filePath:{n}", completed) }
         else
             let commonPrefix = getCommonPrefix filePaths
 
-            if equalsWithPlatformCase commonPrefix argInCompl ||
+            if equalsWithPlatformCase commonPrefix argInCompl.unescaped ||
                equalsWithPlatformCase commonPrefix filePaths[0]
             then
-                let completed = filePaths
+                let completed = filePaths |> adjustFilePaths argInCompl
                 seq { Both ($"#filePath:{n}", completed) }
             else
-                let completed = Array.append [| commonPrefix |] filePaths
+                let filePaths = Array.append [| commonPrefix |] filePaths
+                let completed = filePaths |> adjustFilePaths argInCompl
                 seq { Both ($"#filePath:+{n}", completed) }
     with
         | :? IO.IOException ->
@@ -69,14 +74,14 @@ let private getFilePathCompletions (argInCompl: string) =
 
 // execCfg
 
-let complete_execCfg_cfgName _context (_argsMap: ArgsMap) (argInCompl: string) =
+let complete_execCfg_cfgName _context (_argsMap: ArgsMap) (argInCompl: StringInCompl) =
     IO.Directory.EnumerateFiles (
         cfgFilesDir, "*" + cfgFileExt
     )
     |> Seq.map (
         fun filePath -> IO.Path.GetFileNameWithoutExtension filePath
     )
-    |> keepStartingWith argInCompl
+    |> keepArgsStartingWith argInCompl
 
 let complete_execCfg: CompleteFun list = [
     complete_execCfg_cfgName
@@ -84,7 +89,7 @@ let complete_execCfg: CompleteFun list = [
 
 // write, write!
 
-let complete_writeAux_filePath _context (_argsMap: ArgsMap) (argInCompl: string) =
+let complete_writeAux_filePath _context (_argsMap: ArgsMap) (argInCompl: StringInCompl) =
     getFilePathCompletions argInCompl
 
 let complete_writeAux: CompleteFun list = [
@@ -110,20 +115,20 @@ let check_editView (argsMap: ArgsMap) =
     | _
         -> true
 
-let complete_editViewExtract_strictEncoding _context (argsMap: ArgsMap) (argInCompl: string) =
+let complete_editViewExtract_strictEncoding _context (argsMap: ArgsMap) (argInCompl: StringInCompl) =
     if check_editView argsMap then
         seq { "false"; "true" }
-        |> keepStartingWith argInCompl
+        |> keepArgsStartingWith argInCompl
     else
         noCompletions
 
-let complete_editViewExtract_encoding _context (argsMap: ArgsMap) (argInCompl: string) =
+let complete_editViewExtract_encoding _context (argsMap: ArgsMap) (argInCompl: StringInCompl) =
     if check_editView argsMap then
         getSuggestedEncodings argInCompl
     else
         noCompletions
 
-let complete_editViewExtract_filePath _context (argsMap: ArgsMap) (argInCompl: string) =
+let complete_editViewExtract_filePath _context (argsMap: ArgsMap) (argInCompl: StringInCompl) =
     if check_editView argsMap then
         getFilePathCompletions argInCompl
     else
@@ -144,7 +149,7 @@ let complete_extractBang = complete_editViewExtract
 
 // bufferName
 
-let complete_bufferName_bufferName _context (_argsMap: ArgsMap) (_argInCompl: string) =
+let complete_bufferName_bufferName _context (_argsMap: ArgsMap) (_argInCompl: StringInCompl) =
     seq { ForList "#bufferName" }
 
 let complete_bufferName: CompleteFun list = [

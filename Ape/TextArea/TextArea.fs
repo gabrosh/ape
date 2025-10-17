@@ -75,7 +75,7 @@ type TextArea (
         inGetIdentCompletionsFun (fun () -> this_.Lines)
     )
 
-    let myCompletions: ICompletionItems = myIdentCompletions
+    let myCompletions: CompletionItems = myIdentCompletions
 
     member _.CurrentSettings        = myBuffers.CurrentSettings
     member _.CurrentKeyMappings     = myBuffers.CurrentKeyMappings

@@ -6,6 +6,7 @@ open CompletionCommon
 open CompletionUtils
 open DataTypes
 open Position
+open StringInCompl
 
 // commands names
 
@@ -76,13 +77,20 @@ let private commandsMap : CommandsMap =
 
 // command completion
 
-let private getCommandCompletions (commandToComplete: string) =
+/// Returns string in completion and possible completions for given commandInCompl.
+let private getCommandCompletions (commandInCompl: string) =
     let completions =
         commandNames
-        |> keepStartingWith commandToComplete
+        |> keepCommandsStartingWith commandInCompl
         |> ResizeArray
 
-    (commandToComplete, completions)
+    let stringInCompl = {
+        quoteType = NotQuoted
+        orig      = commandInCompl
+        unescaped = commandInCompl
+    }
+
+    (stringInCompl, completions)
 
 // args completion
 
@@ -112,18 +120,19 @@ let private getCallsToComplete
             let completeFun =
                 argSpecs[first + complCount].completeFun
 
-            yield (completeFun, argsMap)
+            yield (argsMap, completeFun)
     }
 
 let private collectCompletions context argsCompl argInCompl mandatoryCount argSpecs =
     let calls = getCallsToComplete argsCompl mandatoryCount argSpecs
 
     seq {
-        for completeFun, argsMap in calls do
+        for argsMap, completeFun in calls do
             yield! (completeFun context argsMap argInCompl)
     }
 
-let private getArgsCompletions (command: string) (args: string option) =
+/// Returns string in completion and possible completions for given command and args.
+let private getArgsCompletions (command: string) (args: string) =
     match commandsMap.TryFind command with
     | Some commandSpec ->
         let mandatoryCount = commandSpec.mandatoryCount
@@ -144,11 +153,14 @@ let private getArgsCompletions (command: string) (args: string option) =
 
             (argInCompl, completions)
         | Error _e ->
-            ("", noCompletions)
+            (noStringInCompl, noCompletions)
 
     | None ->
-        ("", noCompletions)
+        (noStringInCompl, noCompletions)
 
+// general
+
+/// Returns true if cursor is at a position where completion is possible.
 let private isCompletable (lineStr: string) (cursorChar: int) =
     cursorChar = lineStr.Length || lineStr[cursorChar] = ' '
 
@@ -164,10 +176,10 @@ let private getCompletionsAux (lineStr: string) (cursorChar: int) =
         | _ -> invalidOp ""
 
     match args with
-    | Some args -> getArgsCompletions command (Some args)
+    | Some args -> getArgsCompletions command args
     | None      -> getCommandCompletions command
 
-/// Returns prefix to complete and possible completions for given items to complete.
+/// Returns string in completion and possible completions for given items to complete.
 let getCompletions
     (itemsToComplete: (Chars * Position) seq) =
 

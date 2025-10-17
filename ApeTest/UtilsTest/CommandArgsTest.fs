@@ -3,6 +3,25 @@
 open NUnit.Framework
 
 open CommandArgs
+open StringInCompl
+
+let private StringInCompl_NotQuoted orig = {
+    quoteType = NotQuoted
+    orig      = orig
+    unescaped = orig
+}
+
+let private StringInCompl_Quoted orig unescaped = {
+    quoteType = Quoted
+    orig      = orig
+    unescaped = unescaped
+}
+
+let private StringInCompl_AtQuoted orig unescaped = {
+    quoteType = AtQuoted
+    orig      = orig
+    unescaped = unescaped
+}
 
 [<TestFixture>]
 type CommandArgsTest () =
@@ -142,51 +161,51 @@ type CommandArgsTest () =
     // getArgsForCompl ---------------------------------------------------------
 
     member _.inputs_getArgsForCompl_Ok = [|
-        Some ""              , 4
-        Some "a"             , 4
-        Some "a b"           , 4
-        Some "a b c"         , 4
-        Some "  "            , 4
-        Some "  a  "         , 4
-        Some "  a  b  "      , 4
-        Some "  a  b  c  "   , 4
+        ""              , 4
+        "a"             , 4
+        "a b"           , 4
+        "a b c"         , 4
+        "  "            , 4
+        "  a  "         , 4
+        "  a  b  "      , 4
+        "  a  b  c  "   , 4
 
-        Some "a \"b\" c"     , 4
-        Some "a \"\\\\\" c"  , 4
-        Some "a \"\\\"\" c"  , 4
-        Some "a \"\\t\" c"   , 4
+        "a \"b\" c"     , 4
+        "a \"\\\\\" c"  , 4
+        "a \"\\\"\" c"  , 4
+        "a \"\\t\" c"   , 4
 
-        Some "a @\"b\" c"    , 4
-        Some "a @\"\"\"\" c" , 4
+        "a @\"b\" c"    , 4
+        "a @\"\"\"\" c" , 4
 
-        Some "\"a"           , 4
-        Some "\"\\\""        , 4
-        Some "@\"a"          , 4
-        Some "@\"\"\""       , 4
+        "\"a"           , 4
+        "\"\\\""        , 4
+        "@\"a"          , 4
+        "@\"\"\""       , 4
     |]
 
     member _.expected_getArgsForCompl_Ok: ArgsForComplResult array = [|
-        Ok ([|             |], ""  )
-        Ok ([|             |], "a" )
-        Ok ([|"a"          |], "b" )
-        Ok ([|"a"; "b"     |], "c" )
-        Ok ([|             |], ""  )
-        Ok ([|"a"          |], ""  )
-        Ok ([|"a"; "b"     |], ""  )
-        Ok ([|"a"; "b"; "c"|], ""  )
-                                   
-        Ok ([|"a"; "b"     |], "c" )
-        Ok ([|"a"; "\\"    |], "c" )
-        Ok ([|"a"; "\""    |], "c" )
-        Ok ([|"a"; "\t"    |], "c" )
-                                   
-        Ok ([|"a"; "b"     |], "c" )
-        Ok ([|"a"; "\""    |], "c" )
-                                   
-        Ok ([|             |], "a" )
-        Ok ([|             |], "\"")
-        Ok ([|             |], "a" )
-        Ok ([|             |], "\"")
+        Ok ([|             |], StringInCompl_NotQuoted ""  )
+        Ok ([|             |], StringInCompl_NotQuoted "a" )
+        Ok ([|"a"          |], StringInCompl_NotQuoted "b" )
+        Ok ([|"a"; "b"     |], StringInCompl_NotQuoted "c" )
+        Ok ([|             |], StringInCompl_NotQuoted ""  )
+        Ok ([|"a"          |], StringInCompl_NotQuoted ""  )
+        Ok ([|"a"; "b"     |], StringInCompl_NotQuoted ""  )
+        Ok ([|"a"; "b"; "c"|], StringInCompl_NotQuoted ""  )
+
+        Ok ([|"a"; "b"     |], StringInCompl_NotQuoted "c" )
+        Ok ([|"a"; "\\"    |], StringInCompl_NotQuoted "c" )
+        Ok ([|"a"; "\""    |], StringInCompl_NotQuoted "c" )
+        Ok ([|"a"; "\t"    |], StringInCompl_NotQuoted "c" )
+
+        Ok ([|"a"; "b"     |], StringInCompl_NotQuoted "c" )
+        Ok ([|"a"; "\""    |], StringInCompl_NotQuoted "c" )
+
+        Ok ([|             |], StringInCompl_Quoted    "\"a"     "a" )
+        Ok ([|             |], StringInCompl_Quoted    "\"\\\""  "\"")
+        Ok ([|             |], StringInCompl_AtQuoted  "@\"a"    "a" )
+        Ok ([|             |], StringInCompl_AtQuoted  "@\"\"\"" "\"")
     |]
 
     [<Test>]
@@ -201,15 +220,15 @@ type CommandArgsTest () =
         Assert.AreEqual (expected, actual)
 
     member _.inputs_getArgsForCompl_Error = [|
-        Some "a b c"        , 2
-        Some "  a  b  c  "  , 3
+        "a b c"        , 2
+        "  a  b  c  "  , 3
 
-        Some "\"a\"b"       , 3
-        Some "\"a\"\"b\""   , 3
-        Some "\"\\a\""      , 3
+        "\"a\"b"       , 3
+        "\"a\"\"b\""   , 3
+        "\"\\a\""      , 3
 
-        Some "@\"a\"b"      , 3
-        Some "@\"a\"@\"b\"" , 3
+        "@\"a\"b"      , 3
+        "@\"a\"@\"b\"" , 3
     |]
 
     member _.expected_getArgsForCompl_Error: ArgsForComplResult array = [|

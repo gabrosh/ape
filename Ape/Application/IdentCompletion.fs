@@ -6,6 +6,7 @@ open CharCategories
 open CompletionUtils
 open DataTypes
 open Position
+open StringInCompl
 
 type private Regex        = System.Text.RegularExpressions.Regex
 type private RegexOptions = System.Text.RegularExpressions.RegexOptions
@@ -119,7 +120,7 @@ let private getIdentCompletions
 
     result
 
-/// Returns prefix to complete and possible completions for given items to complete.
+/// Returns string in completion and possible completions for given items to complete.
 let getCompletions
     (isFromPrompt: bool) (getLinesFun: unit -> Lines)
     (itemsToComplete: (Chars * Position) seq) =
@@ -134,6 +135,12 @@ let getCompletions
         let identCompletions =
             getIdentCompletions (getLinesFun ()) identInCompl toSkip
 
-        Ok (identInCompl, identCompletions)
+        let stringInCompl = {
+            quoteType = NotQuoted
+            orig      = identInCompl
+            unescaped = identInCompl
+        }
+
+        Ok (stringInCompl, identCompletions)
     | None ->
         Error "Cursor(s) at wrong position(s)."
