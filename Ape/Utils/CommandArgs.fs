@@ -74,9 +74,9 @@ let atQuoted        = """(@"("["]|[^"])*")"""
 [<Literal>]
 let atQuotedIncompl = """(@"("["]|[^"])*)"""
 [<Literal>]
-let other           = """([^\s"]+)"""
+let other           = """(@|[^\s"@][^\s]*)"""
 [<Literal>]
-let otherIncompl    = """([^\s"]*)"""
+let otherIncompl    = """(|@|[^\s"@][^\s]*)"""
 
 [<Literal>]
 let alterns         = quoted        + "|" + atQuoted        + "|" + other
@@ -163,7 +163,6 @@ let getArgsMapRight args mandatoryCount (names: string array) : ArgsMapResult =
     if not (mandatoryCount <= names.Length) then
         invalidOp "Invalid arguments: mandatoryCount > names.Length"
 
-    let args = args |> Option.defaultValue ""
     let args' = splitArgsString args
 
     match args' with

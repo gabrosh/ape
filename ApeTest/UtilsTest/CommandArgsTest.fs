@@ -29,37 +29,37 @@ type CommandArgsTest () =
     // getArgsMapRight ---------------------------------------------------------
 
     member _.inputs_getArgsMapRight_Ok = [|
-        Some ""              , 0 , [|"x"; "y"; "z"|]
-        Some "a"             , 0 , [|"x"; "y"; "z"|]
-        Some "a b"           , 0 , [|"x"; "y"; "z"|]
-        Some "a b c"         , 0 , [|"x"; "y"; "z"|]
-        Some "  "            , 0 , [|"x"; "y"; "z"|]
-        Some "  a  "         , 0 , [|"x"; "y"; "z"|]
-        Some "  a  b  "      , 0 , [|"x"; "y"; "z"|]
-        Some "  a  b  c  "   , 0 , [|"x"; "y"; "z"|]
+        ""              , 0 , [|"x"; "y"; "z"|]
+        "a"             , 0 , [|"x"; "y"; "z"|]
+        "a b"           , 0 , [|"x"; "y"; "z"|]
+        "a b c"         , 0 , [|"x"; "y"; "z"|]
+        "  "            , 0 , [|"x"; "y"; "z"|]
+        "  a  "         , 0 , [|"x"; "y"; "z"|]
+        "  a  b  "      , 0 , [|"x"; "y"; "z"|]
+        "  a  b  c  "   , 0 , [|"x"; "y"; "z"|]
 
-        Some "a"             , 1 , [|"x"; "y"; "z"|]
-        Some "a b"           , 1 , [|"x"; "y"; "z"|]
-        Some "a b c"         , 1 , [|"x"; "y"; "z"|]
-        Some "  a  "         , 1 , [|"x"; "y"; "z"|]
-        Some "  a  b  "      , 1 , [|"x"; "y"; "z"|]
-        Some "  a  b  c  "   , 1 , [|"x"; "y"; "z"|]
+        "a"             , 1 , [|"x"; "y"; "z"|]
+        "a b"           , 1 , [|"x"; "y"; "z"|]
+        "a b c"         , 1 , [|"x"; "y"; "z"|]
+        "  a  "         , 1 , [|"x"; "y"; "z"|]
+        "  a  b  "      , 1 , [|"x"; "y"; "z"|]
+        "  a  b  c  "   , 1 , [|"x"; "y"; "z"|]
 
-        Some "a b"           , 2 , [|"x"; "y"; "z"|]
-        Some "a b c"         , 2 , [|"x"; "y"; "z"|]
-        Some "  a  b  "      , 2 , [|"x"; "y"; "z"|]
-        Some "  a  b  c  "   , 2 , [|"x"; "y"; "z"|]
+        "a b"           , 2 , [|"x"; "y"; "z"|]
+        "a b c"         , 2 , [|"x"; "y"; "z"|]
+        "  a  b  "      , 2 , [|"x"; "y"; "z"|]
+        "  a  b  c  "   , 2 , [|"x"; "y"; "z"|]
 
-        Some "a b c"         , 3 , [|"x"; "y"; "z"|]
-        Some "  a  b  c  "   , 3 , [|"x"; "y"; "z"|]
+        "a b c"         , 3 , [|"x"; "y"; "z"|]
+        "  a  b  c  "   , 3 , [|"x"; "y"; "z"|]
 
-        Some "a \"b\" c"     , 3 , [|"x"; "y"; "z"|]
-        Some "a \"\\\\\" c"  , 3 , [|"x"; "y"; "z"|]
-        Some "a \"\\\"\" c"  , 3 , [|"x"; "y"; "z"|]
-        Some "a \"\\t\" c"   , 3 , [|"x"; "y"; "z"|]
+        "a \"b\" c"     , 3 , [|"x"; "y"; "z"|]
+        "a \"\\\\\" c"  , 3 , [|"x"; "y"; "z"|]
+        "a \"\\\"\" c"  , 3 , [|"x"; "y"; "z"|]
+        "a \"\\t\" c"   , 3 , [|"x"; "y"; "z"|]
 
-        Some "a @\"b\" c"    , 3 , [|"x"; "y"; "z"|]
-        Some "a @\"\"\"\" c" , 3 , [|"x"; "y"; "z"|]
+        "a @\"b\" c"    , 3 , [|"x"; "y"; "z"|]
+        "a @\"\"\"\" c" , 3 , [|"x"; "y"; "z"|]
     |]
 
     member _.expected_getArgsMapRight_Ok: ArgsMapResult array = [|
@@ -108,23 +108,23 @@ type CommandArgsTest () =
         Assert.AreEqual (expected, actual)
 
     member _.inputs_getArgsMapRight_Error = [|
-        Some ""             , 1 , [|"x"; "y"|]
-        Some "  "           , 1 , [|"x"; "y"|]
+        ""             , 1 , [|"x"; "y"|]
+        "  "           , 1 , [|"x"; "y"|]
 
-        Some "a b c"        , 1 , [|"x"; "y"|]
-        Some "  a  b  c  "  , 1 , [|"x"; "y"|]
+        "a b c"        , 1 , [|"x"; "y"|]
+        "  a  b  c  "  , 1 , [|"x"; "y"|]
 
-        Some "\"\\a\""      , 1 , [|"x"; "y"|]
+        "\"\\a\""      , 1 , [|"x"; "y"|]
 
-        Some "\"a"          , 1 , [|"x"; "y"|]
-        Some "\"a\"b"       , 1 , [|"x"; "y"|]
-        Some "\"a\"\"b\""   , 1 , [|"x"; "y"|]
-        Some "\"\\\""       , 1 , [|"x"; "y"|]
+        "\"a"          , 1 , [|"x"; "y"|]
+        "\"a\"b"       , 1 , [|"x"; "y"|]
+        "\"a\"\"b\""   , 1 , [|"x"; "y"|]
+        "\"\\\""       , 1 , [|"x"; "y"|]
 
-        Some "@\"a"         , 1 , [|"x"; "y"|]
-        Some "@\"a\"b"      , 1 , [|"x"; "y"|]
-        Some "@\"a\"@\"b\"" , 1 , [|"x"; "y"|]
-        Some "@\"\"\""      , 1 , [|"x"; "y"|]
+        "@\"a"         , 1 , [|"x"; "y"|]
+        "@\"a\"b"      , 1 , [|"x"; "y"|]
+        "@\"a\"@\"b\"" , 1 , [|"x"; "y"|]
+        "@\"\"\""      , 1 , [|"x"; "y"|]
     |]
 
     member _.expected_getArgsMapRight_Error: ArgsMapResult array = [|

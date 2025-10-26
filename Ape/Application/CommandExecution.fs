@@ -51,8 +51,8 @@ let private executeCommandAux
 
     let command, args =
         match lineParts.Length with
-        | 1 -> lineParts[0], None
-        | 2 -> lineParts[0], Some lineParts[1]
+        | 1 -> lineParts[0], ""
+        | 2 -> lineParts[0], lineParts[1]
         | _ -> invalidOp ""
 
     match commandsMap.TryFind command with

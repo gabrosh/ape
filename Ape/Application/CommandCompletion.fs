@@ -77,7 +77,7 @@ let private commandsMap : CommandsMap =
 
 // command completion
 
-/// Returns string in completion and possible completions for given commandInCompl.
+/// Returns string in completion and possible completions for given command in completion.
 let private getCommandCompletions (commandInCompl: string) =
     let completions =
         commandNames
@@ -94,14 +94,16 @@ let private getCommandCompletions (commandInCompl: string) =
 
 // args completion
 
+/// Returns all possible combinations of argsMap and completeFun for given complete arguments.
 let private getCallsToComplete
     (argsCompl: string array) mandatoryCount (argSpecs: ArgSpec array) =
 
     let specsCount = argSpecs.Length
     let complCount = argsCompl.Length
     let firstMandatory = specsCount - mandatoryCount
-    // Don't count the argument in completion.
-    let maxFirst = specsCount - 1 - complCount
+    // - 1 for the argument in completion
+    let maxFirst = specsCount - complCount - 1
+    // Include all mandatory arguments.
     let maxFirst = min maxFirst firstMandatory
 
     seq {
@@ -123,6 +125,7 @@ let private getCallsToComplete
             yield (argsMap, completeFun)
     }
 
+/// Returns possible completions for given complete arguments and argument in completion.
 let private collectCompletions context argsCompl argInCompl mandatoryCount argSpecs =
     let calls = getCallsToComplete argsCompl mandatoryCount argSpecs
 
