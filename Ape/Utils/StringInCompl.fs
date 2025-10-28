@@ -89,24 +89,40 @@ let private escapeForAtQuoted (s: string) =
             sb.Append c |> ignore
 
     sb.ToString ()
-    
+
+/// Returns true if given string contains a space character.
+let private isQuotingNeeded (s: string) =
+    s.Contains " "
+
 /// Escapes given completed string according to quoteType.
 let private escapeCompleted (quoteType: QuoteType) (s: string) =
     match quoteType with
-    | NotQuoted -> s
-    | Quoted    -> escapeForQuoted   s
-    | AtQuoted  -> escapeForAtQuoted s
+    | NotQuoted ->
+        if isQuotingNeeded s then
+            escapeForAtQuoted s
+        else
+            s
+    | Quoted    ->
+        escapeForQuoted   s
+    | AtQuoted  ->
+        escapeForAtQuoted s
 
 /// Adds quotation prefix to given completed string according to quoteType.
 let private prefixCompleted (quoteType: QuoteType) (s: string) =
     let prefix =
         match quoteType with
-        | NotQuoted -> ""
-        | Quoted    -> "\""
-        | AtQuoted  -> "@\""
+        | NotQuoted ->
+            if isQuotingNeeded s then
+                "@\""
+            else
+                ""
+        | Quoted    ->
+            "\""
+        | AtQuoted  ->
+            "@\""
 
     prefix + s
-    
+
 /// Escapes given completed string according to quoteType and adds quotation prefix to it.
 let adjustCompleted (quoteType: QuoteType) (s: string) =
     s
