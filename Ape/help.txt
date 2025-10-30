@@ -58,8 +58,8 @@ clipboard is copied to the first register slot.
 Keys recording is toggled by <c-q>, recorded keys are stored in register . .
 
 In Search, Select, Keep and Discard prompts, .NET regular expressions are used.
-Multiline regular expressions specified by (?m) option are supported with a reasonable
-limit as to the count of lines held in the processing buffer.
+Multi-line and single-line regular expressions specified by (?m) and (?s) options are
+supported with a reasonable limit as to the count of lines held in the processing buffer.
 In Search, named groups (?<name>...) and (?'name'...) are colored by distinct colors
 according to the first letter of group's name. Colors for a lowercase letter differ
 from those for the corresponding uppercase letter.

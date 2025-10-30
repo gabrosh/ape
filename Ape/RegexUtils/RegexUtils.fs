@@ -16,7 +16,7 @@ let canMatchNewLine (regex: string) =
     canMatchNewLineIdent.IsMatch regex
 
 /// Regex identifying multi-line regular expressions
-let private isMultiLineRegexIdent = Regex @"^\(\?[^\)]*m"
+let private isMultiLineRegexIdent = Regex @"^\(\?[^\)]*[ms]"
 
 /// Returns true if regex is multi-line expression.
 let isMultiLineRegex (regex: string) =
