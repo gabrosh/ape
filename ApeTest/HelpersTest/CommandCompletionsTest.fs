@@ -163,7 +163,7 @@ type CommandCompletionsTest () =
     // #filePath - basic -------------------------------------------------------
 
     [<Test>]
-    member _.GetNext_GetPrevious_filePath_1 () =
+    member _.GetNext_filePath_1 () =
         init "e true utf-8 abz" 16
 
         assertResult (Some (3, "abz"    )) (myCompletions.GetNext ())
@@ -171,40 +171,43 @@ type CommandCompletionsTest () =
         assertResult (None               ) (myCompletions.GetNext ())
 
     [<Test>]
-    member _.GetNext_GetPrevious_filePath_2 () =
+    member _.GetNext_filePath_2 () =
         init "e true utf-8 " 13
 
-        assertResult (Some (0, "ab"     )) (myCompletions.GetNext ())
-        assertRowStr "#filePath:+3"
-        assertResult (Some (2, "abx.txt")) (myCompletions.GetNext ())
-        assertResult (Some (7, "aby.tx" )) (myCompletions.GetNext ())
-        assertResult (Some (6, "aby.txt")) (myCompletions.GetNext ())
-        assertResult (None               ) (myCompletions.GetNext ())
+        assertResult (Some (0 , "ab"         )) (myCompletions.GetNext ())
+        assertRowStr "#filePath:+4"
+        assertResult (Some (2 , "@\"ab z.txt")) (myCompletions.GetNext ())
+        assertResult (Some (10, "abx.txt"    )) (myCompletions.GetNext ())
+        assertResult (Some (7 , "aby.tx"     )) (myCompletions.GetNext ())
+        assertResult (Some (6 , "aby.txt"    )) (myCompletions.GetNext ())
+        assertResult (None                    ) (myCompletions.GetNext ())
 
     [<Test>]
-    member _.GetNext_GetPrevious_filePath_3 () =
+    member _.GetNext_filePath_3 () =
         init "e true utf-8 a" 14
 
-        assertResult (Some (1, "ab"     )) (myCompletions.GetNext ())
-        assertRowStr "#filePath:+3"
-        assertResult (Some (2, "abx.txt")) (myCompletions.GetNext ())
-        assertResult (Some (7, "aby.tx" )) (myCompletions.GetNext ())
-        assertResult (Some (6, "aby.txt")) (myCompletions.GetNext ())
-        assertResult (None               ) (myCompletions.GetNext ())
+        assertResult (Some (1 , "ab"         )) (myCompletions.GetNext ())
+        assertRowStr "#filePath:+4"
+        assertResult (Some (2 , "@\"ab z.txt")) (myCompletions.GetNext ())
+        assertResult (Some (10, "abx.txt"    )) (myCompletions.GetNext ())
+        assertResult (Some (7 , "aby.tx"     )) (myCompletions.GetNext ())
+        assertResult (Some (6 , "aby.txt"    )) (myCompletions.GetNext ())
+        assertResult (None                    ) (myCompletions.GetNext ())
 
     [<Test>]
-    member _.GetNext_GetPrevious_filePath_4 () =
+    member _.GetNext_filePath_4 () =
         init "e true utf-8 ab" 15
 
         // equalsWithPlatformCase commonPrefix argInCompl = true
-        assertResult (Some (2, "abx.txt")) (myCompletions.GetNext ())
-        assertRowStr "#filePath:3"
-        assertResult (Some (7, "aby.tx" )) (myCompletions.GetNext ())
-        assertResult (Some (6, "aby.txt")) (myCompletions.GetNext ())
-        assertResult (None               ) (myCompletions.GetNext ())
+        assertResult (Some (2 , "@\"ab z.txt")) (myCompletions.GetNext ())
+        assertRowStr "#filePath:4"
+        assertResult (Some (10, "abx.txt"    )) (myCompletions.GetNext ())
+        assertResult (Some (7 , "aby.tx"     )) (myCompletions.GetNext ())
+        assertResult (Some (6 , "aby.txt"    )) (myCompletions.GetNext ())
+        assertResult (None                    ) (myCompletions.GetNext ())
 
     [<Test>]
-    member _.GetNext_GetPrevious_filePath_5 () =
+    member _.GetNext_filePath_5 () =
         init "e true utf-8 abx" 16
 
         // filePaths.Length = 1
@@ -213,7 +216,7 @@ type CommandCompletionsTest () =
         assertResult (None               ) (myCompletions.GetNext ())
 
     [<Test>]
-    member _.GetNext_GetPrevious_filePath_6 () =
+    member _.GetNext_filePath_6 () =
         init "e true utf-8 aby" 16
 
         // equalsWithPlatformCase commonPrefix filePaths[0] = true
@@ -225,17 +228,18 @@ type CommandCompletionsTest () =
     // #filePath - wildCards ---------------------------------------------------
 
     [<Test>]
-    member _.GetNext_GetPrevious_filePath_wildCards_1 () =
+    member _.GetNext_filePath_wildCards_1 () =
         init "e true utf-8 a*.txt" 19
 
-        assertResult (Some (6, "ab"     )) (myCompletions.GetNext ())
-        assertRowStr "#filePath:+2"
-        assertResult (Some (2, "abx.txt")) (myCompletions.GetNext ())
-        assertResult (Some (7, "aby.txt")) (myCompletions.GetNext ())
-        assertResult (None               ) (myCompletions.GetNext ())
+        assertResult (Some (6 , "ab"         )) (myCompletions.GetNext ())
+        assertRowStr "#filePath:+3"
+        assertResult (Some (2 , "@\"ab z.txt")) (myCompletions.GetNext ())
+        assertResult (Some (10, "abx.txt"    )) (myCompletions.GetNext ())
+        assertResult (Some (7 , "aby.txt"    )) (myCompletions.GetNext ())
+        assertResult (None                    ) (myCompletions.GetNext ())
 
     [<Test>]
-    member _.GetNext_GetPrevious_filePath_wildCards_2 () =
+    member _.GetNext_filePath_wildCards_2 () =
         init "e true utf-8 ab?.txt" 20
 
         assertResult (Some (7, "ab"     )) (myCompletions.GetNext ())
@@ -245,7 +249,7 @@ type CommandCompletionsTest () =
         assertResult (None               ) (myCompletions.GetNext ())
 
     [<Test>]
-    member _.GetNext_GetPrevious_filePath_wildCards_3 () =
+    member _.GetNext_filePath_wildCards_3 () =
         init "e true utf-8 abx.t*" 19
 
         assertResult (Some (6, "abx.txt")) (myCompletions.GetNext ())
@@ -253,7 +257,7 @@ type CommandCompletionsTest () =
         assertResult (None               ) (myCompletions.GetNext ())
 
     [<Test>]
-    member _.GetNext_GetPrevious_filePath_wildCards_4 () =
+    member _.GetNext_filePath_wildCards_4 () =
         init "e true utf-8 abx.tx?" 20
 
         assertResult (Some (7, "abx.txt")) (myCompletions.GetNext ())
@@ -263,23 +267,25 @@ type CommandCompletionsTest () =
     // #filePath - quoted, atQuoted --------------------------------------------
 
     [<Test>]
-    member _.GetNext_GetPrevious_filePath_quoted () =
+    member _.GetNext_filePath_quoted () =
         init "e true utf-8 \".\\\\" 17
 
-        assertResult (Some (4 , "\".\\\\ab"     )) (myCompletions.GetNext ())
-        assertRowStr "#filePath:+3"
-        assertResult (Some (6 , "\".\\\\abx.txt")) (myCompletions.GetNext ())
-        assertResult (Some (11, "\".\\\\aby.tx" )) (myCompletions.GetNext ())
-        assertResult (Some (10, "\".\\\\aby.txt")) (myCompletions.GetNext ())
-        assertResult (None                       ) (myCompletions.GetNext ())
+        assertResult (Some (4 , "\".\\\\ab"      )) (myCompletions.GetNext ())
+        assertRowStr "#filePath:+4"
+        assertResult (Some (6 , "\".\\\\ab z.txt")) (myCompletions.GetNext ())
+        assertResult (Some (12, "\".\\\\abx.txt" )) (myCompletions.GetNext ())
+        assertResult (Some (11, "\".\\\\aby.tx"  )) (myCompletions.GetNext ())
+        assertResult (Some (10, "\".\\\\aby.txt" )) (myCompletions.GetNext ())
+        assertResult (None                        ) (myCompletions.GetNext ())
 
     [<Test>]
-    member _.GetNext_GetPrevious_filePath_atQuoted () =
+    member _.GetNext_filePath_atQuoted () =
         init "e true utf-8 @\".\\" 17
 
-        assertResult (Some (4 , "@\".\\ab"     )) (myCompletions.GetNext ())
-        assertRowStr "#filePath:+3"
-        assertResult (Some (6 , "@\".\\abx.txt")) (myCompletions.GetNext ())
-        assertResult (Some (11, "@\".\\aby.tx" )) (myCompletions.GetNext ())
-        assertResult (Some (10, "@\".\\aby.txt")) (myCompletions.GetNext ())
-        assertResult (None                      ) (myCompletions.GetNext ())
+        assertResult (Some (4 , "@\".\\ab"      )) (myCompletions.GetNext ())
+        assertRowStr "#filePath:+4"
+        assertResult (Some (6 , "@\".\\ab z.txt")) (myCompletions.GetNext ())
+        assertResult (Some (12, "@\".\\abx.txt" )) (myCompletions.GetNext ())
+        assertResult (Some (11, "@\".\\aby.tx"  )) (myCompletions.GetNext ())
+        assertResult (Some (10, "@\".\\aby.txt" )) (myCompletions.GetNext ())
+        assertResult (None                       ) (myCompletions.GetNext ())
