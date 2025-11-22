@@ -214,7 +214,7 @@ type TextAreaBufferExtract (
         member this.LinesForCompletion     = myParent.Lines
         member this.Selections             = this.Selections
         member this.IsReadOnly             = this.IsReadOnly
-        member this.IsBufferChanged        = this.IsBufferChanged
+        member this.IsBufferChanged        = false
         member this.HasUndoToRegister      = this.HasUndoToRegister
         member this.HasUndoLinesToRegister = this.HasUndoLinesToRegister
 

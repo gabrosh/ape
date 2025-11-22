@@ -99,9 +99,6 @@ type TextArea (
 
     member _.GetFirstChildBuffer () = myBuffer.GetFirstChild ()
 
-    member _.IsCurrentBufferAnExtract =
-        myBuffer :? TextAreaBufferExtract || myBuffer :? TextAreaExtract
-
     member _.ApplySettings () =
         myBuffers.UpdateCurrentMainContext ()
 

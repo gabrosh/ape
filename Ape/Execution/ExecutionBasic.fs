@@ -81,7 +81,6 @@ let private execute_writeAux quite context (argsMap: ArgsMap) =
             context.textArea.WriteFileAs filePath
     | None ->
         if   not quite
-          && not context.textArea.IsCurrentBufferAnExtract
           && not context.textArea.IsBufferChanged
         then
             context.userMessages.RegisterMessage
@@ -102,11 +101,19 @@ let execute_writeBang = execute_writeAux true
 let argsMapSpec_writeQuit: ArgsMapSpec = (0, [| |])
 
 let execute_writeQuit context (_argsMap: ArgsMap) =
-    while context.textArea.IsAnyBufferChanged () do
+    let userMessages = context.userMessages
+    let textArea     = context.textArea
+
+    // Break the loop also if writing a file caused an error.
+    let mutable hasErrorMessage = false
+
+    while not hasErrorMessage && textArea.IsAnyBufferChanged () do
         context.textArea.ToFirstChangedBuffer ()
-        if not context.textArea.IsCurrentBufferAnExtract then
-            context.textArea.WriteFile ()
-    true
+        context.textArea.WriteFile ()
+        hasErrorMessage <- context.userMessages.HasErrorMessage
+
+    // Quit only if writing the files went without an error.
+    not hasErrorMessage
 
 // edit, edit!
 

@@ -1,4 +1,4 @@
-Ape 0.17 - modal text editor
+Ape 0.18 - modal text editor
 
 
 Key specifications -------------------------------------------------------------
