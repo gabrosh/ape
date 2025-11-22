@@ -101,13 +101,10 @@ let execute_writeBang = execute_writeAux true
 let argsMapSpec_writeQuit: ArgsMapSpec = (0, [| |])
 
 let execute_writeQuit context (_argsMap: ArgsMap) =
-    let userMessages = context.userMessages
-    let textArea     = context.textArea
-
     // Break the loop also if writing a file caused an error.
     let mutable hasErrorMessage = false
 
-    while not hasErrorMessage && textArea.IsAnyBufferChanged () do
+    while not hasErrorMessage && context.textArea.IsAnyBufferChanged () do
         context.textArea.ToFirstChangedBuffer ()
         context.textArea.WriteFile ()
         hasErrorMessage <- context.userMessages.HasErrorMessage
