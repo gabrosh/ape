@@ -69,7 +69,8 @@ let private getFilePathCompletions (argInCompl: StringInCompl) =
                 let completed = filePaths |> adjustFilePaths argInCompl
                 seq { Both ($"#filePath:+{n}", completed) }
     with
-        | :? IO.IOException ->
+        | :? IO.IOException                         // could not find a part of the path
+        | :? System.UnauthorizedAccessException ->  // access to the path is denied
             seq { ForList "#filePath" }
 
 // execCfg
