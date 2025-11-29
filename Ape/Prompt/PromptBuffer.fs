@@ -31,7 +31,7 @@ let private getBufferState
         lines            = lines
         selections       = selections.GetImmutable ()
         mainIndex        = selections.MainIndex
-        selsRegisters    = selsRegisters.GetAllImmutable()
+        selsRegisters    = selsRegisters.GetAllImmutable ()
         displayPos       = displayPos
         pendingWCActions = wantedColumns.GetPendingWCActions ()
     }

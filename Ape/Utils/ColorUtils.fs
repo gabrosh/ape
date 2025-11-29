@@ -37,7 +37,7 @@ type private ColorException (message) =
     inherit Exception (message)
 
 let private parseColorString (colorString: string) =
-    if colorString.StartsWith("#") then
+    if colorString.StartsWith "#" then
         // Parse RGB hex color (e.g., "#0A0B0C")
         let colorRGB = colorString.Substring 1
 
@@ -70,7 +70,7 @@ let private parseCharColors (element: JsonElement) =
 
 let private parseMatches (matchesElement: JsonElement) (schemeName: string) =
     let matches = 
-        matchesElement.EnumerateArray()
+        matchesElement.EnumerateArray ()
         |> Seq.map parseCharColors
         |> Array.ofSeq
 
@@ -111,8 +111,8 @@ let private readColorsFile () =
     let filePath = getColorsFilePath ()
 
     try
-        let jsonContent = File.ReadAllText(filePath)
-        let jsonDocument = JsonDocument.Parse(jsonContent)
+        let jsonContent = File.ReadAllText filePath
+        let jsonDocument = JsonDocument.Parse jsonContent
         jsonDocument.RootElement
     with
         | :? FileNotFoundException as ex ->

@@ -58,10 +58,10 @@ type CommandCompletionsTest () =
     [<OneTimeSetUp>]
     member _.OneTimeSetup () =
         CommandCompletionsTest.PrevCurrentDirectory <-
-            System.IO.Directory.GetCurrentDirectory()
+            System.IO.Directory.GetCurrentDirectory ()
 
-        System.IO.Directory.SetCurrentDirectory(
-            IO.Path.Combine("Data", "FilePathCompletion")
+        System.IO.Directory.SetCurrentDirectory (
+            IO.Path.Combine ("Data", "FilePathCompletion")
         )
 
     [<OneTimeTearDown>]

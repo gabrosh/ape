@@ -93,7 +93,7 @@ type AbstractSingleLineRegex (
                 span.Slice (from, to_ - from)
 
         let matches = myRegexObject.Matches (span.ToString ())
-        let enumerator = matches.GetEnumerator()
+        let enumerator = matches.GetEnumerator ()
 
         try
             let mutable toBreak = false

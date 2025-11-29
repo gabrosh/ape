@@ -148,7 +148,7 @@ let private readFileAux
     | Some rfp ->
         if not rfp.endsWithNewLine then
             inputLine.AddRange lines[lines.Count - 1]
-            lines.RemoveAt(lines.Count - 1)
+            lines.RemoveAt (lines.Count - 1)
     | None ->
         ()
 

@@ -417,13 +417,13 @@ type SelectionsPerformer (
         ) |> ignore
 
     member private _.RotateUp () =
-        let isTopHit = mySelections.RotateUp()
+        let isTopHit = mySelections.RotateUp ()
 
         if isTopHit then
             myUserMessages.RegisterMessage INFO_ROTATION_HIT_TOP
 
     member private _.RotateDown () =
-        let isBottomHit = mySelections.RotateDown()
+        let isBottomHit = mySelections.RotateDown ()
 
         if isBottomHit then
             myUserMessages.RegisterMessage INFO_ROTATION_HIT_BOTTOM

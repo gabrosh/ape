@@ -1,5 +1,7 @@
 ﻿module ConsoleInterop_Windows
 
+#nowarn "9"  // FS0009: Possible unverifiable code
+
 open Microsoft.FSharp.NativeInterop
 open System
 open System.Runtime.InteropServices

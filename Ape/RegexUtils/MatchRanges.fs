@@ -29,7 +29,7 @@ type MatchRanges (
     let mutable myWarnIfNoMatchFound = true
 
     new (inUserMessages: UserMessages, inLines: Lines) =
-        MatchRanges(
+        MatchRanges (
             inUserMessages, inLines, None, true, makeTextRangesGroups ()
         )
 

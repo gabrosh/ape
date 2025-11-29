@@ -164,7 +164,7 @@ type AbstractMultiLineRegex (
         let span = CollectionsMarshal.AsSpan myStringBuffer
 
         let matches = myRegexObject.Matches (span.ToString (), myCurrentChunk)
-        let enumerator = matches.GetEnumerator()
+        let enumerator = matches.GetEnumerator ()
 
         try
             let mutable toContinue = true

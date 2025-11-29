@@ -10,7 +10,7 @@ open UserMessages
 
 let contextRef = TestUtils.makeContextRef_wrapLines 120 30 false
 
-let filePath = @"Data\scrolling.txt"
+let filePath = System.IO.Path.Combine ("Data", "scrolling.txt")
 
 [<TestFixture>]
 type WrapLinesOnFileTest () =

@@ -47,7 +47,7 @@ type MatchRangesExtract (
     new (
         inUserMessages: UserMessages, inLines: Lines, inLinesExtract: Lines
     ) =
-        MatchRangesExtract(
+        MatchRangesExtract (
             inUserMessages, inLines,
             None, true, makeTextRangesGroups (),
             inLinesExtract

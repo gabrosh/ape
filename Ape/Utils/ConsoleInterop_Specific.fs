@@ -12,13 +12,13 @@ type RuntimeOSPlatform =
     | OSX
 
 let private getOSPlatform () =
-    if   RuntimeInformation.IsOSPlatform(OSPlatform.Windows) then
+    if   RuntimeInformation.IsOSPlatform OSPlatform.Windows then
         Windows
-    elif RuntimeInformation.IsOSPlatform(OSPlatform.Linux  ) then
+    elif RuntimeInformation.IsOSPlatform OSPlatform.Linux   then
         Linux
-    elif RuntimeInformation.IsOSPlatform(OSPlatform.FreeBSD) then
+    elif RuntimeInformation.IsOSPlatform OSPlatform.FreeBSD then
         FreeBSD
-    elif RuntimeInformation.IsOSPlatform(OSPlatform.OSX    ) then
+    elif RuntimeInformation.IsOSPlatform OSPlatform.OSX     then
         OSX
     else
         Undefined

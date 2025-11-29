@@ -82,11 +82,11 @@ type TextArea (
     member _.CurrentMainContextRef  = myMainContextRef2 :> IWrappedRef<MainContext>
 
     member _.FilePath
-        with get()     = myBuffer.FilePath
+        with get ()    = myBuffer.FilePath
         and  set value = myBuffer.FilePath <- value
 
     member _.BufferName
-        with get()     = myBuffer.BufferName
+        with get ()    = myBuffer.BufferName
         and  set value = myBuffer.BufferName <- value
 
     member _.Lines                  = myBuffer.Lines

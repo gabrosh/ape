@@ -34,8 +34,8 @@ type LoadFileTest () =
         File.WriteAllText (testFilePath, chars, Encoding.Latin1)
 
     let deleteTestFile () =
-        if System.IO.File.Exists(testFilePath) then
-            System.IO.File.Delete(testFilePath)
+        if System.IO.File.Exists testFilePath then
+            System.IO.File.Delete testFilePath
 
     // command and simple assertions
 

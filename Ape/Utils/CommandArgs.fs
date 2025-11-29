@@ -27,11 +27,11 @@ let TOO_MANY_ARGUMENTS      = "Too many arguments"
 /// If given string is quoted, it removes the quotations
 /// at the beginning and end of it and unescapes it.
 let private adjustArg (s: string) =
-    if s.StartsWith('"') && s.EndsWith('"') then
+    if s.StartsWith '"' && s.EndsWith '"' then
         unescapeQuoted (
             s.Substring (1, s.Length - 2)
         )
-    elif s.StartsWith("@\"") && s.EndsWith('"') then
+    elif s.StartsWith "@\"" && s.EndsWith '"' then
         unescapeAtQuoted (
             s.Substring (2, s.Length - 3)
         )
@@ -42,7 +42,7 @@ let private adjustArg (s: string) =
 /// at the beginning of it and unescapes it. Returns also the quotation type
 /// and the original string.
 let private adjustArgInCompl (s: string) =
-    if s.StartsWith('"') then
+    if s.StartsWith '"' then
         {
             quoteType = Quoted
             orig      = s
@@ -50,7 +50,7 @@ let private adjustArgInCompl (s: string) =
                 s.Substring (1, s.Length - 1)
             )
         }
-    elif s.StartsWith("@\"") then
+    elif s.StartsWith "@\"" then
         {
             quoteType = AtQuoted
             orig      = s

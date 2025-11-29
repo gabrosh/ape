@@ -101,7 +101,7 @@ type TextAreaBuffer (
         this.HasUndoToRegister      <- false
         this.HasUndoLinesToRegister <- false
 
-        this.ClearSearchMatching()
+        this.ClearSearchMatching ()
 
         this.Dispatcher.ApplyChangedLinesCountIfNeeded ()
         this.Dispatcher.DisplayRenderer.ResetLinesCache ()
