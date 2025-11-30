@@ -32,7 +32,7 @@ It's intended to be used as a Swiss knife for structural text editing and log or
 ## Building
 Ape can be built for Windows and Linux using Visual Studio (on Windows).
 
-It can also be built from the command line on Windows and Linux, provided that you have [.NET SDK 10.0](https://dotnet.microsoft.com/en-us/download/dotnet/9.0) or [.NET SDK 9.0](https://dotnet.microsoft.com/en-us/download/dotnet/9.0) installed on your PC:
+It can also be built from the command line on Windows and Linux, provided that you have [.NET SDK 10.0](https://dotnet.microsoft.com/en-us/download/dotnet/10.0) or [.NET SDK 9.0](https://dotnet.microsoft.com/en-us/download/dotnet/9.0) installed on your PC:
 
 `dotnet build Ape/Ape.fsproj`
 
