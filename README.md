@@ -32,7 +32,7 @@ It's intended to be used as a Swiss knife for structural text editing and log or
 ## Building
 Ape can be built for Windows and Linux using Visual Studio (on Windows).
 
-It can also be built from the command line on Windows and Linux, provided that you have [.NET SDK 9.0](https://dotnet.microsoft.com/en-us/download/dotnet/9.0) installed on your PC:
+It can also be built from the command line on Windows and Linux, provided that you have [.NET SDK 10.0](https://dotnet.microsoft.com/en-us/download/dotnet/9.0) or [.NET SDK 9.0](https://dotnet.microsoft.com/en-us/download/dotnet/9.0) installed on your PC:
 
 `dotnet build Ape/Ape.fsproj`
 
@@ -40,15 +40,15 @@ To run the tests:
 
 `dotnet test ApeTest/ApeTest.fsproj`
 
-You can get a single Ape executable file accompanied by the basic configuration files and the help file by publishing the Ape project in Visual Studio, with Deployment mode "Self-contained", and File publish options "Produce single file" and "Trim unused code".
+You can get a single Ape executable file accompanied by the basic configuration files and the help file by publishing the Ape project in Visual Studio, with Deployment mode "Self-contained", and File publish options "Produce single file" and "Trim unused code". With .NET SDK 10.0, File publish option "Enable ReadyToRun compilation" works too.
 
 The same can be achieved from the command line for win-x64 binary:
 
-`dotnet publish -r win-x64 --sc true -p:PublishSingleFile=true -p:PublishTrimmed=true Ape/Ape.fsproj`
+`dotnet publish -r win-x64 --sc true -p:PublishSingleFile=true -p:PublishTrimmed=true -p:PublishReadyToRun=true Ape/Ape.fsproj`
 
 For linux-x64 binary:
 
-`dotnet publish -r linux-x64 --sc true -p:PublishSingleFile=true -p:PublishTrimmed=true Ape/Ape.fsproj`
+`dotnet publish -r linux-x64 --sc true -p:PublishSingleFile=true -p:PublishTrimmed=true -p:PublishReadyToRun=true Ape/Ape.fsproj`
 
 For the best experience on Windows, Ape should be run in Windows Terminal.
 
