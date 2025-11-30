@@ -48,6 +48,7 @@ let private getFilePathCompletions (argInCompl: StringInCompl) =
             IO.Directory.EnumerateFileSystemEntries (path, searchPattern)
             |> Seq.map (transformEnumerateEntry dirNameIsEmpty)
             |> Seq.toArray
+            |> Array.sort
 
         let n = filePaths.Length
 
