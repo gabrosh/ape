@@ -15,7 +15,17 @@ type TextAreaFileWriter () =
             else
                 Ok (FileUtils.writeFile filePath encoding fileFormat endWithNewLine lines)
         with
+        | :? System.ArgumentException as ex ->
+            Error ex.Message
+        | :? System.IO.PathTooLongException as ex ->
+            Error ex.Message
+        | :? System.NotSupportedException as ex ->
+            Error ex.Message
+    //  | :? System.IO.FileNotFoundException as ex ->
+    //      Error ex.Message
         | :? System.IO.DirectoryNotFoundException as ex ->
+            Error ex.Message
+        | :? System.IO.IOException as ex ->
             Error ex.Message
         | :? System.UnauthorizedAccessException as ex ->
             Error ex.Message

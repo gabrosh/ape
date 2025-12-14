@@ -101,9 +101,17 @@ type TextAreaFileReader (
             else
                 Ok (FileUtils.openFileForReading filePath encoding)
         with
-        | :? System.IO.DirectoryNotFoundException as ex ->
+        | :? System.ArgumentException as ex ->
+            Error ex.Message
+        | :? System.IO.PathTooLongException as ex ->
+            Error ex.Message
+        | :? System.NotSupportedException as ex ->
             Error ex.Message
         | :? System.IO.FileNotFoundException as ex ->
+            Error ex.Message
+        | :? System.IO.DirectoryNotFoundException as ex ->
+            Error ex.Message
+        | :? System.IO.IOException as ex ->
             Error ex.Message
         | :? System.UnauthorizedAccessException as ex ->
             Error ex.Message
