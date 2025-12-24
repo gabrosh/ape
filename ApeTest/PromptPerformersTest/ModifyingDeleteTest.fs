@@ -90,7 +90,7 @@ type ModifyingDeleteTest () =
             end_ 0 endChar 0 endChar
 
     [<TestCase( ""  , ""  , [|0; 0; 0|] )>]
-    [<TestCase( ""  , ""  , [|0; 0; 0|] )>]
+    //[<TestCase( ""  , ""  , [|0; 0; 0|] )>]  // duplicate
     [<TestCase( "a" , "a" , [|1; 1; 1|] )>]
     [<TestCase( "ab", "ab", [|2; 2; 2|] )>]
     member _.Delete_NewLine start end_ numbers =
@@ -102,7 +102,7 @@ type ModifyingDeleteTest () =
             end_ 0 endChar 0 endChar
 
     [<TestCase( "cd"  , ""  , [|0; 2; 0|] )>]
-    [<TestCase( "cd"  , ""  , [|0; 2; 0|] )>]
+    //[<TestCase( "cd"  , ""  , [|0; 2; 0|] )>]  // duplicate
     [<TestCase( "acd" , "a" , [|1; 3; 1|] )>]
     [<TestCase( "abcd", "ab", [|2; 4; 2|] )>]
     member _.Delete_OneLineAndNewLine start end_ numbers =

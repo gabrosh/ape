@@ -102,7 +102,7 @@ type ModifyingYankTest () =
         assertRegister ["cd"]
 
     [<TestCase( ""  , [|0; 0|] )>]
-    [<TestCase( ""  , [|0; 0|] )>]
+    //[<TestCase( ""  , [|0; 0|] )>]  // duplicate
     [<TestCase( "a" , [|1; 1|] )>]
     [<TestCase( "ab", [|2; 2|] )>]
     member _.Yank_NewLine start numbers =
@@ -116,7 +116,7 @@ type ModifyingYankTest () =
         assertRegister [""; ""]
 
     [<TestCase( "cd"  , [|0; 2|] )>]
-    [<TestCase( "cd"  , [|0; 2|] )>]
+    //[<TestCase( "cd"  , [|0; 2|] )>]  // duplicate
     [<TestCase( "acd" , [|1; 3|] )>]
     [<TestCase( "abcd", [|2; 4|] )>]
     member _.Yank_OneLineAndNewLine start numbers =
