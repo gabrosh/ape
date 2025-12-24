@@ -57,7 +57,7 @@ On Linux, you will probably have to remap all key bindings with Ctrl modifier to
 OSX support was not tested yet.
 
 ## Windows Defender false positives
-Version 0.16 of Ape may be detected by Windows Defender as a trojan. It's probably caused by the recently added #filePath completion functionality, which uses IO.Directory.EnumerateFileSystemEntries method to get the list of completion candidates.
+From version 0.16 up, Ape may be detected by Windows Defender as a trojan. It's probably caused by the recently added #filePath completion functionality, which uses IO.Directory.EnumerateFileSystemEntries method to get the list of completion candidates.
 
 ## Integrated help
 Press F1 in Normal mode or run :help command (or :h) for help. To get back into Normal mode from wherever you are, press Esc.
