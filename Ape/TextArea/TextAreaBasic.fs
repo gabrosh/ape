@@ -99,7 +99,7 @@ type TextAreaBasic (
 
     // delegating
 
-    // a simplified version of this method exists in TextAreaModifying class
+    // A simplified version of this method exists in TextAreaModifying class.
     member private this.DelegateBasicCommand isExtending command selectionIndex =
         let state = {
             selection         = mySelections[selectionIndex]

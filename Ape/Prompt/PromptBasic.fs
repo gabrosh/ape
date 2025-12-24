@@ -21,7 +21,7 @@ type PromptBasic (
 
     // delegating
 
-    // a simplified version of this method exists in PromptModifying class
+    // A simplified version of this method exists in PromptModifying class.
     member private this.DelegateBasicCommand isExtending command =
         let state = {
             selection         = mySelections[0]
