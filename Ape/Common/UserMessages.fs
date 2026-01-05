@@ -156,15 +156,25 @@ let private logException (ex: Exception) =
     with _ ->
         false
 
+let private getFirstLine (s: string) =
+    let newLineIndex = s.IndexOfAny [| '\r'; '\n' |]
+
+    if newLineIndex <> -1 then
+        s.Substring (0, newLineIndex)
+    else
+        s
+
 let private exceptionToMessage (ex: Exception) =
     match ex with
     | :? System.ArgumentException when
         ex.Message.StartsWith ("The path is empty.", StringComparison.Ordinal) ->
             makeErrorMessage "Empty file path."
     | :? RegexMatchTimeoutException ->
-        makeErrorMessage ex.Message
+        let text = getFirstLine ex.Message
+        makeErrorMessage text
     | _ ->
-        formatMessage ERROR_UNEXPECTED_ERROR ex.Message
+        let text = getFirstLine ex.Message
+        formatMessage ERROR_UNEXPECTED_ERROR text
 
 // rendering
 
