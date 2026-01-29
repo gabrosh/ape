@@ -62,7 +62,7 @@ let private areLinesTheSame
     (a |> Option.get).Equals (b |> Option.get)
 
 [<TailCall>]
-let rec findDifferentLines (states: ResizeArray<BufferState>) i delta =
+let rec private findDifferentLines (states: ResizeArray<BufferState>) i delta =
     if delta = -1 && i = 0 then
         i
     elif delta = +1 && i = states.Count - 1 then
@@ -78,15 +78,23 @@ let rec findDifferentLines (states: ResizeArray<BufferState>) i delta =
         else
             j
 
+/// Goes one state back from newCurrent to current.
+/// Assumes that newCurrent is not equal to current.
+let private goOneStateBack newCurrent current =
+    let delta = compareFun newCurrent current
+    let newCurrent' = newCurrent - delta
+    newCurrent'
+
 /// UndoProvider registers, manages and provides undo states. Undo state can be
 /// named by several names and can contain several selections registers. This class
 /// also maintains information about which undo state is the the last state saved
 /// to the file.
 
 type UndoProvider (
-    myContextRef:   IWrappedRef<MainContext>,
-    myUserMessages: UserMessages,
-    state:          BufferState
+    myIsPromptBuffer: bool,
+    myContextRef:     IWrappedRef<MainContext>,
+    myUserMessages:   UserMessages,
+    state:            BufferState
 ) =
     let mutable myContext = myContextRef.Value
     let handleContextChanged () = myContext <- myContextRef.Value
@@ -274,13 +282,14 @@ type UndoProvider (
 
         let areLinesTheSame' = areLinesTheSame newState.lines oldState.lines
 
-        if myContext.readOnly && not areLinesTheSame' then
+        // Is it a read-only text area buffer and are the lines different ?
+        if not myIsPromptBuffer && myContext.readOnly && not areLinesTheSame' then
             if toSwitchLoosely then
                 myUserMessages.RegisterMessage WARNING_BUFFER_OPENED_AS_READ_ONLY
 
-                // delta is either -1 or +1, it's never 0.
-                let delta = compareFun newCurrent myCurrent
-                let newCurrent' = newCurrent - delta
+                // Go one state back to the state with the same lines.
+                let newCurrent' = goOneStateBack newCurrent myCurrent
+
                 let newState' = myStates[newCurrent']
 
                 if newCurrent' <> myCurrent then

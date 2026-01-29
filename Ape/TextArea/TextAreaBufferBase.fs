@@ -68,7 +68,7 @@ type TextAreaBufferBase (
     let myWantedColumns   = Helpers.WantedColumns mySelections
 
     let myUndoProvider = new UndoProvider (
-        myContextRef, myUserMessages,
+        false, myContextRef, myUserMessages,
         // the same code as in GetInitialUndoState, which can't be called here
         getBufferState (Some myLines) mySelections mySelsRegisters
             myWantedColumns myBasicState.displayPos
