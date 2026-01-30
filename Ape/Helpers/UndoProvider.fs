@@ -61,22 +61,21 @@ let private areLinesTheSame
     // reference equality
     (a |> Option.get).Equals (b |> Option.get)
 
-// Assumes that item states[i + delta] exists.
 [<TailCall>]
 let rec private findDifferentLines (states: ResizeArray<BufferState>) i delta =
-    let oldState = states[i]
-    let j = i + delta
-    let newState = states[j]
-
-    if areLinesTheSame newState.lines oldState.lines then
-        if delta = -1 && j = 0 then
-            j
-        elif delta = +1 && j = states.Count - 1 then
-            j
-        else
-            findDifferentLines states j delta
+    if delta = -1 && i = 0 then
+        i
+    elif delta = +1 && i = states.Count - 1 then
+        i
     else
-        j
+        let oldState = states[i]
+        let j = i + delta
+        let newState = states[j]
+
+        if areLinesTheSame newState.lines oldState.lines then
+            findDifferentLines states j delta
+        else
+            j
 
 /// Goes one state back from i to j.
 /// Assumes that i is not equal to j.
