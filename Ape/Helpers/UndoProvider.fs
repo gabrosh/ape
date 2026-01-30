@@ -68,7 +68,6 @@ let rec private findDifferentLines (states: ResizeArray<BufferState>) i delta =
     let j = i + delta
     let newState = states[j]
 
-    // Don't return index of the state with the same lines.
     if areLinesTheSame newState.lines oldState.lines then
         if delta = -1 && j = 0 then
             j
