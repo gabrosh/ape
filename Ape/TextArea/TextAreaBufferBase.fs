@@ -49,7 +49,16 @@ type TextAreaBufferBase (
     myMatchRanges:  MatchRanges
 ) =
     let mutable myContext = myContextRef.Value
-    let handleContextChanged () = myContext <- myContextRef.Value
+
+    let myUndoContextRef = WrappedRef (
+        makeUndoContext myContext
+    )
+    
+    let handleContextChanged () =
+        myContext <- myContextRef.Value
+        myUndoContextRef.Value <-
+            makeUndoContext myContext
+
     let myContextChangedDisposable =
         myContextRef.Subscribe handleContextChanged
 
@@ -68,7 +77,7 @@ type TextAreaBufferBase (
     let myWantedColumns   = Helpers.WantedColumns mySelections
 
     let myUndoProvider = new UndoProvider (
-        false, myContextRef, myUserMessages,
+        myUndoContextRef, myUserMessages,
         // the same code as in GetInitialUndoState, which can't be called here
         getBufferState (Some myLines) mySelections mySelsRegisters
             myWantedColumns myBasicState.displayPos

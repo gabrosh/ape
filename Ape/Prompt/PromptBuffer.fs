@@ -43,6 +43,10 @@ type PromptBuffer (
     inUserMessages:    UserMessages,
     myRegisters:       Registers.Registers
 ) =
+    let myUndoContextRef = WrappedRef {
+        readOnly = false
+    }
+
     let myBasicState = {
         displayPos = DisplayPos_Zero
     }
@@ -62,7 +66,7 @@ type PromptBuffer (
     let myMatchRanges = MatchRanges.MatchRanges (inUserMessages, myLines)
 
     let myUndoProvider = new UndoProvider (
-        true, inContextRef, inUserMessages,
+        myUndoContextRef, inUserMessages,
         // the same code as in GetInitialUndoState, which can't be called here
         getBufferState (Some myLines) mySelections mySelsRegisters
             myWantedColumns myBasicState.displayPos

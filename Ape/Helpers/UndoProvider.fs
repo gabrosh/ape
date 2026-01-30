@@ -61,29 +61,29 @@ let private areLinesTheSame
     // reference equality
     (a |> Option.get).Equals (b |> Option.get)
 
+// Assumes that item states[i + delta] exists.
 [<TailCall>]
 let rec private findDifferentLines (states: ResizeArray<BufferState>) i delta =
-    if delta = -1 && i = 0 then
-        i
-    elif delta = +1 && i = states.Count - 1 then
-        i
-    else
-        let oldState = states[i]
-        let j = i + delta
-        let newState = states[j]
+    let oldState = states[i]
+    let j = i + delta
+    let newState = states[j]
 
-        // Don't return index of the state with the same lines.
-        if areLinesTheSame newState.lines oldState.lines then
-            findDifferentLines states j delta
-        else
+    // Don't return index of the state with the same lines.
+    if areLinesTheSame newState.lines oldState.lines then
+        if delta = -1 && j = 0 then
             j
+        elif delta = +1 && j = states.Count - 1 then
+            j
+        else
+            findDifferentLines states j delta
+    else
+        j
 
-/// Goes one state back from newCurrent to current.
-/// Assumes that newCurrent is not equal to current.
-let private goOneStateBack newCurrent current =
-    let delta = compareFun newCurrent current
-    let newCurrent' = newCurrent - delta
-    newCurrent'
+/// Goes one state back from i to j.
+/// Assumes that i is not equal to j.
+let private goOneStateBack i j =
+    let delta = compareFun i j
+    i - delta
 
 /// UndoProvider registers, manages and provides undo states. Undo state can be
 /// named by several names and can contain several selections registers. This class
@@ -91,10 +91,9 @@ let private goOneStateBack newCurrent current =
 /// to the file.
 
 type UndoProvider (
-    myIsPromptBuffer: bool,
-    myContextRef:     IWrappedRef<MainContext>,
-    myUserMessages:   UserMessages,
-    state:            BufferState
+    myContextRef:   IWrappedRef<UndoContext>,
+    myUserMessages: UserMessages,
+    state:          BufferState
 ) =
     let mutable myContext = myContextRef.Value
     let handleContextChanged () = myContext <- myContextRef.Value
@@ -282,8 +281,8 @@ type UndoProvider (
 
         let areLinesTheSame' = areLinesTheSame newState.lines oldState.lines
 
-        // Is it a read-only text area buffer and are the lines different ?
-        if not myIsPromptBuffer && myContext.readOnly && not areLinesTheSame' then
+        // Is it a read-only buffer and are the lines different ?
+        if myContext.readOnly && not areLinesTheSame' then
             if toSwitchLoosely then
                 myUserMessages.RegisterMessage WARNING_BUFFER_OPENED_AS_READ_ONLY
 

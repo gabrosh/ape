@@ -80,6 +80,10 @@ type RenderingContext = {
     tabStop:             int
 }
 
+type UndoContext = {
+    readOnly:            bool
+}
+
 // making various kinds of context
 
 let private getColorScheme colorSchemeName =
@@ -204,4 +208,9 @@ let makeRendereringContext (mainContext: MainContext) =
         completionsRow      = mainContext.completionsRow
         promptRow           = mainContext.promptRow
         tabStop             = mainContext.tabStop
+    }
+
+let makeUndoContext (mainContext: MainContext) =
+    {
+        readOnly = mainContext.readOnly
     }
