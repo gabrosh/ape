@@ -12,7 +12,7 @@ let contextRef = TestUtils.makeConsoleContextRef 80 25
 [<TestFixture>]
 type IdentCompletionsPromptTest () =
 
-    let mutable myLines = ResizeArray<Chars> ()
+    let mutable myLines = Lines ()
 
     let myCompletions = new CompletionItems (
         contextRef, UserMessages (),
@@ -22,7 +22,7 @@ type IdentCompletionsPromptTest () =
     // initialization
 
     let init lineStr cursor =
-        myLines <- ResizeArray [
+        myLines <- Lines [
             stringToChars "true t"
         ]
         myCompletions.TrySet [

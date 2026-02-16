@@ -12,7 +12,7 @@ let contextRef = TestUtils.makeConsoleContextRef 80 25
 [<TestFixture>]
 type IdentCompletionsTextAreaTest () =
 
-    let mutable myLines = ResizeArray<Chars> ()
+    let mutable myLines = Lines ()
 
     let myCompletions = new CompletionItems (
         contextRef, UserMessages (),
@@ -22,7 +22,7 @@ type IdentCompletionsTextAreaTest () =
     // initialization
 
     let init lineStr cursor =
-        myLines <- ResizeArray [
+        myLines <- Lines [
             stringToChars lineStr
             stringToChars "true"
         ]

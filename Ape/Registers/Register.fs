@@ -12,7 +12,7 @@ let isContentEmpty (lines: Lines) =
 /// Makes Lines from given string formed by one or multiple lines separated by '\n'.
 let makeLinesFromString (s: string) =
     let lines = s.Split '\n'
-    let result = ResizeArray lines.Length
+    let result = Lines lines.Length
 
     for line in lines do
         let trimmed = line.TrimEnd '\r'
