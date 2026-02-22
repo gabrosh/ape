@@ -312,7 +312,7 @@ type UndoProvider (
         myStates[myCurrent]
 
     /// Sets the current state as saved to the file.
-    member this.SetCurrentStateAsSaved () =
+    member _.SetCurrentStateAsSaved () =
         myStates[myCurrent] <- {
             myStates[myCurrent] with wasSaved = true
         }
