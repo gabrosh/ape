@@ -24,7 +24,7 @@ type PromptHistory () =
     member this.WhenLeaving (line: Chars) toOverwrite =
         if toOverwrite then
             if this.IsCurrentFromHistory then
-                myLines.RemoveAt myCurrent
+                myLines.Remove myCurrent
 
         if not line.IsEmpty then
             myLines.Add line
@@ -57,4 +57,4 @@ type PromptHistory () =
         let distinct =
             myLines |> Seq.rev |> Seq.distinct |> Seq.rev |> Seq.toList
         myLines.Clear ()
-        myLines.AddRange distinct
+        myLines.AddSeq distinct

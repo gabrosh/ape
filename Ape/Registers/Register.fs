@@ -12,7 +12,7 @@ let isContentEmpty (lines: Lines) =
 /// Makes Lines from given string formed by one or multiple lines separated by '\n'.
 let makeLinesFromString (s: string) =
     let lines = s.Split '\n'
-    let result = Lines lines.Length
+    let result = Lines ()
 
     for line in lines do
         let trimmed = line.TrimEnd '\r'
@@ -113,8 +113,8 @@ type Register () =
     member private _.AppendToExistingSlot index lines =
         let count = lines.Count
         let head  = lines[0]
-        let tail  = lines.GetRange (1, count - 1)
+        let tail  = lines.GetRangeSeq 1 (count - 1)
 
         let slot = mySlots[index]
         slot[slot.Count - 1] <- slot[slot.Count - 1].AddRange head
-        slot.AddRange tail
+        slot.AddSeq tail

@@ -87,6 +87,9 @@
     <Compile Include="PromptPerformersTest\ModifyingOthersTest.fs" />
     <Compile Include="PromptPerformersTest\TextRangesTest.fs" />
     <Compile Include="PromptPerformersTest\SelectionsTests.fs" />
+    <Compile Include="SkipListTest\SkipListString.fs" />
+    <Compile Include="SkipListTest\SkipListStringTest.fs" />
+    <Compile Include="SkipListTest\SkipListStringFuzzyTest.fs" />
     <Compile Include="DummyFile.fs" />
   </ItemGroup>
 

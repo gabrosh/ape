@@ -126,7 +126,7 @@ type LinesAccessor (myLines: Lines) =
         Chars.Empty
 
     member _.YankLines from to_ =
-        myLines.GetRange (from, to_ - from)
+        myLines.GetRange from (to_ - from)
 
     // removing
 
@@ -140,12 +140,12 @@ type LinesAccessor (myLines: Lines) =
 
     member this.RemoveLines from to_ =
         if from <> to_ then
-            myLines.RemoveRange (from, to_ - from)
+            myLines.RemoveRange from (to_ - from)
             this.IsLinesModified <- true
 
     member this.CombineTwoLines first =
         myLines[first] <- myLines[first].AddRange myLines[first + 1]
-        myLines.RemoveAt (first + 1)
+        myLines.Remove (first + 1)
 
         this.IsLinesModified <- true
 
@@ -167,12 +167,12 @@ type LinesAccessor (myLines: Lines) =
 
     member this.InsertLines line (what: Lines) =
         if what.Count <> 0 then
-            myLines.InsertRange (line, what)
+            myLines.InsertLines line what
             this.IsLinesModified <- true
 
     member this.AppendLines (what: Lines) =
         if what.Count <> 0 then
-            myLines.AddRange what
+            myLines.AddLines what
             this.IsLinesModified <- true
 
     member this.SplitLine line char_ =
@@ -180,7 +180,7 @@ type LinesAccessor (myLines: Lines) =
         let left  = ImmutableArray.Create (chars, 0    , char_)
         let right = ImmutableArray.Create (chars, char_, chars.Length - char_)
         myLines[line] <- left
-        myLines.Insert (line + 1, right)
+        myLines.Insert (line + 1) right
 
         this.IsLinesModified <- true
 
@@ -190,7 +190,7 @@ type LinesAccessor (myLines: Lines) =
         let right = ImmutableArray.Create (chars, char_, chars.Length - char_)
         let indent = getIndentChars chars char_
         myLines[line] <- left
-        myLines.Insert (line + 1, indent.AddRange right)
+        myLines.Insert (line + 1) (indent.AddRange right)
 
         this.IsLinesModified <- true
 
@@ -254,8 +254,10 @@ type LinesAccessor (myLines: Lines) =
         let mutable toBreak = false
         let mutable line = from
 
-        while (not toBreak) && line < to_ do
-            let chars = myLines[line]
+        use rangeSeq = (myLines.GetRangeSeq from (to_ - from)).GetEnumerator ()
+
+        while (not toBreak) && rangeSeq.MoveNext () do
+            let chars = rangeSeq.Current
             let to_ = chars.Length
             toBreak <- f line 0 to_ true chars
             line <- line + 1

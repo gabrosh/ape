@@ -5,6 +5,7 @@ open System.Text
 open System.Collections.Immutable
 
 open ConsoleInterop_Specific
+open Lines
 
 /// File extension added to the file path when creating an extract buffer.
 let extractFileExt = ".x"
@@ -81,9 +82,6 @@ let private getNewLineSeparator fileFormat =
 
 // others
 
-type Chars = ImmutableArray<char>
-type Lines = ResizeArray<Chars>
-
 [<Struct>]
 type ReloadFileParams = {
     fileOffset:           int64
@@ -148,7 +146,7 @@ let private readFileAux
     | Some rfp ->
         if not rfp.endsWithNewLine then
             inputLine.AddRange lines[lines.Count - 1]
-            lines.RemoveAt (lines.Count - 1)
+            lines.Remove (lines.Count - 1)
     | None ->
         ()
 

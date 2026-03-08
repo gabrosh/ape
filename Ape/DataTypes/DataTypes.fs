@@ -13,8 +13,8 @@ type RegexMatchTimeoutException (message: string) =
 /// int type supplement for accessing int's static members.
 type IntType = int
 
-type Chars = FileUtils.Chars
-type Lines = FileUtils.Lines
+type Chars = Lines.Chars
+type Lines = Lines.Lines
 
 /// Converts position to user position.
 let posToUserPos x =

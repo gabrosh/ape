@@ -293,6 +293,9 @@ let main argv =
     Console.Write (getColorsSequence colorScheme.normal)
     Console.Clear ()
 
+    //let stopWatch = System.Diagnostics.Stopwatch();
+    //stopWatch.Start();
+
     if not userMessages.HasErrorMessage then
         match options with
         | Ok x ->
@@ -326,6 +329,10 @@ let main argv =
 
         | Error _ ->
             ()
+
+    //stopWatch.Stop ()
+    //let elapsedMs = stopWatch.ElapsedMilliseconds;
+    //UserMessages.logInfo (elapsedMs.ToString ())
 
     runMainLoop ()
 

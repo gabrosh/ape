@@ -144,7 +144,7 @@ let private logFilePath = IO.Path.Combine (
 let private logException (ex: Exception) =
     let s =
         Utils.toTimestampString DateTime.Now +
-        "Exception caught\n   " +
+        "Exception caught:\n   " +
         (ex.GetType ()).ToString () + ": " + ex.Message + "\n" +
         "Stack trace:\n" + ex.StackTrace + "\n\n";
 
@@ -155,6 +155,21 @@ let private logException (ex: Exception) =
         true
     with _ ->
         false
+
+/// Logs given message.
+let logInfo (message: string) =
+    let s =
+        Utils.toTimestampString DateTime.Now +
+        "Info:\n   " +
+        message + "\n\n"
+
+    try
+        IO.File.AppendAllText (
+            logFilePath, s, Text.UTF8Encoding false
+        )
+        ()
+    with _ ->
+        ()
 
 let private getFirstLine (s: string) =
     let newLineIndex = s.IndexOfAny [| '\r'; '\n' |]

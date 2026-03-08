@@ -189,7 +189,7 @@ type MatchRangesExtract (
         myLinesExtract.Clear ()
         myLineExtractToLine.Clear ()
 
-        myLinesExtract.AddRange this.SearchedLines
+        myLinesExtract.AddLines this.SearchedLines
 
     /// Returns TextRanges corresponding to myLinesExtract.
     member private this.GetTextRangesExtract () =

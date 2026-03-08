@@ -478,7 +478,7 @@ type ModifyingPerformer (
             myAccessor.YankToEnd first.line first.char
                 |> lines.Add
             myAccessor.YankLines (first.line + 1) rightKept.line
-                |> lines.AddRange
+                |> lines.AddSeq
             // Is rightKept.line before EOF ?
             if rightKept.line < myLines.Count then
                 myAccessor.Yank rightKept.line 0 rightKept.char
@@ -541,7 +541,7 @@ type ModifyingPerformer (
             myAccessor.Insert (targetLine + 1) 0 lines[linesCount - 1]
             // Are there any middle lines ?
             if linesCount > 2 then
-                let what = lines.GetRange (1, linesCount - 2)
+                let what = lines.GetRange 1 (linesCount - 2)
                 myAccessor.InsertLines (targetLine + 1) what
 
     member private _.DoInsertAfterEof _target lines =

@@ -103,8 +103,7 @@ type UndoRedoPerformer (
     member private _.ApplyState state =
         match state.lines with
         | Some lines ->
-            myLines.Clear ()
-            myLines.AddRange lines
+            myLines.SetFromUndoNodes lines
             myIsLinesApplied <- true
         | None ->
             ()

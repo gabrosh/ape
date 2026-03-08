@@ -17,12 +17,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="SkipList/SkipListAux.fs" />
+    <Compile Include="SkipList/SkipList.fs" />
     <Compile Include="Utils\Utils.fs" />
     <Compile Include="Utils\BinarySearch.fs" />
     <Compile Include="Utils\ConsoleInterop_Common.fs" />
     <Compile Include="Utils\ConsoleInterop_Linux.fs" />
     <Compile Include="Utils\ConsoleInterop_Windows.fs" />
     <Compile Include="Utils\ConsoleInterop_Specific.fs" />
+    <Compile Include="Utils\Lines.fs" />
     <Compile Include="Utils\FileUtils.fs" />
     <Compile Include="Utils\FilePathUtils.fs" />
     <Compile Include="Utils\ColorSchemes.fs" />

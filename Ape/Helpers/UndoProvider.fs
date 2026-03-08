@@ -5,7 +5,7 @@ open System.Collections.Immutable
 
 open Common
 open Context
-open DataTypes
+open Lines
 open Selection
 open UserMessages
 open WrappedRef
@@ -13,7 +13,7 @@ open WrappedRef
 type BufferState = {
     names:            char list
     wasSaved:         bool
-    lines:            ImmutableArray<Chars> option
+    lines:            ResizeArray<ResizeArray<Chars>> option
     selections:       ImmutableArray<Selection>
     mainIndex:        int
     selsRegisters:    ImmutableArray<SelectionsRegisters.Item>
@@ -55,8 +55,8 @@ let private statesDiffer_woLines a b =
     || not (areSelectionsMatchingTo   a.selections    b.selections)
 
 let private areLinesTheSame
-    (a: ImmutableArray<Chars> option)
-    (b: ImmutableArray<Chars> option)
+    (a: UndoNodes option)
+    (b: UndoNodes option)
   =
     // reference equality
     (a |> Option.get).Equals (b |> Option.get)

@@ -23,12 +23,14 @@ let private getBufferState
     (wantedColumns: Helpers.WantedColumns)
     displayPos
   =
-    let lines = lines |> Option.map ImmutableArray.CreateRange
+    let undoNodes = lines |> Option.map (
+        fun lines' -> lines'.GetUndoNodes ()
+    ) 
 
     {
         names            = []
         wasSaved         = false
-        lines            = lines
+        lines            = undoNodes
         selections       = selections.GetImmutable ()
         mainIndex        = selections.MainIndex
         selsRegisters    = selsRegisters.GetAllImmutable ()
