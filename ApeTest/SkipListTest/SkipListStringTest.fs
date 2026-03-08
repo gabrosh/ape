@@ -13,7 +13,7 @@ let private getTestSkipListString () =
 type SkipListStringTests () =
 
     [<Test>]
-    member _.SkipListString_InsertItem () =
+    member _.SkipListString_Insert () =
         let sl = getTestSkipListString ()
 
         sl.Insert 0 'a'
@@ -26,7 +26,7 @@ type SkipListStringTests () =
         Assert.That (sl.AsString (), Is.EqualTo "abcccb")
 
     [<Test>]
-    member _.SkipListString_AppendItem () =
+    member _.SkipListString_Add () =
         let sl = getTestSkipListString ()
 
         sl.Add 'a'
@@ -49,6 +49,16 @@ type SkipListStringTests () =
         Assert.That (sl.AsString (), Is.EqualTo "abcccb")
 
     [<Test>]
+    member _.SkipListString_AddString () =
+        let sl = getTestSkipListString ()
+
+        sl.AddString "a"
+        sl.AddString "bb"
+        sl.AddString "ccc"
+
+        Assert.That (sl.AsString (), Is.EqualTo "abbccc")
+
+    [<Test>]
     member _.SkipListString_RemoveRange_FirstNode () =
         let sl = getTestSkipListString ()
 
@@ -60,7 +70,7 @@ type SkipListStringTests () =
         Assert.That (sl.AsString (), Is.EqualTo "ccb")
 
     [<Test>]
-    member _.SkipListString_Remove_NonFirstNodes () =
+    member _.SkipListString_RemoveRange_NonFirstNodes () =
         let sl = getTestSkipListString ()
 
         sl.InsertString 0 "a"
@@ -82,7 +92,7 @@ type SkipListStringTests () =
         Assert.That (string (sl.Get 5), Is.EqualTo "b")
 
     [<Test>]
-    member _.SkipListString_GetRange () =
+    member _.SkipListString_GetRangeSeq () =
         let sl = getTestSkipListString ()
 
         sl.InsertString 0 "a"
@@ -91,6 +101,17 @@ type SkipListStringTests () =
 
         Assert.That (String.Concat (sl.GetRangeSeq 0 6), Is.EqualTo "abcccb")
         Assert.That (String.Concat (sl.GetRangeSeq 1 4), Is.EqualTo "bccc")
+
+    [<Test>]
+    member _.SkipListString_GetRange () =
+        let sl = getTestSkipListString ()
+
+        sl.InsertString 0 "a"
+        sl.InsertString 1 "bb"
+        sl.InsertString 2 "ccc"
+
+        Assert.That (sl.GetRange 0 6, Is.EqualTo "abcccb")
+        Assert.That (sl.GetRange 1 4, Is.EqualTo "bccc")
 
     [<Test>]
     member _.SkipListString_Set () =
@@ -169,25 +190,6 @@ type SkipListStringTests () =
         Assert.That (sl'.AsString (), Is.EqualTo "abcccb")
 
     [<Test>]
-    member _.SkipListString_IEnumerableOfChar () =
-        let sl = getTestSkipListString ()
-
-        sl.InsertString 0 "a"
-        sl.InsertString 1 "bb"
-        sl.InsertString 2 "ccc"
-        sl.InsertString 6 "dd"
-        sl.InsertString 8 "e"
-        sl.InsertString 7 "fff"
-        sl.InsertString 6 "zzzzzz"
-
-        let sb = StringBuilder ()
-
-        for c in sl :> Collections.Generic.IEnumerable<char> do
-            sb.Append c |> ignore
-
-        Assert.That (sb.ToString (), Is.EqualTo "abcccbzzzzzzdfffde")
-
-    [<Test>]
     member _.SkipListString_IEnumerableOfObj () =
         let sl = getTestSkipListString ()
 
@@ -202,6 +204,25 @@ type SkipListStringTests () =
         let sb = StringBuilder ()
 
         for c in sl :> Collections.IEnumerable do
+            sb.Append c |> ignore
+
+        Assert.That (sb.ToString (), Is.EqualTo "abcccbzzzzzzdfffde")
+
+    [<Test>]
+    member _.SkipListString_IEnumerableOfChar () =
+        let sl = getTestSkipListString ()
+
+        sl.InsertString 0 "a"
+        sl.InsertString 1 "bb"
+        sl.InsertString 2 "ccc"
+        sl.InsertString 6 "dd"
+        sl.InsertString 8 "e"
+        sl.InsertString 7 "fff"
+        sl.InsertString 6 "zzzzzz"
+
+        let sb = StringBuilder ()
+
+        for c in sl :> Collections.Generic.IEnumerable<char> do
             sb.Append c |> ignore
 
         Assert.That (sb.ToString (), Is.EqualTo "abcccbzzzzzzdfffde")

@@ -522,7 +522,7 @@ type SkipList<'T> (levelsCount: int, maxSize: int) =
         member this.GetEnumerator () : Collections.IEnumerator =
             (this.GetRangeSeq 0 myCount).GetEnumerator ()
     
-    // Enumerator for a simple iteration over a collection of items of type 'U.
+    // Enumerator for a simple iteration over a collection of items of type 'T.
     interface Collections.Generic.IEnumerable<'T> with
         member this.GetEnumerator () : Collections.Generic.IEnumerator<'T> =
             (this.GetRangeSeq 0 myCount).GetEnumerator ()

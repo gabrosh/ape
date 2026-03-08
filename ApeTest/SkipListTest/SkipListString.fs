@@ -30,6 +30,9 @@ type SkipListString (levelsCount: int, maxSize: int) =
         let array = (ResizeArray s)
         this.AddItems array array.Count
 
+    member this.GetRange (index: int) (count: int) =
+        String.Concat (this.GetRangeSeq index count)
+
     member this.AsString () =
         String.Concat (this.GetRangeSeq 0 this.Count)
 
