@@ -29,28 +29,28 @@ type Lines () =
             if itemsCount > 0 then
                 this.AddItems items itemsCount
     
-    /// Adds items at the end of the buffer.
+    /// Adds items to the end.
     member this.AddLines (items: Lines) =
         if items.Count > 0 then
             this.AddItems items items.Count
     
-    /// Adds items at the end of the buffer.
+    /// Adds items to the end.
     member this.AddSeq (items: Chars seq) =
         let items = ResizeArray<Chars> items
         if items.Count > 0 then
             this.AddItems items items.Count
     
-    /// Inserts items at the specified index.
+    /// Inserts items at index.
     member this.InsertLines (index: int) (items: Lines) =
         if items.Count > 0 then
             this.InsertItems index items items.Count
     
-    /// Inserts items at the specified index.
+    /// Inserts items at index.
     member this.InsertSeq (index: int) (items: Chars seq) =
         let items = ResizeArray<Chars> items
         if items.Count > 0 then
             this.InsertItems index items items.Count
     
-    /// Returns a new Lines object containing a range of lines.
+    /// Returns count items starting at index as a new Lines instance.
     member this.GetRange (index: int) (count: int) =
         Lines (this.GetRangeSeq index count, count)

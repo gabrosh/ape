@@ -257,7 +257,7 @@ type SkipList<'T> (levelsCount: int, maxSize: int) =
     /// Count of nodes in the data structure.
     member _.NodesCount = myNodesCount
 
-    /// Gets or sets the line at the specified index.
+    /// Gets or sets the item at the specified index.
     member this.Item
         with get index       = this.Get index
         and  set index value = this.Set index value
@@ -271,7 +271,20 @@ type SkipList<'T> (levelsCount: int, maxSize: int) =
 
         node.chunk[index - accSize]
 
-    /// Returns a sequence of count items starting at index.
+    /// Sets item at index.
+    member this.Set index (item: 'T) =
+        if index < 0 || index > myCount then
+            raise (new ArgumentOutOfRangeException "index")
+
+        let struct (node, accSize) = this.GetNodeAndAccSize index
+        
+        if node.isInUndo then
+            node.chunk <- makeCopy node.chunk
+            node.isInUndo <- false
+
+        node.chunk[index - accSize] <- item
+
+    /// Returns count items starting at index as a sequence.
     member this.GetRangeSeq index count =
         if index < 0 || index + count > myCount then
             raise (new ArgumentOutOfRangeException "index, count")
@@ -296,19 +309,6 @@ type SkipList<'T> (levelsCount: int, maxSize: int) =
                 node <- node'.nexts[0]
                 pos  <- 0
         }
-
-    /// Sets item at index.
-    member this.Set index (item: 'T) =
-        if index < 0 || index > myCount then
-            raise (new ArgumentOutOfRangeException "index")
-
-        let struct (node, accSize) = this.GetNodeAndAccSize index
-        
-        if node.isInUndo then
-            node.chunk <- makeCopy node.chunk
-            node.isInUndo <- false
-
-        node.chunk[index - accSize] <- item
 
     /// Inserts item at index.
     member this.Insert index (item: 'T) =
@@ -398,7 +398,7 @@ type SkipList<'T> (levelsCount: int, maxSize: int) =
 
         myCount <- myCount + itemsCount
 
-    /// Adds item at the end of the data structure.
+    /// Adds item to the end.
     member this.Add (item: 'T) =
         let index = myCount
 
@@ -421,7 +421,7 @@ type SkipList<'T> (levelsCount: int, maxSize: int) =
 
         myCount <- myCount + 1
 
-    /// Adds items with given itemsCount at the end of the data structure.
+    /// Adds items with given itemsCount to the end.
     member this.AddItems (items: 'T seq) itemsCount =
         if itemsCount = 0 then
             raise (new ArgumentException "items")
