@@ -137,7 +137,7 @@ type ModifyingPerformer (
 
     /// Adds EOL after EOF.
     member _.AddEolAfterEof () =
-        let lines = Lines [Chars.Empty]
+        let lines = Lines Chars.Empty
         myAccessor.AppendLines lines
 
     /// Clears register related to command if required.
@@ -195,7 +195,7 @@ type ModifyingPerformer (
 
         // Assure that cursor is at a valid position.
         if myAccessor.IsAfterEof next then
-            myAccessor.AppendLines (Lines [Chars.Empty])
+            myAccessor.AppendLines (Lines Chars.Empty)
 
         mySelection <- {
             mySelection with first = next; last = next
@@ -262,11 +262,11 @@ type ModifyingPerformer (
         let delta =
             getSpacesForTab myContext.tabStop myLines[target.line] target.char
 
-        let lines = Lines [
+        let lines = Lines (
             ImmutableArray.CreateRange (
                 seq { for _ = 1 to delta do Utils.charSpace }
             )
-        ]
+        )
 
         this.DoInsert target lines
 
@@ -451,11 +451,11 @@ type ModifyingPerformer (
         if delta > 0 then
             let target = mySelection.first
 
-            let lines = Lines [
+            let lines = Lines (
                 ImmutableArray.CreateRange (
                     seq { for _ = 1 to delta do Utils.charSpace }
                 )
-            ]
+            )
 
             this.DoInsert target lines
 
@@ -478,7 +478,7 @@ type ModifyingPerformer (
             myAccessor.YankToEnd first.line first.char
                 |> lines.Add
             myAccessor.YankLines (first.line + 1) rightKept.line
-                |> lines.AddSeq
+                |> lines.AddLines
             // Is rightKept.line before EOF ?
             if rightKept.line < myLines.Count then
                 myAccessor.Yank rightKept.line 0 rightKept.char

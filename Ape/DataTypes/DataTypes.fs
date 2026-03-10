@@ -46,7 +46,8 @@ let hasLastEmptyLine (lines: Lines) =
 
 /// Removes the last line of given lines.
 let trimLastLine (lines: Lines) =
-    lines |> Seq.take (lines.Count - 1) |> Lines
+    let itemsCount = lines.Count - 1
+    Lines (lines |> Seq.take itemsCount, itemsCount)
 
 /// Removes the last line of given lines if it is empty.
 let trimLastEmptyLine (lines: Lines) =

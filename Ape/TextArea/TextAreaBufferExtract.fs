@@ -275,5 +275,5 @@ let makeTextAreaBufferExtract (
         userMessages,
         registers,
         filePath,
-        Lines []  // lines added in MatchRangesExtract constructor
+        Lines ()   // lines added in MatchRangesExtract constructor
     )

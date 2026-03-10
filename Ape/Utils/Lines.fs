@@ -14,6 +14,19 @@ let private maxSize = 1000
 type Lines () =
     inherit SkipList<Chars> (levelsCount, maxSize)
 
+    /// Creates a Lines instance from item.
+    new (item: Chars) as this =
+        Lines ()
+        then
+            this.Add item
+    
+    /// Creates a Lines instance from items with given itemsCount.
+    new (items: Chars seq, itemsCount: int) as this =
+        Lines ()
+        then
+            if itemsCount > 0 then
+                this.AddItems items itemsCount
+
     /// Creates a Lines instance from items.
     new (items: Chars seq) as this =
         Lines ()
@@ -22,23 +35,19 @@ type Lines () =
             if items.Count > 0 then
                 this.AddItems items items.Count
 
-    /// Creates a Lines instance from items with given itemsCount.
-    new (items: Chars seq, itemsCount: int) as this =
-        Lines ()
-        then
-            if itemsCount > 0 then
-                this.AddItems items itemsCount
-    
+    /// Returns count items starting at index as a new Lines instance.
+    member this.GetRange (index: int) (count: int) =
+        Lines (this.GetRangeSeq index count, count)
+
     /// Adds items to the end.
     member this.AddLines (items: Lines) =
         if items.Count > 0 then
             this.AddItems items items.Count
     
     /// Adds items to the end.
-    member this.AddSeq (items: Chars seq) =
-        let items = ResizeArray<Chars> items
-        if items.Count > 0 then
-            this.AddItems items items.Count
+    member this.AddSeq (items: Chars seq) itemsCount =
+        if itemsCount > 0 then
+            this.AddItems items itemsCount
     
     /// Inserts items at index.
     member this.InsertLines (index: int) (items: Lines) =
@@ -46,11 +55,6 @@ type Lines () =
             this.InsertItems index items items.Count
     
     /// Inserts items at index.
-    member this.InsertSeq (index: int) (items: Chars seq) =
-        let items = ResizeArray<Chars> items
-        if items.Count > 0 then
-            this.InsertItems index items items.Count
-    
-    /// Returns count items starting at index as a new Lines instance.
-    member this.GetRange (index: int) (count: int) =
-        Lines (this.GetRangeSeq index count, count)
+    member this.InsertSeq (index: int) (items: Lines) itemsCount =
+        if itemsCount > 0 then
+            this.InsertItems index items itemsCount

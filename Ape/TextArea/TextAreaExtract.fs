@@ -294,6 +294,6 @@ let makeTextAreaExtract (
         userMessages,
         registers,
         filePath,
-        Lines [Chars.Empty],
-        Lines []              // lines added in MatchRangesExtract constructor
+        Lines Chars.Empty,
+        Lines ()            // lines added in MatchRangesExtract constructor
     )

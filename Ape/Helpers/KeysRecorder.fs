@@ -25,7 +25,7 @@ type KeysRecorder (registers: Registers.Registers) =
                 |> ignore
 
             registers.CreateOrClear register
-            let lines = Lines [stringToChars keysString]
+            let lines = Lines (stringToChars keysString)
             registers.ApplyToSlot register 0 lines
         else
             registers.Remove register

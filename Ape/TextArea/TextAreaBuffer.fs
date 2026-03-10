@@ -278,5 +278,5 @@ let makeTextAreaBuffer (
         userMessages,
         registers,
         filePath,
-        Lines [Chars.Empty]
+        Lines Chars.Empty
     )

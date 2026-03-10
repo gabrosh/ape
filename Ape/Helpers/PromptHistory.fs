@@ -6,7 +6,7 @@ open DataTypes
 /// The history itself is changed only when leaving the prompt.
 
 type PromptHistory () =
-    let myLines = Lines ()
+    let myLines = ResizeArray<Chars> ()
 
     let mutable myCurrent = 0
 
@@ -24,7 +24,7 @@ type PromptHistory () =
     member this.WhenLeaving (line: Chars) toOverwrite =
         if toOverwrite then
             if this.IsCurrentFromHistory then
-                myLines.Remove myCurrent
+                myLines.RemoveAt myCurrent
 
         if not line.IsEmpty then
             myLines.Add line
@@ -57,4 +57,4 @@ type PromptHistory () =
         let distinct =
             myLines |> Seq.rev |> Seq.distinct |> Seq.rev |> Seq.toList
         myLines.Clear ()
-        myLines.AddSeq distinct
+        myLines.AddRange distinct

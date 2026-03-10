@@ -77,7 +77,7 @@ let isPastableToPrompt (lines: Lines option) =
 let getPastableToPrompt (lines: Lines option) =
     match lines with
     | Some lines
-        -> Some (Lines [lines[0]])
+        -> Some (Lines lines[0])
     | _
         -> None
 

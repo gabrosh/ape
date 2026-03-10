@@ -111,10 +111,12 @@ type Register () =
         mySlots[index] <- lines
 
     member private _.AppendToExistingSlot index lines =
-        let count = lines.Count
+        let count     = lines.Count
+        let tailCount = count - 1
+
         let head  = lines[0]
-        let tail  = lines.GetRangeSeq 1 (count - 1)
+        let tail  = lines.GetRangeSeq 1 tailCount
 
         let slot = mySlots[index]
         slot[slot.Count - 1] <- slot[slot.Count - 1].AddRange head
-        slot.AddSeq tail
+        slot.AddSeq tail tailCount

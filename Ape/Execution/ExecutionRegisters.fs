@@ -23,7 +23,7 @@ let execute_reg context (argsMap: ArgsMap) =
             formatMessage ERROR_EMPTY_REGISTER_VALUE line
         )
     else
-        let lines = Lines [stringToChars line]
+        let lines = Lines (stringToChars line)
 
         let register = SelectedRegister (false, registerStringToChar regName)
 

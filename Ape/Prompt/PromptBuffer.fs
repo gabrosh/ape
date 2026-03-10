@@ -54,7 +54,7 @@ type PromptBuffer (
     }
 
     // fields affected by Undo/Redo
-    let myLines           = Lines [Chars.Empty]
+    let myLines           = Lines Chars.Empty
     let mySelectionsArray = ResizeArray<Selection> [Selection_Zero]
     let mySelections      = Selections mySelectionsArray
     let mySelsModifier    = TextRangesModifier mySelectionsArray
