@@ -310,6 +310,74 @@ type SkipList<'T> (levelsCount: int, maxSize: int) =
                 pos  <- 0
         }
 
+    /// Adds item to the end.
+    member this.Add (item: 'T) =
+        let index = myCount
+
+        this.SetNodesToUpdateAndAccSizes index
+
+        let node = toUpdate[0]
+
+        // Can items be inserted into node.chunk without exceeding maxSize?
+        if node.chunk.Count + 1 <= maxSize then
+            if node.isInUndo then
+                node.chunk <- makeCopy node.chunk
+                node.isInUndo <- false
+
+            node.chunk.Add item
+            this.UpdateNodeSizes 1
+        else
+            let chunk = getChunkWithItem item
+
+            this.InsertNewNode chunk chunk.Count
+
+        myCount <- myCount + 1
+
+    /// Adds items with given itemsCount to the end.
+    member this.AddItems (items: 'T seq) itemsCount =
+        if itemsCount = 0 then
+            raise (new ArgumentException "items")
+
+        let index = myCount
+
+        this.SetNodesToUpdateAndAccSizes index
+
+        let node  = toUpdate[0]
+        let addAt = index - accSizes[0]
+
+        // Items can be appended to node.chunk without exceeding maxSize?
+        if node.chunk.Count + itemsCount <= maxSize then
+            if node.isInUndo then
+                node.chunk <- makeCopy node.chunk
+                node.isInUndo <- false
+
+            node.chunk.AddRange items
+            this.UpdateNodeSizes itemsCount
+        else
+            use chunks =
+                // Don't append to the last and full node.
+                if addAt = maxSize then
+                    (getChunksWithItems items maxSize).GetEnumerator ()
+                else
+                    if node.isInUndo then
+                        node.isInUndo <- false
+
+                    let chunks' =
+                        (combineWithItems node.chunk addAt items maxSize maxSize).GetEnumerator ()
+
+                    chunks'.MoveNext () |> ignore
+                    let firstChunk = chunks'.Current
+                    this.UpdateNodeSizes (firstChunk.Count - node.chunk.Count)
+                    node.chunk <- firstChunk
+
+                    chunks'
+
+            while chunks.MoveNext () do
+                let chunk = chunks.Current
+                this.InsertNewNode chunk chunk.Count
+
+        myCount <- myCount + itemsCount
+
     /// Inserts item at index.
     member this.Insert index (item: 'T) =
         if index < 0 || index > myCount then
@@ -384,74 +452,6 @@ type SkipList<'T> (levelsCount: int, maxSize: int) =
 
                     let chunks' =
                         (combineWithItems node.chunk insertAt items (maxSize / 2) maxSize).GetEnumerator ()
-
-                    chunks'.MoveNext () |> ignore
-                    let firstChunk = chunks'.Current
-                    this.UpdateNodeSizes (firstChunk.Count - node.chunk.Count)
-                    node.chunk <- firstChunk
-
-                    chunks'
-
-            while chunks.MoveNext () do
-                let chunk = chunks.Current
-                this.InsertNewNode chunk chunk.Count
-
-        myCount <- myCount + itemsCount
-
-    /// Adds item to the end.
-    member this.Add (item: 'T) =
-        let index = myCount
-
-        this.SetNodesToUpdateAndAccSizes index
-
-        let node = toUpdate[0]
-
-        // Can items be inserted into node.chunk without exceeding maxSize?
-        if node.chunk.Count + 1 <= maxSize then
-            if node.isInUndo then
-                node.chunk <- makeCopy node.chunk
-                node.isInUndo <- false
-
-            node.chunk.Add item
-            this.UpdateNodeSizes 1
-        else
-            let chunk = getChunkWithItem item
-
-            this.InsertNewNode chunk chunk.Count
-
-        myCount <- myCount + 1
-
-    /// Adds items with given itemsCount to the end.
-    member this.AddItems (items: 'T seq) itemsCount =
-        if itemsCount = 0 then
-            raise (new ArgumentException "items")
-
-        let index = myCount
-
-        this.SetNodesToUpdateAndAccSizes index
-
-        let node  = toUpdate[0]
-        let addAt = index - accSizes[0]
-
-        // Items can be appended to node.chunk without exceeding maxSize?
-        if node.chunk.Count + itemsCount <= maxSize then
-            if node.isInUndo then
-                node.chunk <- makeCopy node.chunk
-                node.isInUndo <- false
-
-            node.chunk.AddRange items
-            this.UpdateNodeSizes itemsCount
-        else
-            use chunks =
-                // Don't append to the last and full node.
-                if addAt = maxSize then
-                    (getChunksWithItems items maxSize).GetEnumerator ()
-                else
-                    if node.isInUndo then
-                        node.isInUndo <- false
-
-                    let chunks' =
-                        (combineWithItems node.chunk addAt items maxSize maxSize).GetEnumerator ()
 
                     chunks'.MoveNext () |> ignore
                     let firstChunk = chunks'.Current

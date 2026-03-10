@@ -41,10 +41,10 @@ type SkipListStringFuzzyTests () =
             | 0 -> this.ExecuteGet          ()
             | 1 -> this.ExecuteGetRangeSeq  ()
             | 2 -> this.ExecuteSet          ()
-            | 3 -> this.ExecuteInsert       ()
-            | 4 -> this.ExecuteInsertString ()
-            | 5 -> this.ExecuteAdd          ()
-            | 6 -> this.ExecuteAddString    ()
+            | 3 -> this.ExecuteAdd          ()
+            | 4 -> this.ExecuteAddString    ()
+            | 5 -> this.ExecuteInsert       ()
+            | 6 -> this.ExecuteInsertString ()
             | 7 -> this.ExecuteRemove       ()
             | 8 -> this.ExecuteRemoveRange  ()
             | 9 ->
@@ -91,31 +91,6 @@ type SkipListStringFuzzyTests () =
             Assert.That (sl.AsString (), Is.EqualTo referenceString,
                 $"After Set at {index}")
 
-    member private _.ExecuteInsert () =
-        if referenceString.Length < 30 then
-            let index = rnd.Next (referenceString.Length + 1)
-            let insertedChar = getRandomChar ()
-
-            sl.Insert index insertedChar
-            referenceString <- referenceString.Insert (index, insertedChar.ToString ())
-
-            Assert.That (sl.AsString (), Is.EqualTo referenceString,
-                $"After Insert at {index}: '{insertedChar}'")
-
-    member private _.ExecuteInsertString () =
-        if referenceString.Length < 30 then
-            let index = rnd.Next (referenceString.Length + 1)
-            let strLen = rnd.Next (1, 10)
-            let insertedStr = String (
-                Array.init strLen (fun _ -> getRandomChar ())
-            )
-
-            sl.InsertString index insertedStr
-            referenceString <- referenceString.Insert (index, insertedStr)
-
-            Assert.That (sl.AsString (), Is.EqualTo referenceString,
-                $"After InsertString at {index}: '{insertedStr}'")
-
     member private _.ExecuteAdd () =
         if referenceString.Length < 30 then
             let index = referenceString.Length
@@ -140,6 +115,31 @@ type SkipListStringFuzzyTests () =
 
             Assert.That (sl.AsString (), Is.EqualTo referenceString,
                 $"After AddString: '{insertedStr}'")
+
+    member private _.ExecuteInsert () =
+        if referenceString.Length < 30 then
+            let index = rnd.Next (referenceString.Length + 1)
+            let insertedChar = getRandomChar ()
+
+            sl.Insert index insertedChar
+            referenceString <- referenceString.Insert (index, insertedChar.ToString ())
+
+            Assert.That (sl.AsString (), Is.EqualTo referenceString,
+                $"After Insert at {index}: '{insertedChar}'")
+
+    member private _.ExecuteInsertString () =
+        if referenceString.Length < 30 then
+            let index = rnd.Next (referenceString.Length + 1)
+            let strLen = rnd.Next (1, 10)
+            let insertedStr = String (
+                Array.init strLen (fun _ -> getRandomChar ())
+            )
+
+            sl.InsertString index insertedStr
+            referenceString <- referenceString.Insert (index, insertedStr)
+
+            Assert.That (sl.AsString (), Is.EqualTo referenceString,
+                $"After InsertString at {index}: '{insertedStr}'")
 
     member private _.ExecuteRemove () =
         if referenceString.Length > 0 then

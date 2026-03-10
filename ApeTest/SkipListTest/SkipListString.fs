@@ -22,16 +22,13 @@ type SkipListString (levelsCount: int, maxSize: int) =
 
     let maxLevel = levelsCount - 1
 
-    member this.InsertString index (s: string) =
-        let array = (ResizeArray s)
-        this.InsertItems index array array.Count
-
     member this.AddString (s: string) =
         let array = (ResizeArray s)
         this.AddItems array array.Count
 
-    member this.GetRange (index: int) (count: int) =
-        String.Concat (this.GetRangeSeq index count)
+    member this.InsertString index (s: string) =
+        let array = (ResizeArray s)
+        this.InsertItems index array array.Count
 
     member this.AsString () =
         String.Concat (this.GetRangeSeq 0 this.Count)
