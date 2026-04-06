@@ -230,7 +230,7 @@ type Key =
     | ShiftCtrlAlt of InputKey
     | CharNoModif  of char
 
-let private modNoModif      = enum<ConsoleModifiers> 0
+let private modNoModif      = ConsoleModifiers.None
 let private modCtrl         = ConsoleModifiers.Control
 let private modAlt          = ConsoleModifiers.Alt
 let private modCtrlAlt      = ConsoleModifiers.Control ||| ConsoleModifiers.Alt
@@ -239,7 +239,7 @@ let private modShiftCtrl    = ConsoleModifiers.Shift ||| modCtrl
 let private modShiftAlt     = ConsoleModifiers.Shift ||| modAlt
 let private modShiftCtrlAlt = ConsoleModifiers.Shift ||| modCtrlAlt
 
-let private noModifOrShift modifs =
+let private isNoModifOrShift modifs =
        modifs = modNoModif
     || modifs = modShift
 
@@ -287,7 +287,7 @@ let private consoleKeyToInputKey consoleKey =
 let private keyCharToInputKey keyChar =
     enum<InputKey> (int keyChar)
 
-/// Recognizes keys like Enter and shortcuts like Ctrl-Enter, AltCtrl-Enter.
+/// Recognizes keys like Enter and shortcuts like Ctrl-Enter, CtrlAlt-Enter.
 let private recognizeSpecial modifs consoleKey _keyChar (_capsLock: bool) =
     let found, inputKey = specialToInputKey.TryGetValue consoleKey
     if found then
@@ -313,13 +313,13 @@ let private recognizeLetterKey modifs consoleKey _keyChar (capsLock: bool) =
 /// Recognizes characters like a, A.
 let private recognizeLetterChar modifs _consoleKey keyChar (_capsLock: bool) =
     if 'A' <= keyChar && keyChar <= 'Z'
-        && noModifOrShift modifs
+        && isNoModifOrShift modifs
     then
         let inputKey = keyCharToInputKey keyChar
         Some (Shift inputKey)
 
     elif 'a' <= keyChar && keyChar <= 'z'
-        && noModifOrShift modifs
+        && isNoModifOrShift modifs
     then
         let inputKey = keyCharToInputKey (keyChar - aA_delta)
         Some (NoModif inputKey)
@@ -348,7 +348,7 @@ let private recognizeDigitKey modifs consoleKey _keyChar (_capsLock: bool) =
 /// Recognizes characters like 0.
 let private recognizeDigitChar modifs _consoleKey keyChar (_capsLock: bool) =
     if '0' <= keyChar && keyChar <= '9'
-        && noModifOrShift modifs
+        && isNoModifOrShift modifs
     then
         let inputKey = keyCharToInputKey keyChar
         Some (getModifierFun_ClearShift modifs inputKey)
