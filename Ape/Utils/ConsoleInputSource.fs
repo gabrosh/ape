@@ -21,6 +21,8 @@ type ConsoleInputSource () as this_ =
     let myWindowSizeLock     = Object ()
     let mutable myWindowSize = consoleInterop.GetConsoleWindowSize ()
 
+    let mutable myUseKittyKeys = false  
+    
     let myQueue = new BlockingCollection<ConsoleInput> ()
 
     let myInputKeyThread   = Thread this_.InputKeyWorker
@@ -32,6 +34,18 @@ type ConsoleInputSource () as this_ =
 
         myWindowSizeThread.IsBackground <- true
         myWindowSizeThread.Start ()
+
+    /// Initializes the console.
+    member _.Initialize useKittyKeys =
+        if useKittyKeys then
+            myUseKittyKeys <- KittyKeys.initialize ()            
+        myUseKittyKeys
+
+    /// Deinitializes the console.
+    member _.Deinitialize () =
+        if myUseKittyKeys then
+            KittyKeys.deinitialize ()
+            myUseKittyKeys <- false
 
     /// Returns the current size of the console window.
     member _.GetWindowSize () =
@@ -49,8 +63,13 @@ type ConsoleInputSource () as this_ =
 
     member private _.InputKeyWorker () =
         while true do
-            let key = keyInfoToKey (Console.ReadKey true) (consoleInterop.GetCapsLock ())
-            if key <> CharNoModif '\000' then
+            let key =
+                if myUseKittyKeys then
+                    KittyKeys.readKey ()
+                else
+                    GenttyKeys.readKey ()
+
+            if key <> CharNoModif '\x00' then
                 myQueue.Add (KeyboardInputRead key)
 
     member private this.WindowSizeWorker () =

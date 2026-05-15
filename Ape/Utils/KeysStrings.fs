@@ -75,6 +75,7 @@ let private specialKeyNames = Map [
     "down"   , InputKey.DownArrow
     "ins"    , InputKey.Insert
     "del"    , InputKey.Delete
+    "begin"  , InputKey.Begin
 
     "f1"     , InputKey.F1
     "f2"     , InputKey.F2

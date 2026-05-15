@@ -1,9 +1,10 @@
-﻿module ConsoleKeysTest
+﻿module GenttyKeysTest
 
 open NUnit.Framework
 open System
 
 open ConsoleKeys
+open GenttyKeys
 
 [<TestFixture>]
 type ConsoleKeysTest () =

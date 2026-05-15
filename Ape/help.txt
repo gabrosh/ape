@@ -24,6 +24,7 @@ right   right arrow
 down    down arrow
 ins     insert
 del     delete
+begin   numpad's key 5 without Num Lock
 
 f1-f12  F1-F12
 
@@ -409,6 +410,8 @@ tabBySpaces      tbs    true     false true      tab and indent by space charact
 scrollOffset     so     3        0 to 99         count of characters always displayed near the main cursor
 cursorBeforeEol  cbe    false    false true      put cursor at EOL instead of the last line character
                                                  (applies to some of "cursor movement" commands)
+useKittyKeys     ukk    false    false true      use Kitty keyboard protocol for keyboard input
+                                                 (settable only in configuration file)
 
 
 Key mappings -------------------------------------------------------------------

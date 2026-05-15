@@ -11,6 +11,7 @@ open DataTypes
 open KeyDispatching
 open KeysStrings
 open Registers
+open Settings
 open UndoRedo
 open UserMessages
 open WrappedRef
@@ -261,6 +262,17 @@ let rec runMainLoop () =
 
 // main function
 
+let getUseKittyKeysSetting () =
+    let settings = textArea.CurrentSettings
+
+    getValueBool settings Name.useKittyKeys
+
+let setUseKittyKeysSetting useKittyKeys =
+    let settings = textArea.CurrentSettings
+    
+    setValueAsFixed settings (Some Scope.``global``) Name.useKittyKeys
+        (if useKittyKeys then "true" else "false") |> ignore
+
 [<EntryPoint>]
 let main argv =
     consoleInterop.DisableExitOnCtrlC ()
@@ -321,7 +333,7 @@ let main argv =
                     textArea.ToFirstBuffer ()
                     textArea.DeleteBuffer ()
                 ) |> ignore
-            | None          ->
+            | None ->
                 let result = textArea.SetBufferSettings x.encoding x.strictEncoding (Some "false")
                 match result with
                 | Error e -> userMessages.RegisterMessage (makeErrorMessage e)
@@ -334,12 +346,18 @@ let main argv =
     //let elapsedMs = stopWatch.ElapsedMilliseconds;
     //UserMessages.logInfo (elapsedMs.ToString ())
 
+    let useKittyKeys = getUseKittyKeysSetting ()    
+    let useKittyKeys' = consoleInputSource.Initialize useKittyKeys    
+    setUseKittyKeysSetting useKittyKeys'
+    
     runMainLoop ()
 
     (textArea   :> IDisposable).Dispose ()
     (prompt     :> IDisposable).Dispose ()
     (statusArea :> IDisposable).Dispose ()
     (renderer   :> IDisposable).Dispose ()
+
+    consoleInputSource.Deinitialize ()
 
     Console.ForegroundColor <- bckFg
     Console.BackgroundColor <- bckBg

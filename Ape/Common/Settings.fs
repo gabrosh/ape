@@ -50,6 +50,7 @@ type Name =
     | tabBySpaces      = 15
     | scrollOffset     = 16
     | cursorBeforeEol  = 17
+    | useKittyKeys     = 18
 
 let nameToString (name: Name) =
     name.ToString ()
@@ -83,6 +84,7 @@ let parseName (s: string) =
         | "tbs" -> Ok Name.tabBySpaces
         | "so"  -> Ok Name.scrollOffset
         | "cbe" -> Ok Name.cursorBeforeEol
+        | "ukk" -> Ok Name.useKittyKeys
         | _     -> Error $"Invalid setting's name: '{s}'"
 
 type Value =
@@ -157,6 +159,7 @@ let specsMap =
         Name.tabBySpaces      , Bools       ( default_ = true  , isValid = all            )
         Name.scrollOffset     , Ints        ( default_ = 3     , isValid = isInRange 0 99 )
         Name.cursorBeforeEol  , Bools       ( default_ = false , isValid = all            )
+        Name.useKittyKeys     , Bools       ( default_ = false , isValid = all            )
     ]
 
 // user input values validation

@@ -32,6 +32,9 @@
     <Compile Include="Utils\DefaultColors.fs" />
     <Compile Include="Utils\ColorUtils.fs" />
     <Compile Include="Utils\ConsoleKeys.fs" />
+    <Compile Include="Utils\GenttyKeys.fs" />
+    <Compile Include="Utils\KittyKeysAux.fs" />
+    <Compile Include="Utils\KittyKeys.fs" />
     <Compile Include="Utils\ConsoleInputSource.fs" />
     <Compile Include="Utils\KeysStrings.fs" />
     <Compile Include="Utils\StringInCompl.fs" />
