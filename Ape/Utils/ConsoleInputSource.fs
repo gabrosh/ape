@@ -13,6 +13,7 @@ let private windowSizePollingInterval = 100  // ms
 type ConsoleInput =
     | KeyboardInputRead of Key
     | WindowSizeChanged of WindowSize
+    | ExceptionCaught   of Exception
 
 /// ConsoleInputSource provides console input - either the next input key
 /// or the new console window size after resizing the console window.
@@ -63,14 +64,18 @@ type ConsoleInputSource () as this_ =
 
     member private _.InputKeyWorker () =
         while true do
-            let key =
-                if myUseKittyKeys then
-                    KittyKeys.readKey ()
-                else
-                    GenttyKeys.readKey ()
+            try
+                let key =
+                    if myUseKittyKeys then
+                        KittyKeys.readKey ()
+                    else
+                        GenttyKeys.readKey ()
 
-            if key <> CharNoModif '\x00' then
-                myQueue.Add (KeyboardInputRead key)
+                if key <> CharNoModif '\x00' then
+                    myQueue.Add (KeyboardInputRead key)
+            with
+                | ex ->
+                    myQueue.Add (ExceptionCaught ex)
 
     member private this.WindowSizeWorker () =
         while true do

@@ -242,6 +242,12 @@ let rec mainLoop mode keyPrefix =
                     ()
         else
             mainLoop mode keyPrefix
+            
+    | ExceptionCaught ex ->
+        userMessages.RegisterException ex
+        if isConsoleOK then
+            rerender mode keyPrefix
+        mainLoop mode keyPrefix
 
 [<TailCall>]
 let rec runMainLoop () =
