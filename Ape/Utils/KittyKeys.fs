@@ -334,15 +334,15 @@ let private recognizeTextEscaped (kittyKey: KittyKey) =
 let private recognizeSpecialEscaped (kittyKey: KittyKey) =
     match kittyKey with
     | KittyEscaped {
-          unicode = Some keyChar; modifiers = modifiers; endChar = endChar
+          unicode = Some keyChar; modifiers = modifs; endChar = endChar
       } ->
         match functionalKeys |> Map.tryFind (int keyChar, endChar) with
         | Some inputKey ->
-            Some (getKittyModifierFun_NoModif modifiers inputKey)
+            Some (getKittyModifierFun_NoModif modifs inputKey)
         | None ->
             match functionalKeys_KP |> Map.tryFind (int keyChar, endChar) with
             | Some inputKey ->
-                Some (getKittyModifierFun_HandleSHNL modifiers inputKey)
+                Some (getKittyModifierFun_HandleSHNL modifs inputKey)
             | None ->
                 None
     | _ ->
@@ -352,11 +352,11 @@ let private recognizeSpecialEscaped (kittyKey: KittyKey) =
 let private recognizeLetterEscaped (kittyKey: KittyKey) =
     match kittyKey with
     | KittyEscaped {
-          unicode = Some keyChar; modifiers = modifiers; endChar = 'u'
+          unicode = Some keyChar; modifiers = modifs; endChar = 'u'
       } ->
         if 'a' <= keyChar && keyChar <= 'z' then
             let inputKey = keyCharToInputKey (keyChar - aA_delta)
-            Some (getKittyModifierFun_HandleCL modifiers inputKey)
+            Some (getKittyModifierFun_HandleCL modifs inputKey)
         else
             None
     | _ ->
@@ -367,20 +367,20 @@ let private recognizeSymbolEscaped (kittyKey: KittyKey) =
     let result =
         match kittyKey with
         | KittyEscaped {
-              shifted = Some keyChar; modifiers = modifiers; endChar = 'u'
+              shifted = Some keyChar; modifiers = modifs; endChar = 'u'
           }
         | KittyEscaped {
-              unicode = Some keyChar; modifiers = modifiers; endChar = 'u'
+              unicode = Some keyChar; modifiers = modifs; endChar = 'u'
           } ->
-            Some (keyChar, modifiers)
+            Some (keyChar, modifs)
         | _ ->
             None
             
     match result with
-    | Some (keyChar, modifiers) ->
+    | Some (keyChar, modifs) ->
         let found, inputKey = symbolToInputKey.TryGetValue keyChar
         if found then
-            Some (getKittyModifierFun_ClearShiftAndCL modifiers inputKey)
+            Some (getKittyModifierFun_ClearShiftAndCL modifs inputKey)
         else
             None
     | None ->
@@ -390,14 +390,14 @@ let private recognizeSymbolEscaped (kittyKey: KittyKey) =
 let private recognizeDigitEscaped (kittyKey: KittyKey) =
     match kittyKey with
     | KittyEscaped {
-          shifted = Some keyChar; modifiers = modifiers; endChar = 'u'
+          shifted = Some keyChar; modifiers = modifs; endChar = 'u'
       }
     | KittyEscaped {
-          unicode = Some keyChar; modifiers = modifiers; endChar = 'u'
+          unicode = Some keyChar; modifiers = modifs; endChar = 'u'
       } ->
         if '0' <= keyChar && keyChar <= '9' then
             let inputKey = keyCharToInputKey keyChar
-            Some (getKittyModifierFun_ClearShiftAndCL modifiers inputKey)
+            Some (getKittyModifierFun_ClearShiftAndCL modifs inputKey)
         else
             None
     | _ ->

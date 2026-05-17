@@ -1,4 +1,4 @@
-﻿module ConsoleKeys
+module ConsoleKeys
 
 open System
 
@@ -308,7 +308,7 @@ let keyPrefixToChar keyPrefix =
     | _ ->
         None
 
-// optional Shift with or without other modifs
+// optional Shift with or without other modifiers
 
 let (|OptShift|_|) inputKey x =
     match x with

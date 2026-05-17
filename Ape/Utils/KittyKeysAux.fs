@@ -122,17 +122,17 @@ let private parseEscaped (s: string) =
             modifiers = KittyModifiers.None; endChar = e
         }
 
-    | [| keyCodes; modifiers |] ->
+    | [| keyCodes; modifs |] ->
         let u, s, l = parseKeyCodes keyCodes
-        let m = parseModifiers modifiers
+        let m = parseModifiers modifs
         {
             unicode = u; shifted = s; layout = l; text = None
             modifiers = m; endChar = e
         }
 
-    | [| keyCodes; modifiers; text |] ->
+    | [| keyCodes; modifs; text |] ->
         let u, s, l = parseKeyCodes keyCodes
-        let m = parseModifiers modifiers
+        let m = parseModifiers modifs
         let t = parseText text
         {
             unicode = u; shifted = s; layout = l; text = t
@@ -218,5 +218,5 @@ let internal getKittyKeyRepr (kittyKey: KittyKey) =
         getParsedEscapedRepr escaped
     | KittyChar keyChar ->
         getCharRepr keyChar
-    | ConsoleKey (consoleKey, consoleModifiers) ->
-        $"{consoleKey}, {consoleModifiers}"
+    | ConsoleKey (consoleKey, modifs) ->
+        $"{consoleKey}, {modifs}"
