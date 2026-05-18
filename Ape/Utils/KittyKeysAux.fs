@@ -4,7 +4,7 @@ open System
 open System.Text
 
 [<Flags>]
-type public KittyModifiers =
+type KittyModifiers =
     | None      = 0b00000000
     | Shift     = 0b00000001
     | Alt       = 0b00000010
@@ -15,7 +15,7 @@ type public KittyModifiers =
     | Caps_lock = 0b01000000
     | Num_lock  = 0b10000000
 
-type public Escaped = {
+type Escaped = {
     unicode:   char option
     shifted:   char option
     layout:    char option
@@ -24,7 +24,7 @@ type public Escaped = {
     endChar:   char
 }
 
-let public Escaped_zero = {
+let Escaped_zero = {
     unicode   = None
     shifted   = None
     layout    = None
@@ -33,7 +33,7 @@ let public Escaped_zero = {
     endChar   = '\x00'
 }   
 
-type public KittyKey =
+type KittyKey =
     | KittyUndefined
     | KittyEscaped of Escaped
     | KittyChar    of char
@@ -54,7 +54,7 @@ let private initFlags =
         ||| ProgressiveFlags.ReportAssociatedText
     )
 
-let internal writeInitRequest () =
+let writeInitRequest () =
     // Set progressive enhancements.
     Console.Write $"\x1b[>{initFlags}u"
     // Query progressive enhancements set above.
@@ -62,10 +62,10 @@ let internal writeInitRequest () =
     // Query primary device attributes.
     Console.Write "\x1b[c"
 
-let internal writeDeinitRequest () =
+let writeDeinitRequest () =
     Console.Write "\x1b[<u"
 
-let internal readInitResponse () =
+let readInitResponse () =
     let sb = StringBuilder ()
 
     let mutable keyChar = '\x00'
@@ -77,7 +77,7 @@ let internal readInitResponse () =
 
     sb.ToString ()
 
-let internal supportsKittyProtocol (initResponse: string) =
+let supportsKittyProtocol (initResponse: string) =
     // Are the progressive enhancements set?
     initResponse.StartsWith $"\x1b[?{initFlags}u"
 
@@ -110,7 +110,7 @@ let private parseKeyCodes (s: string) =
 let private parseText (s: string) =
     parseKeyCode s    
 
-let private parseEscaped (s: string) =
+let parseEscaped (s: string) =
     let e  = s[s.Length - 1]
     let s' = s.Substring (0, s.Length - 1)
     
@@ -142,7 +142,7 @@ let private parseEscaped (s: string) =
     | _ ->
         Escaped_zero
 
-let internal readEscaped () =
+let private readEscaped () =
     let sb = StringBuilder ()
 
     let mutable doContinue = true
@@ -165,7 +165,7 @@ let internal readEscaped () =
     sb.ToString () |> parseEscaped
 
 /// Reads one input key from the console.
-let internal readInputKey () =
+let readInputKey () =
     let keyInfo = Console.ReadKey true
     let keyChar = keyInfo.KeyChar
     
@@ -210,7 +210,7 @@ let private getParsedEscapedRepr pe =
     
     $"u:{u} s:{s} l:{l} t:{t} m:{pe.modifiers} e:{pe.endChar}"
 
-let internal getKittyKeyRepr (kittyKey: KittyKey) =
+let getKittyKeyRepr (kittyKey: KittyKey) =
     match kittyKey with
     | KittyUndefined ->
         "Undefined"

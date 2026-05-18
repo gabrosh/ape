@@ -37,6 +37,8 @@
     <Compile Include="TestUtils.fs" />
     <Compile Include="UtilsTest\BinarySearchTest.fs" />
     <Compile Include="UtilsTest\GenttyKeysTest.fs" />
+    <Compile Include="UtilsTest\KittyKeysAuxTest.fs" />
+    <Compile Include="UtilsTest\KittyKeysTest.fs" />
     <Compile Include="UtilsTest\CommandArgsTest.fs" />
     <Compile Include="UtilsTest\KeyStringsTest.fs" />
     <Compile Include="HelpersTest\PromptHistoryTest.fs" />

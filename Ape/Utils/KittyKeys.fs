@@ -152,9 +152,9 @@ let private modCtrl         = ConsoleModifiers.Control
 let private modAlt          = ConsoleModifiers.Alt
 let private modCtrlAlt      = ConsoleModifiers.Control ||| ConsoleModifiers.Alt
 let private modShift        = ConsoleModifiers.Shift
-let private modShiftCtrl    = ConsoleModifiers.Shift ||| modCtrl
-let private modShiftAlt     = ConsoleModifiers.Shift ||| modAlt
-let private modShiftCtrlAlt = ConsoleModifiers.Shift ||| modCtrlAlt
+let private modShiftCtrl    = ConsoleModifiers.Shift   ||| modCtrl
+let private modShiftAlt     = ConsoleModifiers.Shift   ||| modAlt
+let private modShiftCtrlAlt = ConsoleModifiers.Shift   ||| modCtrlAlt
 
 let private modifierFuns = Map [
 //                      NoOper         ClearShift 
@@ -177,11 +177,13 @@ let private getModifierFun_NoOper modifs =
 let private kittyModNoModif      = KittyModifiers.None
 let private kittyModCtrl         = KittyModifiers.Ctrl
 let private kittyModAlt          = KittyModifiers.Alt
-let private kittyModCtrlAlt      = KittyModifiers.Ctrl ||| KittyModifiers.Alt
+let private kittyModCtrlAlt      = KittyModifiers.Ctrl  ||| KittyModifiers.Alt
 let private kittyModShift        = KittyModifiers.Shift
 let private kittyModShiftCtrl    = KittyModifiers.Shift ||| kittyModCtrl
 let private kittyModShiftAlt     = KittyModifiers.Shift ||| kittyModAlt
 let private kittyModShiftCtrlAlt = KittyModifiers.Shift ||| kittyModCtrlAlt
+let private kittyModCapsLock     = KittyModifiers.Caps_lock
+let private kittyModNumLock      = KittyModifiers.Num_lock
 
 let private kittyModifiersMask =
         KittyModifiers.Ctrl
@@ -239,7 +241,7 @@ let private getKittyModifierFun_HandleSHNL (modifs: KittyModifiers) =
     let func, _ = kittyModifierFuns[modifs']
     func
 
-let private getKittyModifierFun_ClearShiftAndCL (modifs: KittyModifiers) =
+let private getKittyModifierFun_ClearShiftCLNL (modifs: KittyModifiers) =
     let modifs' =
         modifs |> clear (KittyModifiers.Caps_lock ||| KittyModifiers.Num_lock)
     
@@ -312,8 +314,8 @@ let private recognizeDigitChar (kittyKey: KittyKey) =
     | _ ->
         None
 
-/// Recognizes all other characters like á.
-let private recognizeChar (kittyKey: KittyKey) =
+/// Recognizes all other characters like á, €.
+let private recognizeOtherChar (kittyKey: KittyKey) =
     match kittyKey with
     | KittyChar keyChar ->
         Some (CharNoModif keyChar)
@@ -380,7 +382,7 @@ let private recognizeSymbolEscaped (kittyKey: KittyKey) =
     | Some (keyChar, modifs) ->
         let found, inputKey = symbolToInputKey.TryGetValue keyChar
         if found then
-            Some (getKittyModifierFun_ClearShiftAndCL modifs inputKey)
+            Some (getKittyModifierFun_ClearShiftCLNL modifs inputKey)
         else
             None
     | None ->
@@ -397,7 +399,7 @@ let private recognizeDigitEscaped (kittyKey: KittyKey) =
       } ->
         if '0' <= keyChar && keyChar <= '9' then
             let inputKey = keyCharToInputKey keyChar
-            Some (getKittyModifierFun_ClearShiftAndCL modifs inputKey)
+            Some (getKittyModifierFun_ClearShiftCLNL modifs inputKey)
         else
             None
     | _ ->
@@ -415,7 +417,7 @@ let private inputKeyRecognizers = [|
     recognizeSymbolChar
     recognizeDigitChar
     
-    recognizeChar
+    recognizeOtherChar
 
     recognizeTextEscaped
     

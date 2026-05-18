@@ -123,7 +123,7 @@ let private recognizeDigitChar modifs _consoleKey keyChar (_capsLock: bool) =
         None
 
 /// Recognizes all other characters like á.
-let private recognizeChar modifs _consoleKey keyChar _capsLock =
+let private recognizeOtherChar modifs _consoleKey keyChar _capsLock =
     Some (getModifierFun_ForChar modifs keyChar)
 
 let private inputKeyRecognizers = [|
@@ -133,7 +133,7 @@ let private inputKeyRecognizers = [|
     recognizeSymbol      // Symbols typed on digit keys have priority before Shift-Alt-0 to Shift-Alt-9.
     recognizeDigitKey
     recognizeDigitChar
-    recognizeChar
+    recognizeOtherChar
 |]
 
 /// Returns Key corresponding to ConsoleKeyInfo.

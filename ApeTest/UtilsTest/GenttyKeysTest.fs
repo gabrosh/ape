@@ -26,7 +26,7 @@ type ConsoleKeysTest () =
         ]
 
         for input, expected in inputsAndExpected do
-            Assert.AreEqual (expected, keyInfoToKey input false, keyInfoToString input)
+            Assert.AreEqual (expected, keyInfoToKey input false, keyInfoToString input, input)
 
     [<Test>]
     member _.keyInfoToKey_LetterKey_WithoutCapsLock () =
@@ -39,7 +39,7 @@ type ConsoleKeysTest () =
         ]
 
         for input, expected in inputsAndExpected do
-            Assert.AreEqual (expected, keyInfoToKey input false, keyInfoToString input)
+            Assert.AreEqual (expected, keyInfoToKey input false, keyInfoToString input, input)
 
     [<Test>]
     member _.keyInfoToKey_LetterChar_WithoutCapsLock () =
@@ -52,7 +52,7 @@ type ConsoleKeysTest () =
         ]
 
         for input, expected in inputsAndExpected do
-            Assert.AreEqual (expected, keyInfoToKey input false, keyInfoToString input)
+            Assert.AreEqual (expected, keyInfoToKey input false, keyInfoToString input, input)
 
     [<Test>]
     member _.keyInfoToKey_LetterKey_WithCapsLock () =
@@ -65,7 +65,7 @@ type ConsoleKeysTest () =
         ]
 
         for input, expected in inputsAndExpected do
-            Assert.AreEqual (expected, keyInfoToKey input true, keyInfoToString input)
+            Assert.AreEqual (expected, keyInfoToKey input true, keyInfoToString input, input)
 
     [<Test>]
     member _.keyInfoToKey_LetterChar_WithCapsLock () =
@@ -78,7 +78,7 @@ type ConsoleKeysTest () =
         ]
 
         for input, expected in inputsAndExpected do
-            Assert.AreEqual (expected, keyInfoToKey input true, keyInfoToString input)
+            Assert.AreEqual (expected, keyInfoToKey input true, keyInfoToString input, input)
 
     [<Test>]
     member _.keyInfoToKey_Symbol () =
@@ -95,7 +95,7 @@ type ConsoleKeysTest () =
         ]
 
         for input, expected in inputsAndExpected do
-            Assert.AreEqual (expected, keyInfoToKey input false, keyInfoToString input)
+            Assert.AreEqual (expected, keyInfoToKey input false, keyInfoToString input, input)
 
     [<Test>]
     member _.keyInfoToKey_DigitKey () =
@@ -108,7 +108,7 @@ type ConsoleKeysTest () =
         ]
 
         for input, expected in inputsAndExpected do
-            Assert.AreEqual (expected, keyInfoToKey input false, keyInfoToString input)
+            Assert.AreEqual (expected, keyInfoToKey input false, keyInfoToString input, input)
 
     [<Test>]
     member _.keyInfoToKey_DigitChar () =
@@ -119,10 +119,10 @@ type ConsoleKeysTest () =
         ]
 
         for input, expected in inputsAndExpected do
-            Assert.AreEqual (expected, keyInfoToKey input false, keyInfoToString input)
+            Assert.AreEqual (expected, keyInfoToKey input false, keyInfoToString input, input)
 
     [<Test>]
-    member _.keyInfoToKey_Char () =
+    member _.keyInfoToKey_OtherChar () =
         let inputsAndExpected = [
 //                          keyChar key            shift  alt    ctrl
             ConsoleKeyInfo ('a',    ConsoleKey.X , false, true , true ), CharNoModif 'a'
@@ -138,4 +138,4 @@ type ConsoleKeysTest () =
         ]
 
         for input, expected in inputsAndExpected do
-            Assert.AreEqual (expected, keyInfoToKey input false, keyInfoToString input)
+            Assert.AreEqual (expected, keyInfoToKey input false, keyInfoToString input, input)
