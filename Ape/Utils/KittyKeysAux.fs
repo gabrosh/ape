@@ -186,16 +186,16 @@ let readInputKey () =
 
 // representing KittyKey values for testing purposes
 
-let private intToHexStr (v: int) =
-    if   v <= 0xFF     then v.ToString "X2"
-    elif v <= 0xFFFF   then v.ToString "X4"
-    elif v <= 0xFFFFFF then v.ToString "X6"
-                       else v.ToString "X8"
+let private intToDecStr (v: int) =
+    v.ToString ()
 
 let private getCharRepr (c: char) =
     if Char.IsControl c then
-        let hexStr = intToHexStr (int c)
-        $"<{hexStr}>"
+        let decStr = intToDecStr (int c)
+        $"<{decStr}>"
+    elif int c > 127 then
+        let decStr = intToDecStr (int c)
+        $"<{decStr}>"        
     else
         c.ToString ()
         

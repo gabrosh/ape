@@ -113,9 +113,9 @@ p    <c-R>{regName}  paste uppercase register {regName} before cursor
 Normal mode prefixes:
 
      {count}         repeating count (positive decimal number)
-p    '{regName}      lowercase or uppercase register name
+p    '{regName}      lowercase or uppercase register prefix
                      (any printable character, can be uppercase)
-p    "{regName}      uppercase register name
+p    "{regName}      uppercase register prefix
                      (any printable character, can be uppercase)
 
 
@@ -224,8 +224,7 @@ p    <a-;>           flip selection's direction
 
 Normal mode - multiplying selection:
 
-     +               multiply selection by count of slots in register "
-     '{regName}+     multiply selection by count of slots in register {regName}
+   r +               multiply selection by count of slots in default or specified register
      {count}+        multiply selection by {count}
 
 

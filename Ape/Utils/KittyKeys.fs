@@ -130,7 +130,7 @@ let functionalKeys = Map [
 //  ( ( 57454 , 'u' ), ISO_LEVEL5_SHIFT     )  // ISO_LEVEL5_SHIFT
 ]
 
-let functionalKeys_KP = Map [
+let functionalKeys_NumPad = Map [
     ( ( 57417 , 'u' ), InputKey.LeftArrow   )  // KP_LEFT
     ( ( 57418 , 'u' ), InputKey.RightArrow  )  // KP_RIGHT
     ( ( 57419 , 'u' ), InputKey.UpArrow     )  // KP_UP
@@ -322,17 +322,46 @@ let private recognizeOtherChar (kittyKey: KittyKey) =
     | _ ->
         None
 
-/// Recognizes text characters like €, Đ.
+/// Recognizes text characters like €, &.
+///
+/// In Windows Terminal:
+/// u:e s: l: t:<8364> m:Alt e:u -> CharNoModif '€'
+/// u:c s: l: t:& m:Alt e:u      -> CharNoModif '&'
+/// 
 let private recognizeTextEscaped (kittyKey: KittyKey) =
     match kittyKey with
     | KittyEscaped {
-          unicode = Some keyChar; text = Some keyChar2; endChar = 'u'
-      } when keyChar2 <> keyChar && Char.ToLower keyChar2 <> keyChar ->
-        Some (CharNoModif keyChar2)
+          shifted = Some shifted; text = Some text; endChar = 'u'
+      } ->
+        if text <> shifted then
+            Some (CharNoModif text)
+        else
+            None
+    | KittyEscaped {
+          unicode = Some unicode; text = Some text; endChar = 'u'
+      } ->
+        if text <> unicode then
+            Some (CharNoModif text)
+        else
+            None
     | _ ->
         None
 
-/// Recognizes keys like Enter and shortcuts like Ctrl-Enter, CtrlAlt-Enter.
+/// Recognizes shortcuts like ShiftCtrlAlt-Enter;
+/// keys like Enter and shortcuts like ShiftCtrlAlt-Enter on Numpad;
+/// keys like LeftArrow and shortcuts like ShiftCtrlAlt-LeftArrow on Numpad.
+/// (And possibly keys like Enter.)
+/// 
+/// u:<13> s: l: t: m:Shift, Alt, Ctrl e:u              -> ShiftCtrlAlt Enter
+/// 
+/// u:<57414> s: l: t: m:None e:u                       -> Enter
+/// u:<57414> s: l: t: m:Shift, Alt, Ctrl e:u           -> ShiftCtrlAlt Enter
+///
+/// u:<57417> s: l: t: m:None e:u                       -> NoModif      LeftArrow
+/// u:<57417> s: l: t: m:Shift, Alt, Ctrl e:u           -> ShiftCtrlAlt LeftArrow
+/// u:<57417> s: l: t: m:Shift, Num_lock e:u            -> NoModif      LeftArrow
+/// u:<57417> s: l: t: m:Shift, Alt, Ctrl, Num_lock e:u -> CtrlAlt      LeftArrow
+/// 
 let private recognizeSpecialEscaped (kittyKey: KittyKey) =
     match kittyKey with
     | KittyEscaped {
@@ -342,7 +371,7 @@ let private recognizeSpecialEscaped (kittyKey: KittyKey) =
         | Some inputKey ->
             Some (getKittyModifierFun_NoModif modifs inputKey)
         | None ->
-            match functionalKeys_KP |> Map.tryFind (int keyChar, endChar) with
+            match functionalKeys_NumPad |> Map.tryFind (int keyChar, endChar) with
             | Some inputKey ->
                 Some (getKittyModifierFun_HandleSHNL modifs inputKey)
             | None ->
@@ -350,7 +379,15 @@ let private recognizeSpecialEscaped (kittyKey: KittyKey) =
     | _ ->
         None
     
-/// Recognizes letter characters like a, A and shortcuts like Alt-a, CtrlAlt-A.
+/// Recognizes shortcuts like CtrlAlt-A, ShiftCtrlAlt-A.
+/// (And possibly keys like A.)
+/// 
+/// u:a s: l: t: m:Alt, Ctrl e:u                   -> CtrlAlt A
+/// u:a s:A l: t: m:Shift, Alt, Ctrl e:u           -> ShiftCtrlAlt A
+///
+/// u:a s: l: t: m:Alt, Ctrl, Caps_lock e:u        -> ShiftCtrlAlt A
+/// u:a s: l: t: m:Shift, Alt, Ctrl, Caps_lock e:u -> CtrlAlt A
+/// 
 let private recognizeLetterEscaped (kittyKey: KittyKey) =
     match kittyKey with
     | KittyEscaped {
@@ -364,7 +401,12 @@ let private recognizeLetterEscaped (kittyKey: KittyKey) =
     | _ ->
         None
 
-/// Recognizes symbol characters from ASCII table like & and shortcuts like Ctrl-&, CtrlAlt-&.
+/// Recognizes shortcuts with symbol characters from ASCII table like CtrlAlt-&.
+/// (And possibly symbol characters from ASCII table like &.)
+///
+/// u:7 s:& l: t: m:Shift, Alt, Ctrl e:u -> CtrlAlt Ampersand
+/// u:[ s: l: t: m:Alt, Ctrl e:u         -> CtrlAlt LeftSquare
+/// 
 let private recognizeSymbolEscaped (kittyKey: KittyKey) =
     let result =
         match kittyKey with
@@ -388,7 +430,13 @@ let private recognizeSymbolEscaped (kittyKey: KittyKey) =
     | None ->
         None
 
-/// Recognizes digit characters like 0 and shortcuts like Ctrl-0, CtrlAlt-0.
+/// Recognizes shortcuts with digit characters like CtrlAlt-0;
+/// shortcuts with digit characters like CtrlAlt-0 on NumPad.
+/// (And possibly digit characters like 0.)
+///
+/// u:0 s: l: t: m:Alt, Ctrl e:u                 -> CtrlAlt D0
+/// u:<57399> s: l: t: m:Alt, Ctrl, Num_lock e:u -> CtrlAlt D0
+/// 
 let private recognizeDigitEscaped (kittyKey: KittyKey) =
     match kittyKey with
     | KittyEscaped {
