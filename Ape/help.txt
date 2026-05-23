@@ -35,6 +35,26 @@ gt      >
 Examples: x, <x>, <c-x>, <del>, <c-del>
 
 
+Support for Kitty Keyboard Protocol --------------------------------------------
+
+The usage of Kitty Keyboard Protocol (supported by Kitty and several other terminal
+emulators on Linux and also by Windows Terminal version 1.25 or higher on Windows)
+can be turned on by putting line "set global useKittyKeys true" into the configuration
+file (for example, extended.cfg). If the terminal emulator supports this protocol,
+it's used instead of the default keyboard input method.
+
+For Kitty terminal emulator to send escape sequences correctly recognizable by Ape,
+you have to put these lines into your kitty.conf file:
+
+map f1 send_text all \x1b[11~
+map f2 send_text all \x1b[12~
+map f4 send_text all \x1b[14~
+
+For Windows Terminal you have to change the escape sequence sent for F3 to:
+
+\u001b[1;1R
+
+
 Text area and Prompt area commands ---------------------------------------------
 
 p = applicable also in prompt modes

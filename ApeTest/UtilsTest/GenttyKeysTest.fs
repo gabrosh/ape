@@ -7,7 +7,7 @@ open ConsoleKeys
 open GenttyKeys
 
 [<TestFixture>]
-type ConsoleKeysTest () =
+type GenttyKeysTest () =
     let keyInfoToString (input: ConsoleKeyInfo) =
         $"{input.KeyChar} {input.Key} {input.Modifiers}"
 

@@ -50,9 +50,14 @@ For linux-x64 binary:
 
 `dotnet publish -r linux-x64 --sc true -p:PublishSingleFile=true -p:PublishTrimmed=true -p:PublishReadyToRun=true Ape/Ape.fsproj`
 
-For the best experience on Windows, Ape should be run in Windows Terminal.
 
-On Linux, you will probably have to remap all key bindings with Ctrl modifier to something else as Linux console practically doesn't support key bindings with Ctrl modifier.
+## For the best experience...
+On Windows, Ape should be run in Windows Terminal.
+
+On Linux, Ape should be run in some teminal emulator supporting the Kitty Keyboard Protocol. Usage of this protocol by the application must be turned on explicitly. Please look at the integrated help for more details.
+
+Ape can use Kitty Keyboard Protocol also on Windows when run in Windows Terminal version 1.25 or higher. 
+
 
 OSX support was not tested yet.
 
