@@ -123,7 +123,7 @@ let private recognizeDigitChar modifs _consoleKey keyChar (_capsLock: bool) =
         None
 
 /// Recognizes all other characters like á.
-let private recognizeOtherChar modifs _consoleKey keyChar _capsLock =
+let private recognizeOtherChar modifs _consoleKey keyChar (_capsLock: bool) =
     Some (getModifierFun_ForChar modifs keyChar)
 
 let private inputKeyRecognizers = [|

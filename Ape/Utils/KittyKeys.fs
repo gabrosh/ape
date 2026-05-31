@@ -5,14 +5,14 @@ open System
 open ConsoleKeys
 open KittyKeysAux
 
-/// Initializes Kitty keyboard protocol support for the terminal.
+/// Initializes Kitty Keyboard Protocol support for the terminal.
 /// Returns true if the protocol is supported by the terminal.
 let initialize () =
     writeInitRequest ()
     let initResponse = readInitResponse ()
     supportsKittyProtocol initResponse
 
-/// Deinitializes Kitty keyboard protocol support for the terminal.
+/// Deinitializes Kitty Keyboard Protocol support for the terminal.
 let deinitialize () =
     writeDeinitRequest ()
 
@@ -331,16 +331,12 @@ let private recognizeOtherChar (kittyKey: KittyKey) =
 let private recognizeTextEscaped (kittyKey: KittyKey) =
     match kittyKey with
     | KittyEscaped {
-          shifted = Some shifted; text = Some text; endChar = 'u'
-      } ->
-        if text <> shifted then
-            Some (CharNoModif text)
-        else
-            None
+          shifted = Some keyChar; text = Some text; endChar = 'u'
+      }
     | KittyEscaped {
-          unicode = Some unicode; text = Some text; endChar = 'u'
+          unicode = Some keyChar; text = Some text; endChar = 'u'
       } ->
-        if text <> unicode then
+        if text <> keyChar then
             Some (CharNoModif text)
         else
             None
@@ -408,26 +404,19 @@ let private recognizeLetterEscaped (kittyKey: KittyKey) =
 /// u:[ s: l: t: m:Alt, Ctrl e:u         -> CtrlAlt LeftSquare
 /// 
 let private recognizeSymbolEscaped (kittyKey: KittyKey) =
-    let result =
-        match kittyKey with
-        | KittyEscaped {
-              shifted = Some keyChar; modifiers = modifs; endChar = 'u'
-          }
-        | KittyEscaped {
-              unicode = Some keyChar; modifiers = modifs; endChar = 'u'
-          } ->
-            Some (keyChar, modifs)
-        | _ ->
-            None
-            
-    match result with
-    | Some (keyChar, modifs) ->
+    match kittyKey with
+    | KittyEscaped {
+          shifted = Some keyChar; modifiers = modifs; endChar = 'u'
+      }
+    | KittyEscaped {
+          unicode = Some keyChar; modifiers = modifs; endChar = 'u'
+      } ->
         let found, inputKey = symbolToInputKey.TryGetValue keyChar
         if found then
             Some (getKittyModifierFun_ClearShiftCLNL modifs inputKey)
         else
             None
-    | None ->
+    | _ ->
         None
 
 /// Recognizes shortcuts with digit characters like CtrlAlt-0;
