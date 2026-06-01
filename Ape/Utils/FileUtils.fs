@@ -26,9 +26,9 @@ let encodingsArray =
     |> Array.ofSeq
     |> Array.sort
 
-let defaultEncoding = "utf-8"
-
 let encodingsSet = Set.ofArray encodingsArray
+
+let defaultEncoding = "utf-8"
 
 let suggestedEncodings = [|
     "utf-8"
@@ -48,6 +48,9 @@ type FileFormat =
     | unix = 2
     | mac  = 3
 
+let fileFormatsArray =
+    System.Enum.GetNames typeof<FileFormat>
+
 let defaultFileFormat =
     match osPlatform with
     | RuntimeOSPlatform.Undefined
@@ -55,9 +58,6 @@ let defaultFileFormat =
     | RuntimeOSPlatform.Linux
     | RuntimeOSPlatform.FreeBSD
     | RuntimeOSPlatform.OSX       -> FileFormat.unix
-
-let fileFormatsArray =
-    System.Enum.GetNames typeof<FileFormat>
 
 let private getFileFormat fileFormatAcc =
     let hasCR = (fileFormatAcc &&& int '\r') = int '\r'

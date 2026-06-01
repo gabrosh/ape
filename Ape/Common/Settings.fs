@@ -2,9 +2,12 @@
 
 open System.Collections.Generic
 
-type FUFF = FileUtils.FileFormat
+open ConsoleInterop_Specific
 
-let FUDFF = FileUtils.defaultFileFormat
+type FUFF  = FileUtils.FileFormat
+let  FUDFF = FileUtils.defaultFileFormat
+
+type CICT = ConsoleInterop_Common.ClipboardType
 
 // definitions
 
@@ -51,6 +54,7 @@ type Name =
     | scrollOffset     = 16
     | cursorBeforeEol  = 17
     | useKittyKeys     = 18
+    | clipboardType    = 19
 
 let nameToString (name: Name) =
     name.ToString ()
@@ -85,21 +89,24 @@ let parseName (s: string) =
         | "so"  -> Ok Name.scrollOffset
         | "cbe" -> Ok Name.cursorBeforeEol
         | "ukk" -> Ok Name.useKittyKeys
+        | "ct"  -> Ok Name.clipboardType
         | _     -> Error $"Invalid setting's name: '{s}'"
 
 type Value =
-    | Bool       of bool
-    | Int        of int
-    | String     of string
-    | FileFormat of FUFF
+    | Bool          of bool
+    | Int           of int
+    | String        of string
+    | FileFormat    of FUFF
+    | ClipboardType of CICT
 
 let valueToString (value: Value) =
     match value with
-    | Bool       false -> "false"
-    | Bool       true  -> "true"
-    | Int        x     -> x.ToString ()
-    | String     x     -> x.ToString ()
-    | FileFormat x     -> x.ToString ()
+    | Bool          false -> "false"
+    | Bool          true  -> "true"
+    | Int           x     -> x.ToString ()
+    | String        x     -> x.ToString ()
+    | FileFormat    x     -> x.ToString ()
+    | ClipboardType x     -> x.ToString ()
 
 // Contains (value, isFixed) pair as a value.
 type SettingsDict =
@@ -114,10 +121,11 @@ type Settings = {
 // specifications
 
 type SettingSpec =
-    | Bools       of default_: bool   * isValid: (bool   -> bool)
-    | Ints        of default_: int    * isValid: (int    -> bool)
-    | Strings     of default_: string * isValid: (string -> bool)
-    | FileFormats of default_: FUFF   * isValid: (FUFF   -> bool)
+    | Bools          of default_: bool   * isValid: (bool   -> bool)
+    | Ints           of default_: int    * isValid: (int    -> bool)
+    | Strings        of default_: string * isValid: (string -> bool)
+    | FileFormats    of default_: FUFF   * isValid: (FUFF   -> bool)
+    | ClipboardTypes of default_: CICT   * isValid: (CICT   -> bool)
 
 let private all _value =
     true
@@ -136,30 +144,37 @@ let private isInMap values value =
 
 let specsMap =
     Map [
-        Name.colorScheme , Strings (
-            default_ = ColorUtils.defaultScheme, isValid = isInMap ColorUtils.schemesMap
+        Name.colorScheme      , Strings        (
+            default_ = ColorUtils.defaultScheme,
+            isValid  = isInMap ColorUtils.schemesMap
         )
 
-        Name.encoding    , Strings (
-            default_ = FileUtils.defaultEncoding, isValid = isInSet FileUtils.encodingsSet
+        Name.encoding         , Strings        (
+            default_ = FileUtils.defaultEncoding,
+            isValid  = isInSet FileUtils.encodingsSet
         )
 
-        Name.strictEncoding   , Bools       ( default_ = true  , isValid = all            )
-        Name.fileFormat       , FileFormats ( default_ = FUDFF , isValid = all            )
-        Name.newLineAtEof     , Bools       ( default_ = true  , isValid = all            )
-        Name.readOnly         , Bools       ( default_ = false , isValid = all            )
-        Name.reloadAsLogFile  , Bools       ( default_ = false , isValid = all            )
-        Name.maxSavedUndos    , Ints        ( default_ = 25    , isValid = isEqOrGt  1    )
-        Name.reSearchMatching , Bools       ( default_ = true  , isValid = all            )
-        Name.recursionLimit   , Ints        ( default_ = 1000  , isValid = isEqOrGt  1    )
-        Name.wrapLines        , Bools       ( default_ = false , isValid = all            )
-        Name.wrapAtWord       , Bools       ( default_ = true  , isValid = all            )
-        Name.showLineNumbers  , Bools       ( default_ = false , isValid = all            )
-        Name.tabStop          , Ints        ( default_ = 4     , isValid = isInRange 1 99 )
-        Name.tabBySpaces      , Bools       ( default_ = true  , isValid = all            )
-        Name.scrollOffset     , Ints        ( default_ = 3     , isValid = isInRange 0 99 )
-        Name.cursorBeforeEol  , Bools       ( default_ = false , isValid = all            )
-        Name.useKittyKeys     , Bools       ( default_ = false , isValid = all            )
+        Name.clipboardType    , ClipboardTypes (
+            default_ = consoleInterop.GetDefaultClipboardType (),
+            isValid  = consoleInterop.IsClipboardTypeSupported
+        )
+
+        Name.strictEncoding   , Bools          ( default_ = true  , isValid = all            )
+        Name.fileFormat       , FileFormats    ( default_ = FUDFF , isValid = all            )
+        Name.newLineAtEof     , Bools          ( default_ = true  , isValid = all            )
+        Name.readOnly         , Bools          ( default_ = false , isValid = all            )
+        Name.reloadAsLogFile  , Bools          ( default_ = false , isValid = all            )
+        Name.maxSavedUndos    , Ints           ( default_ = 25    , isValid = isEqOrGt  1    )
+        Name.reSearchMatching , Bools          ( default_ = true  , isValid = all            )
+        Name.recursionLimit   , Ints           ( default_ = 1000  , isValid = isEqOrGt  1    )
+        Name.wrapLines        , Bools          ( default_ = false , isValid = all            )
+        Name.wrapAtWord       , Bools          ( default_ = true  , isValid = all            )
+        Name.showLineNumbers  , Bools          ( default_ = false , isValid = all            )
+        Name.tabStop          , Ints           ( default_ = 4     , isValid = isInRange 1 99 )
+        Name.tabBySpaces      , Bools          ( default_ = true  , isValid = all            )
+        Name.scrollOffset     , Ints           ( default_ = 3     , isValid = isInRange 0 99 )
+        Name.cursorBeforeEol  , Bools          ( default_ = false , isValid = all            )
+        Name.useKittyKeys     , Bools          ( default_ = false , isValid = all            )
     ]
 
 // user input values validation
@@ -172,10 +187,11 @@ let private validateAux name value parse isValid constr =
 
 let private validate name value =
     match specsMap[name] with
-    | Bools       (_, isValid) -> validateAux name value Parsing.parseBool       isValid Bool
-    | Ints        (_, isValid) -> validateAux name value Parsing.parseInt        isValid Int
-    | Strings     (_, isValid) -> validateAux name value Parsing.parseString     isValid String
-    | FileFormats (_, isValid) -> validateAux name value Parsing.parseFileFormat isValid FileFormat
+    | Bools          (_, isValid) -> validateAux name value Parsing.parseBool          isValid Bool
+    | Ints           (_, isValid) -> validateAux name value Parsing.parseInt           isValid Int
+    | Strings        (_, isValid) -> validateAux name value Parsing.parseString        isValid String
+    | FileFormats    (_, isValid) -> validateAux name value Parsing.parseFileFormat    isValid FileFormat
+    | ClipboardTypes (_, isValid) -> validateAux name value Parsing.parseClipboardType isValid ClipboardType
 
 [<TailCall>]
 let rec private isValueFixedRec settings name =
@@ -336,6 +352,12 @@ let getValueFileFormat settings name =
     | FileFormat x -> x
     | _            -> invalidOp "Must be FileFormat"
 
+/// Returns value of the ClipboardType setting with given name.
+let getValueClipboardType settings name =
+    match getValue settings name with
+    | ClipboardType x -> x
+    | _               -> invalidOp "Must be ClipboardType"
+    
 let rec getSettingReprAux settings name (acc: string) =
     match settings with
     | Some settings ->
@@ -361,10 +383,11 @@ let getSettingRepr settings name =
 
 let private getDefaultValue spec =
     match spec with
-    | Bools       (default_, _) -> Bool       default_
-    | Ints        (default_, _) -> Int        default_
-    | Strings     (default_, _) -> String     default_
-    | FileFormats (default_, _) -> FileFormat default_
+    | Bools          (default_, _) -> Bool          default_
+    | Ints           (default_, _) -> Int           default_
+    | Strings        (default_, _) -> String        default_
+    | FileFormats    (default_, _) -> FileFormat    default_
+    | ClipboardTypes (default_, _) -> ClipboardType default_
 
 /// Returns new default settings with no parent.
 let private makeDefaultSettings () =

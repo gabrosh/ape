@@ -485,18 +485,3 @@ let kittyKeyToKey (kittyKey: KittyKey) =
 let readKey () =
     let kittyKey = readInputKey ()
     kittyKeyToKey kittyKey
-
-// testing
-
-let run () =
-    let mutable doContinue = true
-
-    while doContinue do
-        let kittyKey = readInputKey ()
-        Console.WriteLine (getKittyKeyRepr kittyKey)        
-
-        let key = kittyKeyToKey kittyKey
-        Console.WriteLine key
-        
-        if key = NoModif InputKey.F10 then
-            doContinue <- false

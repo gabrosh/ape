@@ -21,6 +21,7 @@
     <Compile Include="SkipList/SkipList.fs" />
     <Compile Include="Utils\Utils.fs" />
     <Compile Include="Utils\BinarySearch.fs" />
+    <Compile Include="Utils\BashRunner.fs" />
     <Compile Include="Utils\ConsoleInterop_Common.fs" />
     <Compile Include="Utils\ConsoleInterop_Linux.fs" />
     <Compile Include="Utils\ConsoleInterop_Windows.fs" />

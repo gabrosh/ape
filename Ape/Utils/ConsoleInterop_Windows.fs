@@ -63,6 +63,10 @@ extern bool private GetConsoleScreenBufferInfo(
 
 type ConsoleInterop () =
 
+    let mutable myClipboardType = None
+
+    let invalidClipboardType = "Invalid clipboard type"
+    
     interface IConsoleInterop with
 
         member _.DisableExitOnCtrlC () =
@@ -110,6 +114,31 @@ type ConsoleInterop () =
         member _.GetCapsLock () =
             Console.CapsLock
 
+        member _.GetDefaultClipboardType () =
+            ClipboardType.windows
+
+        member _.IsClipboardTypeSupported (clipboardType: ClipboardType) = 
+            match clipboardType with
+            | ClipboardType.windows -> true
+            | _                     -> false
+
+        member _.SetClipboardType (clipboardType: ClipboardType) =
+            myClipboardType <- Some clipboardType
+            
+        member _.GetClipboardText () =
+            match myClipboardType with
+            | Some ClipboardType.windows ->     
+                TextCopy.ClipboardService.GetText ()
+            | _ ->
+                invalidOp invalidClipboardType
+
+        member _.SetClipboardText text =
+            match myClipboardType with
+            | Some ClipboardType.windows ->     
+                TextCopy.ClipboardService.SetText text
+            | _ ->
+                invalidOp invalidClipboardType
+            
     /// Returns information about the specified console screen buffer.
     member private _.GetConsoleScreenBufferInfo () =
         let handle = GetStdHandle STD_OUTPUT_HANDLE

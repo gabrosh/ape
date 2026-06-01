@@ -1,8 +1,8 @@
 ﻿module Registers
 
 open System.Collections.Generic
-open TextCopy
 
+open ConsoleInterop_Specific
 open DataTypes
 open Register
 
@@ -136,7 +136,7 @@ type Registers () =
 
         this.CreateOrClearRegister name
 
-        let text = ClipboardService.GetText ()
+        let text = consoleInterop.GetClipboardText ()
         if text <> null then
             myRegisters[name].SetFromString text
 
@@ -146,9 +146,9 @@ type Registers () =
 
         if myRegisters.ContainsKey name then
             let text = myRegisters[name].GetAsString ()
-            ClipboardService.SetText text
+            consoleInterop.SetClipboardText text
         else
-            ClipboardService.SetText ""
+            consoleInterop.SetClipboardText ""
 
     member private _.CreateOrClearRegister name =
         if not (myRegisters.ContainsKey name) then

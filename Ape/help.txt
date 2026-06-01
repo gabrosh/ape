@@ -407,30 +407,33 @@ When unspecified, the command is applied on the most local scope ("buffer" or "e
 
 settings         abbr.  default  valid values
 
-colorScheme      cs     rgbDark  dark            color scheme
+colorScheme      cs     rgbDark  dark             color scheme
                                  light
                                  rgbDark
                                  rgbLight
-encoding         enc    utf-8    .NET encodings  file encoding
-strictEncoding   se     true     false true      raise an error on invalid bytes read from file
-fileFormat       ff     dos      dos unix mac    format of new line separator used for writing to a file
-newLineAtEof     nae    true     false true      append a new line separator at EOF when writing to a file
-                                                 (doesn't apply for a single empty line)
-readOnly         ro     false    false true      file opened as read-only (viewing mode)
-reloadAsLogFile  rlf    false    false true      when reloading a file, load only newly appended lines
-maxSavedUndos    msu    25       1 to ...        maximum count of retained saved undos
-reSearchMatching rsm    true     false true      re-search for matchings after the buffer's content change
-recursionLimit   rl     1000     1 to ...        recursion limit for a sequence of keys from key mapping
-wrapLines        wl     false    false true      wrap lines when displaying them
-wrapAtWord       waw    true     false true      wrap lines at word when displaying them
-showLineNumbers  sln    false    false true      show line numbers on the left side of the text area
-tabStop          ts     4        1 to 99         count of spaces in a single tab stop
-tabBySpaces      tbs    true     false true      tab and indent by space characters
-scrollOffset     so     3        0 to 99         count of characters always displayed near the main cursor
-cursorBeforeEol  cbe    false    false true      put cursor at EOL instead of the last line character
-                                                 (applies to some of "cursor movement" commands)
-useKittyKeys     ukk    false    false true      use Kitty keyboard protocol for keyboard input
-                                                 (settable only in configuration file)
+encoding         enc    utf-8    .NET encodings   file encoding
+strictEncoding   se     true     false true       raise an error on invalid bytes read from file
+fileFormat       ff     dos      dos unix mac     format of new line separator used for writing to a file
+newLineAtEof     nae    true     false true       append a new line separator at EOF when writing to a file
+                                                  (doesn't apply for a single empty line)
+readOnly         ro     false    false true       file opened as read-only (viewing mode)
+reloadAsLogFile  rlf    false    false true       when reloading a file, load only newly appended lines
+maxSavedUndos    msu    25       1 to ...         maximum count of retained saved undos
+reSearchMatching rsm    true     false true       re-search for matchings after the buffer's content change
+recursionLimit   rl     1000     1 to ...         recursion limit for a sequence of keys from key mapping
+wrapLines        wl     false    false true       wrap lines when displaying them
+wrapAtWord       waw    true     false true       wrap lines at word when displaying them
+showLineNumbers  sln    false    false true       show line numbers on the left side of the text area
+tabStop          ts     4        1 to 99          count of spaces in a single tab stop
+tabBySpaces      tbs    true     false true       tab and indent by space characters
+scrollOffset     so     3        0 to 99          count of characters always displayed near the main cursor
+cursorBeforeEol  cbe    false    false true       put cursor at EOL instead of the last line character
+                                                  (applies to some of "cursor movement" commands)
+useKittyKeys     ukk    false    false true       use Kitty keyboard protocol for keyboard input
+                                                  (settable only in configuration file)
+clipboardType    ct     windows  windows          system clipboard type (on Windows OS)
+                        x11      x11 wayland wsl  system clipboard type (on Linux OS)
+                                                  (settable only in configuration file)
 
 
 Key mappings -------------------------------------------------------------------

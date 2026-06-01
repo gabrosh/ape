@@ -26,7 +26,7 @@ let private getOSPlatform () =
 /// OS platform we are running on.
 let osPlatform = getOSPlatform ()
 
-/// This instance provides OS platform dependent methods.
+/// This instance provides OS platform-dependent methods.
 let consoleInterop =
     match osPlatform with
     | Windows -> ConsoleInterop_Windows.ConsoleInterop () :> IConsoleInterop

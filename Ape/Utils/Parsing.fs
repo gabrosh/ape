@@ -2,6 +2,8 @@
 
 type FUFF = FileUtils.FileFormat
 
+type CICT = ConsoleInterop_Common.ClipboardType
+
 // parsing user input
 
 let parseBool (value: string) =
@@ -28,3 +30,8 @@ let parseFileFormat (value: string) =
     match System.Enum.TryParse<FUFF> value with
     | true, x -> Ok x
     | _       -> Error $"Must be FileFormat: '{value}'"
+
+let parseClipboardType (value: string) =
+    match System.Enum.TryParse<CICT> value with
+    | true, x -> Ok x
+    | _       -> Error $"Must be ClipboardType: '{value}'"

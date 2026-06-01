@@ -57,6 +57,9 @@ let complete_set_value _context (argsMap: ArgsMap) (argInCompl: StringInCompl) =
             | Settings.FileFormats _ ->
                 FileUtils.fileFormatsArray
                 |> keepArgsStartingWith argInCompl
+            | Settings.ClipboardTypes _ ->
+                ConsoleInterop_Common.clipboardTypesArray
+                |> keepArgsStartingWith argInCompl
             | Settings.Ints    _ ->
                 seq { ForList "#int" }
             | Settings.Strings _ ->

@@ -142,7 +142,7 @@ let dispatchKey isToConsole mode keyPrefix key =
     | _ ->
         (Continue mode, keyPrefix)
 
-/// Dispatches a key sequence recusively.
+/// Dispatches a key sequence recursively.
 [<TailCall>]
 let rec dispatchKeySequence mode keyPrefix keys recursionLimit recursions =
     match keys with
@@ -268,16 +268,36 @@ let rec runMainLoop () =
 
 // main function
 
-let getUseKittyKeysSetting () =
+let getBoolSetting name =
     let settings = textArea.CurrentSettings
 
-    getValueBool settings Name.useKittyKeys
+    getValueBool settings name  
 
-let setUseKittyKeysSetting useKittyKeys =
+let setBoolSettingAsFixed name value =
     let settings = textArea.CurrentSettings
     
-    setValueAsFixed settings (Some Scope.``global``) Name.useKittyKeys
-        (if useKittyKeys then "true" else "false") |> ignore
+    setValueAsFixed settings (Some Scope.``global``) name
+        (if value then "true" else "false") |> ignore
+
+let getClipboardTypeSetting name =
+    let settings = textArea.CurrentSettings
+
+    getValueClipboardType settings name
+    
+let setClipboardTypeSettingAsFixed name value =
+    let settings = textArea.CurrentSettings
+    
+    setValueAsFixed settings (Some Scope.``global``) name
+        (value.ToString ()) |> ignore
+
+let applySettings () =
+    let useKittyKeys = getBoolSetting Name.useKittyKeys
+    let useKittyKeys' = consoleInputSource.Initialize useKittyKeys 
+    setBoolSettingAsFixed Name.useKittyKeys useKittyKeys'
+    
+    let clipboardType = getClipboardTypeSetting Name.clipboardType
+    consoleInterop.SetClipboardType clipboardType
+    setClipboardTypeSettingAsFixed Name.clipboardType clipboardType
 
 [<EntryPoint>]
 let main argv =
@@ -352,10 +372,7 @@ let main argv =
     //let elapsedMs = stopWatch.ElapsedMilliseconds;
     //UserMessages.logInfo (elapsedMs.ToString ())
 
-    let useKittyKeys = getUseKittyKeysSetting ()    
-    let useKittyKeys' = consoleInputSource.Initialize useKittyKeys    
-    setUseKittyKeysSetting useKittyKeys'
-    
+    applySettings ()    
     runMainLoop ()
 
     (textArea   :> IDisposable).Dispose ()
