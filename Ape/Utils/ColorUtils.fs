@@ -104,7 +104,7 @@ let private parseScheme (schemeElement: JsonElement) (schemeName: string) =
             statusError        = parseCharColors (schemeElement.GetProperty "statusError"       )
         }
     with
-        | :? KeyNotFoundException as ex ->
+        | :? KeyNotFoundException ->
             raise (ColorException $"Wrong format in color scheme '{schemeName}'")
 
 let private readColorsFile () =
@@ -115,7 +115,7 @@ let private readColorsFile () =
         let jsonDocument = JsonDocument.Parse jsonContent
         jsonDocument.RootElement
     with
-        | :? FileNotFoundException as ex ->
+        | :? FileNotFoundException ->
             raise (ColorException $"Can't read color definitions file: '{colorsFileName}'")
         | :? JsonException ->
             raise (ColorException $"Wrong format of color definitions file: '{colorsFileName}'")
@@ -131,7 +131,7 @@ let reloadColors () =
             try
                 root.GetProperty("defaultScheme").GetString();
             with
-                | :? KeyNotFoundException as ex ->
+                | :? KeyNotFoundException ->
                     raise (ColorException $"Missing 'defaultScheme' attribute in color definitions file")
         
         // Parse schemes.
@@ -139,7 +139,7 @@ let reloadColors () =
             try
                 root.GetProperty("schemes").EnumerateObject()
             with
-                | :? KeyNotFoundException as ex ->
+                | :? KeyNotFoundException ->
                     raise (ColorException $"Missing 'schemes' attribute in color definitions file")
 
         let newSchemesMap =

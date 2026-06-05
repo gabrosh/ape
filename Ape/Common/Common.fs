@@ -1,12 +1,9 @@
 ﻿module Common
 
-open System
-
 open Commands.InCommands
 open Commands.OutCommands
 open Context
 open DataTypes
-open Position
 open PositionClassifier
 open Selection
 

@@ -19,7 +19,7 @@ type ConsoleInterop () =
                     arg.Cancel <- true
             )
 
-        /// Not available this OS platform.
+        /// Not available on this OS platform.
         member _.SetConsoleOutputMode () =
             ()
 

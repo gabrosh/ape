@@ -200,7 +200,7 @@ let makePromptContext (mainContext: MainContext) (extraContext: ExtraContext) =
         cursorBeforeEol     = mainContext.cursorBeforeEol
     }
 
-let makeRendereringContext (mainContext: MainContext) =
+let makeRenderingContext (mainContext: MainContext) =
     {
         colorScheme         = mainContext.colorScheme
         windowWidth         = mainContext.windowWidth

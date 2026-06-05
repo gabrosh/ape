@@ -383,9 +383,9 @@ type ModifyingPerformer (
         if not (mySelection.first = mySelection.last) then
             invalidOp ""
 
-        let rigthKept = mySelection.first
-        let first = rigthKept.Sub 0 count
-        let last  = rigthKept.Sub 0 1
+        let rightKept = mySelection.first
+        let first = rightKept.Sub 0 count
+        let last  = rightKept.Sub 0 1
         let deleteSpec = myAccessor.GetDeleteSpec first last
         this.DoDelete deleteSpec.first deleteSpec.rightKept
 

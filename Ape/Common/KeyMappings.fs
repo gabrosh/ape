@@ -66,7 +66,7 @@ let rec private mapKeyRec keyMappings scope modeKeyTriple keySeq =
     if keyMappings.scope = scope then
         keyMappings.dict[modeKeyTriple] <- keySeq
     else
-        keyMappings.dict.Remove (modeKeyTriple) |> ignore
+        keyMappings.dict.Remove modeKeyTriple |> ignore
 
         if keyMappings.parent.IsSome then
             mapKeyRec keyMappings.parent.Value scope modeKeyTriple keySeq

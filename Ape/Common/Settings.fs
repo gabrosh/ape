@@ -214,7 +214,7 @@ let private isScopeInvalid settings scope =
 let private isNameInScopeInvalid scope name =
     scope = Scope.extract && (
         match name with
-        // Buffers extract is read-only.
+        // Buffer extract is read-only.
         | Name.encoding
         | Name.strictEncoding
         | Name.fileFormat

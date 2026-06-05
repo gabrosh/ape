@@ -804,7 +804,7 @@ type TextArea (
         | None   -> this.ApplySettings ()
                     Ok ()
 
-    member __.DeleteBuffer () =
+    member _.DeleteBuffer () =
         myBuffers.DeleteBuffer ()
         applyBufferSwitch ()
 

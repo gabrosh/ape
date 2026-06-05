@@ -24,7 +24,7 @@ let private linesBumperLength = 100
 // lines chunk length corresponds to lines count soft limit of a possible match
 let private linesChunkLength  = 5000
 
-// bumber for lookbehind, two chunks for a possible match, bumber for lookahead
+// bumper for lookbehind, two chunks for a possible match, bumper for lookahead
 let private lineSpecsCapacity =
     linesBumperLength + 2 * linesChunkLength + linesBumperLength
 

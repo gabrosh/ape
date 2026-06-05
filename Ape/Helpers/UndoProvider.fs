@@ -85,7 +85,7 @@ let private goOneStateBack i j =
 
 /// UndoProvider registers, manages and provides undo states. Undo state can be
 /// named by several names and can contain several selections registers. This class
-/// also maintains information about which undo state is the the last state saved
+/// also maintains information about which undo state is the last state saved
 /// to the file.
 
 type UndoProvider (

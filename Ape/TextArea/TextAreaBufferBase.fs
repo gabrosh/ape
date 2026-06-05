@@ -1,7 +1,6 @@
 ﻿module TextAreaBufferBase
 
 open System
-open System.Collections.Immutable
 
 open Commands.InCommands
 open Common

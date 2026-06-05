@@ -175,7 +175,7 @@ type Selections (mySelections: ResizeArray<Selection>) =
 
     /// Returns sorted selected ranges and sorted cursors for lines in interval
     /// <startLine, endLine>. Selected ranges don't overlap and those that touch each other
-    /// are not joined together. Cursors on the same position are not merged into one.
+    /// are not joined together. Cursors at the same position are not merged into one.
     member _.GetSelectedRangesAndCursors startLine endLine =
         let cursors = ResizeArray<Position> ()
         let ranges  = ResizeArray<TextRange> ()

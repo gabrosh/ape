@@ -12,7 +12,7 @@ type private Regex = System.Text.RegularExpressions.Regex
 
 /// MatchRanges holds results of searching for regex matches as a dictionary of
 /// TextRanges for the main group and, optionally, several named groups. It provides
-/// information about the groups, and can perform clearing or re-searching with
+/// information about the groups and can perform clearing or re-searching with
 /// the last used regex.
 
 type MatchRanges (
@@ -139,7 +139,7 @@ type MatchRanges (
     member internal _.ClearSearchAux () =
         myTextRanges <- makeTextRangesGroups ()
 
-    /// Updates text ranges after reloading the file, according the previous state.
+    /// Updates text ranges after reloading the file, according to the previous state.
     member this.UpdateAfterReload () =
         if not this.IsCleared then
             this.ReSearch ()

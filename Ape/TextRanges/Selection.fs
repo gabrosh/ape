@@ -127,10 +127,10 @@ with
         /// Returns a new selection created by modifying selection according to deleteSpec,
         /// and a flag specifying if the selection has been eliminated by modifying it.
         member this.ApplyDelete (deleteSpec: DeleteSpec) =
-            let isElimineted, textRange =
+            let isEliminated, textRange =
                 this.AsTextRange.ApplyDelete deleteSpec
 
-            (isElimineted, this.MakeApplied textRange)
+            (isEliminated, this.MakeApplied textRange)
 
         /// Returns a new selection created by modifying selection according to one-line insertSpec.
         member this.ApplyOneLineInsert (insertSpec: OneLineInsertSpec) =
@@ -142,10 +142,10 @@ with
         /// Returns a new selection created by modifying selection according to one-line deleteSpec,
         /// and a flag specifying if the selection has been eliminated by modifying it.
         member this.ApplyOneLineDelete (deleteSpec: OneLineDeleteSpec) =
-            let isElimineted, textRange =
+            let isEliminated, textRange =
                 this.AsTextRange.ApplyOneLineDelete deleteSpec
 
-            (isElimineted, this.MakeApplied textRange)
+            (isEliminated, this.MakeApplied textRange)
 
 let Selection_Zero = {
     first     = Position_Zero

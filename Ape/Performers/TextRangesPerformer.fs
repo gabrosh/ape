@@ -78,7 +78,7 @@ type TextRangesPerformer (
 
         ,
 
-        // This is needed also for FillWithChar, ToUppercase and Invercase
+        // This is needed also for FillWithChar, ToUppercase and InvertCase
         // as StartApplyingModifications in TextAreaTextRanges class, which clears
         // the selections' wanted columns, is called for all TextRanges commands.
         [SetHardWantedColumn; SetSoftWantedColumn]

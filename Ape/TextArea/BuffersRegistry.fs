@@ -3,7 +3,6 @@
 open System
 
 open Context
-open DataTypes
 open TextAreaBuffer
 open TextAreaBufferExtract
 open TextAreaExtract

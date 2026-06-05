@@ -83,9 +83,9 @@ type ConsoleRenderer (
     myStatusArea:   StatusArea
 ) =
     let mutable myRenderingContext =
-        makeRendereringContext myContextRef.Value
+        makeRenderingContext myContextRef.Value
     let handleContextChanged () =
-        myRenderingContext <- makeRendereringContext myContextRef.Value
+        myRenderingContext <- makeRenderingContext myContextRef.Value
     let myContextChangedDisposable =
         myContextRef.Subscribe handleContextChanged
 

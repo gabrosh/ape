@@ -159,7 +159,7 @@ type PromptModifying (
         delegateFun (PasteBeforeAux (register, true))
         this.StopApplyingModifications ()
 
-    // delagating
+    // delegating
 
     // simplified version of PromptBasic.DelegateBasicCommand
     member private this.DelegateCommonCommand command =

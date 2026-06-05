@@ -265,7 +265,7 @@ type SkipList<'T> (levelsCount: int, maxSize: int) =
     /// Gets item at index.
     member this.Get index =
         if index < 0 || index > myCount then
-            raise (new ArgumentOutOfRangeException "index")
+            raise (ArgumentOutOfRangeException "index")
 
         let struct (node, accSize) = this.GetNodeAndAccSize index
 
@@ -274,7 +274,7 @@ type SkipList<'T> (levelsCount: int, maxSize: int) =
     /// Sets item at index.
     member this.Set index (item: 'T) =
         if index < 0 || index > myCount then
-            raise (new ArgumentOutOfRangeException "index")
+            raise (ArgumentOutOfRangeException "index")
 
         let struct (node, accSize) = this.GetNodeAndAccSize index
         
@@ -287,7 +287,7 @@ type SkipList<'T> (levelsCount: int, maxSize: int) =
     /// Returns count items starting at index as a sequence.
     member this.GetRangeSeq index count =
         if index < 0 || index + count > myCount then
-            raise (new ArgumentOutOfRangeException "index, count")
+            raise (ArgumentOutOfRangeException "index, count")
 
         let struct (startNode, accSize) = this.GetNodeAndAccSize index
 
@@ -336,7 +336,7 @@ type SkipList<'T> (levelsCount: int, maxSize: int) =
     /// Adds items with given itemsCount to the end.
     member this.AddItems (items: 'T seq) itemsCount =
         if itemsCount = 0 then
-            raise (new ArgumentException "items")
+            raise (ArgumentException "items")
 
         let index = myCount
 
@@ -381,7 +381,7 @@ type SkipList<'T> (levelsCount: int, maxSize: int) =
     /// Inserts item at index.
     member this.Insert index (item: 'T) =
         if index < 0 || index > myCount then
-            raise (new ArgumentOutOfRangeException "index")
+            raise (ArgumentOutOfRangeException "index")
 
         this.SetNodesToUpdateAndAccSizes index
 
@@ -424,9 +424,9 @@ type SkipList<'T> (levelsCount: int, maxSize: int) =
     /// Inserts items with given itemsCount at index.
     member this.InsertItems index (items: 'T seq) itemsCount =
         if index < 0 || index > myCount then
-            raise (new ArgumentOutOfRangeException "index")
+            raise (ArgumentOutOfRangeException "index")
         if itemsCount = 0 then
-            raise (new ArgumentException "items")
+            raise (ArgumentException "items")
 
         this.SetNodesToUpdateAndAccSizes index
 
@@ -473,7 +473,7 @@ type SkipList<'T> (levelsCount: int, maxSize: int) =
     /// Removes count items starting at index.
     member this.RemoveRange index count =
         if index < 0 || index + count > myCount then
-            raise (new ArgumentOutOfRangeException "index, count")
+            raise (ArgumentOutOfRangeException "index, count")
 
         let mutable remaining = count
 

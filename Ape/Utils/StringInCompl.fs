@@ -5,9 +5,9 @@ open System.Text
 /// QuoteType is the type of the quotation prefix for a string to be completed.
 
 type QuoteType =
-    | NotQuoted  // string without any quotation prefix, eg. asd
-    | Quoted     // string with quotation prefix, eg. "asd
-    | AtQuoted   // string with at-quotation prefix, eg. @"asd
+    | NotQuoted  // string without any quotation prefix, e.g. asd
+    | Quoted     // string with quotation prefix, e.g. "asd
+    | AtQuoted   // string with at-quotation prefix, e.g. @"asd
 
 /// StringInCompl represents a string to be completed.
 
@@ -25,7 +25,7 @@ let noStringInCompl = {
 }
 
 /// Unescapes quoted string. Replaces every pair of \<char> with <char>,
-/// with the exception of \t, which is replaced by tab character.
+/// except \t, which is replaced by tab character.
 let unescapeQuoted (s: string) =
     let sb = StringBuilder ()
 

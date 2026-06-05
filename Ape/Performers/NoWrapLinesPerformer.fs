@@ -224,8 +224,8 @@ type NoWrapLinesPerformer (
         let top = min this.LastLine (myDisplayPos.line + scrollRows)
 
         let maxTop = this.GetMaxTop ()
-        let ammendedTop = min maxTop top
-        let top = max ammendedTop myDisplayPos.line
+        let amendedTop = min maxTop top
+        let top = max amendedTop myDisplayPos.line
 
         myDisplayPos <- { myDisplayPos with line = top }
 

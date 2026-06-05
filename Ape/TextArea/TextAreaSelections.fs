@@ -28,7 +28,7 @@ type TextAreaSelections (
 
         this.StoreBasicState ()
 
-    // delagating
+    // delegating
 
     member private _.DelegateSelectionsCommand command =
         myDispatcher.SelectionsPerformer.PerformCommand

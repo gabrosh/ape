@@ -19,7 +19,7 @@ type PromptUndoRedo (
 
         this.StoreBasicState ()
 
-    // delagating
+    // delegating
 
     member private this.DelegateUndoRedoCommand command =
         let state: UndoRedoCommandInState = {

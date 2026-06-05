@@ -147,7 +147,7 @@ let private promptSelectedRegister promptType isUpper c =
 // key dispatching in various editor modes
 
 let private dispatchNormalMain
-    (userMessages: UserMessages.UserMessages)
+    (_userMessages: UserMessages.UserMessages)
     (textArea: TextArea) (prompt: Prompt)
     key =
 

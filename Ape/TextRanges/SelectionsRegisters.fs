@@ -57,7 +57,7 @@ let getRegisterName register =
     | DefaultRegister -> defaultRegisterName
     | SelectedRegister (_isUpper, c) -> c
 
-/// SelectionsRegisters holds a list of selections binded to a name
+/// SelectionsRegisters holds a list of selections bound to a name
 /// and modifies them according to given modifying specifications.
 
 type SelectionsRegisters () =

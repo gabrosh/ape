@@ -330,8 +330,8 @@ type WrapLinesPerformer (
         let top = this.FindLineRowDown myDisplayPos.line myDisplayPos.lineRow scrollRows
 
         let maxTop = this.GetMaxTop ()
-        let ammendedTop = getLower maxTop top
-        let top = getGreater ammendedTop myDisplayPos
+        let amendedTop = getLower maxTop top
+        let top = getGreater amendedTop myDisplayPos
 
         myDisplayPos <- top
 

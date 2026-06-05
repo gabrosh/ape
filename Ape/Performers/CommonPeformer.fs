@@ -17,7 +17,7 @@ open WrappedRef
 let private compareFirstTo (first: Position) (a: TextRange) =
     compareTo first a.first
 
-/// CommonPerformer is performer for commands independent from NoWrap and WrapLines modes.
+/// CommonPerformer is performer for commands independent of NoWrap and WrapLines modes.
 /// It performs one command on a single selection at a time.
 /// In addition, it provides input and output WantedColumnsActions for the command
 /// to be performed.

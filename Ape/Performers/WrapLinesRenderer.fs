@@ -71,7 +71,7 @@ let private getLineCharsArrayFromChars (context: AreaContext) chars =
 
     lineChars |> Seq.toArray
 
-/// Returns lineChars splitted to separate rows.
+/// Returns lineChars split to separate rows.
 /// Reaching line end is indicated by cOpt = EOL and NoChar, but char, lineColumn, row and column
 /// have still valid/usable values.
 let private splitLineCharsToRows (context: AreaContext) lineChars =
@@ -281,7 +281,7 @@ type WrapLinesRenderer (
             if myLinesCache.Count > maxCount then
                 this.TrimLinesCache firstLine lastLine
 
-    /// Returns display rows for given rows. line must be line
+    /// Returns display rows for given rows. line must be the starting
     /// index of rows and it's used for highlighting purposes.
     member private _.GetLineDisplayRows
         rows firstRow line (positionClassifier: PositionClassifier) =

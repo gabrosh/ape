@@ -43,7 +43,7 @@ let getPromptModeDisplayChars colorScheme mode (keyPrefix: Key option) =
             let p, c = getPromptPrefixAndChar promptType
             makeDisplayChars p c colorScheme colorScheme.promptModePrefix
 
-    | PromptInsertMode (promptType, (PromptInsertPasteState isUpper))
+    | PromptInsertMode (promptType, PromptInsertPasteState isUpper)
      -> let p, _ = getPromptPrefixAndChar promptType
         let c = if isUpper then 'R' else 'r'
         makeDisplayChars p c colorScheme colorScheme.promptInsertPaste
@@ -64,12 +64,12 @@ let getPromptModeDisplayChars colorScheme mode (keyPrefix: Key option) =
             let p, c = getPromptPrefixAndChar promptType
             makeDisplayChars p c colorScheme colorScheme.statusNormalMode
 
-    | PromptNormalMode (promptType, (PromptRegisterState (ToSelectRegisterState isUpper)))
+    | PromptNormalMode (promptType, PromptRegisterState (ToSelectRegisterState isUpper))
      -> let p, _ = getPromptPrefixAndChar promptType
         let c = if isUpper then '"' else '''
         makeDisplayChars p c colorScheme colorScheme.statusNormalMode
 
-    | PromptNormalMode (promptType, (PromptRegisterState (SelectedRegisterState (_isUpper, c))))
+    | PromptNormalMode (promptType, PromptRegisterState (SelectedRegisterState (_isUpper, c)))
      -> let p, _ = getPromptPrefixAndChar promptType
         makeDisplayChars p c colorScheme colorScheme.promptRegister
 
