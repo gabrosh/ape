@@ -89,10 +89,14 @@ type ApplicationState =
     | Continue of Mode  // continue running in specified mode
     | Exit              // exit the application immediately
 
-let mutable isConsoleOK = true
+let isWindowSizeOK windowSize =
+       windowSize.width  > 0
+    && windowSize.height > 0
+
+let mutable isConsoleOK = isWindowSizeOK windowSize
 
 let applyWindowSize windowSize =
-    if windowSize.width > 0 then
+    if isWindowSizeOK windowSize then
         consoleContextRef.Value <-
             makeConsoleContext windowSize
 
@@ -243,12 +247,15 @@ let rec mainLoop mode keyPrefix =
         else
             mainLoop mode keyPrefix
             
+    | FatalExceptionCaught ex ->
+        userMessages.RegisterException ex
+        
     | ExceptionCaught ex ->
         userMessages.RegisterException ex
         if isConsoleOK then
             rerender mode keyPrefix
         mainLoop mode keyPrefix
-
+        
 [<TailCall>]
 let rec runMainLoop () =
     let wasExceptionCaught = tryCall userMessages (
@@ -299,8 +306,7 @@ let applySettings () =
     consoleInterop.SetClipboardType clipboardType
     setClipboardTypeSettingAsFixed Name.clipboardType clipboardType
 
-[<EntryPoint>]
-let main argv =
+let mainAux argv =
     consoleInterop.DisableExitOnCtrlC ()
     consoleInterop.SetConsoleOutputMode ()
 
@@ -388,3 +394,12 @@ let main argv =
     Console.CursorVisible   <- true
 
     0
+
+[<EntryPoint>]
+let main argv =
+    try
+        mainAux argv
+    with
+        | ex ->
+            userMessages.RegisterException ex
+            1

@@ -11,9 +11,10 @@ open ConsoleInterop_Specific
 let private windowSizePollingInterval = 100  // ms
 
 type ConsoleInput =
-    | KeyboardInputRead of Key
-    | WindowSizeChanged of WindowSize
-    | ExceptionCaught   of Exception
+    | KeyboardInputRead    of Key
+    | WindowSizeChanged    of WindowSize
+    | FatalExceptionCaught of Exception
+    | ExceptionCaught      of Exception
 
 /// ConsoleInputSource provides console input - either the next input key
 /// or the new console window size after resizing the console window.
@@ -74,6 +75,8 @@ type ConsoleInputSource () as this_ =
                 if key <> CharNoModif '\x00' then
                     myQueue.Add (KeyboardInputRead key)
             with
+                | :? ConsoleKeys.FatalException as ex ->
+                    myQueue.Add (FatalExceptionCaught ex)
                 | ex ->
                     myQueue.Add (ExceptionCaught ex)
 

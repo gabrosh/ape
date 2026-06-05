@@ -22,6 +22,7 @@ It's intended to be used as a Swiss knife for structural text editing and log or
 - Command name and command arguments completion in command prompt
 - Macro recording and editing
 - Light and dark color schemes
+- Support for Kitty Keyboard Protocol
 
 ## Non-goals
 - Mouse support

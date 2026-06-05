@@ -3,6 +3,8 @@ module KittyKeysAux
 open System
 open System.Text
 
+open ConsoleKeys
+
 [<Flags>]
 type KittyModifiers =
     | None      = 0b00000000
@@ -71,7 +73,7 @@ let readInitResponse () =
     let mutable keyChar = '\x00'
 
     while keyChar <> 'c' do
-        let keyInfo = Console.ReadKey true
+        let keyInfo = consoleReadKey ()
         keyChar <- keyInfo.KeyChar
         sb.Append keyChar |> ignore
 
@@ -148,7 +150,7 @@ let private readEscaped () =
     let mutable doContinue = true
 
     while doContinue do
-        let keyInfo = Console.ReadKey true
+        let keyInfo = consoleReadKey ()
         let keyChar = keyInfo.KeyChar
 
         sb.Append keyChar |> ignore
@@ -166,11 +168,11 @@ let private readEscaped () =
 
 /// Reads one input key from the console.
 let readInputKey () =
-    let keyInfo = Console.ReadKey true
+    let keyInfo = consoleReadKey ()
     let keyChar = keyInfo.KeyChar
     
     if keyChar = '\x1B' then
-        let keyInfo' = Console.ReadKey true
+        let keyInfo' = consoleReadKey ()
         let keyChar' = keyInfo'.KeyChar
         
         if keyChar' = '\x5b' then

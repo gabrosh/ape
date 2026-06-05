@@ -148,6 +148,6 @@ let keyInfoToKey (keyInfo: ConsoleKeyInfo) capsLock =
 
 /// Reads one input key from the console.
 let readKey () =
-    let keyInfo = Console.ReadKey true
+    let keyInfo = consoleReadKey ()
     let capsLock = consoleInterop.GetCapsLock ()
     keyInfoToKey keyInfo capsLock

@@ -2,6 +2,15 @@ module ConsoleKeys
 
 open System
 
+exception FatalException of string
+
+let consoleReadKey () =
+    try
+        Console.ReadKey true
+    with 
+        | ex ->
+            raise (FatalException ex.Message)
+
 type InputKey =
   | Backspace    = 8
   | Tab          = 9
