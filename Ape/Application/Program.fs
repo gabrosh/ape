@@ -125,7 +125,8 @@ let dispatchKey isToConsole mode keyPrefix key =
 
     | None, key ->
         let result, areasToRender =
-            dispatchKey userMessages textArea prompt registers mode key
+            KeyDispatching.dispatchKey
+                userMessages textArea prompt registers mode key
 
         match result with
         | Performed mode nextMode ->
