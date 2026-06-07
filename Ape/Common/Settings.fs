@@ -37,24 +37,24 @@ let parseScope (s: string) =
 
 type Name =
     | colorScheme      = 1
-    | encoding         = 2
-    | strictEncoding   = 3
-    | fileFormat       = 4
-    | newLineAtEof     = 5
-    | readOnly         = 6
-    | reloadAsLogFile  = 7
-    | maxSavedUndos    = 8
-    | reSearchMatching = 9
-    | recursionLimit   = 10
-    | wrapLines        = 11
-    | wrapAtWord       = 12
-    | showLineNumbers  = 13
-    | tabStop          = 14
-    | tabBySpaces      = 15
-    | scrollOffset     = 16
-    | cursorBeforeEol  = 17
-    | useKittyKeys     = 18
-    | clipboardType    = 19
+    | useKittyKeys     = 2
+    | clipboardType    = 3
+    | encoding         = 4
+    | strictEncoding   = 5
+    | fileFormat       = 6
+    | newLineAtEof     = 7
+    | readOnly         = 8
+    | reloadAsLogFile  = 9
+    | maxSavedUndos    = 10
+    | reSearchMatching = 11
+    | recursionLimit   = 12
+    | wrapLines        = 13
+    | wrapAtWord       = 14
+    | showLineNumbers  = 15
+    | tabStop          = 16
+    | tabBySpaces      = 17
+    | scrollOffset     = 18
+    | cursorBeforeEol  = 19
 
 let nameToString (name: Name) =
     name.ToString ()
@@ -72,6 +72,8 @@ let parseName (s: string) =
     | None     ->
         match s with
         | "cs"  -> Ok Name.colorScheme
+        | "ukk" -> Ok Name.useKittyKeys
+        | "ct"  -> Ok Name.clipboardType
         | "enc" -> Ok Name.encoding
         | "se"  -> Ok Name.strictEncoding
         | "ff"  -> Ok Name.fileFormat
@@ -88,8 +90,6 @@ let parseName (s: string) =
         | "tbs" -> Ok Name.tabBySpaces
         | "so"  -> Ok Name.scrollOffset
         | "cbe" -> Ok Name.cursorBeforeEol
-        | "ukk" -> Ok Name.useKittyKeys
-        | "ct"  -> Ok Name.clipboardType
         | _     -> Error $"Invalid setting's name: '{s}'"
 
 type Value =
@@ -149,16 +149,17 @@ let specsMap =
             isValid  = isInMap ColorUtils.schemesMap
         )
 
-        Name.encoding         , Strings        (
-            default_ = FileUtils.defaultEncoding,
-            isValid  = isInSet FileUtils.encodingsSet
-        )
-
         Name.clipboardType    , ClipboardTypes (
             default_ = consoleInterop.GetDefaultClipboardType (),
             isValid  = consoleInterop.IsClipboardTypeSupported
         )
 
+        Name.encoding         , Strings        (
+            default_ = FileUtils.defaultEncoding,
+            isValid  = isInSet FileUtils.encodingsSet
+        )
+
+        Name.useKittyKeys     , Bools          ( default_ = false , isValid = all            )
         Name.strictEncoding   , Bools          ( default_ = true  , isValid = all            )
         Name.fileFormat       , FileFormats    ( default_ = FUDFF , isValid = all            )
         Name.newLineAtEof     , Bools          ( default_ = true  , isValid = all            )
@@ -174,7 +175,6 @@ let specsMap =
         Name.tabBySpaces      , Bools          ( default_ = true  , isValid = all            )
         Name.scrollOffset     , Ints           ( default_ = 3     , isValid = isInRange 0 99 )
         Name.cursorBeforeEol  , Bools          ( default_ = false , isValid = all            )
-        Name.useKittyKeys     , Bools          ( default_ = false , isValid = all            )
     ]
 
 // user input values validation
