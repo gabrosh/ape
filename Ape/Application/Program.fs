@@ -202,7 +202,9 @@ let dispatchInputKey mode keyPrefix key =
         let isToConsole = keySequenceSleep > 0
 
         let result =
-            dispatchKeySequence mode None keys' recursionLimit 1 isToConsole keySequenceSleep
+            dispatchKeySequence
+                mode None keys' recursionLimit 1
+                isToConsole keySequenceSleep
         
         match result with
         | Continue mode', keyPrefix ->

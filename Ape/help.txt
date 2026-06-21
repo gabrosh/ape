@@ -411,6 +411,7 @@ colorScheme      cs     rgbDark  dark light        color scheme
                                  rgbDark rgbLight
 useKittyKeys     ukk    false    false true        use Kitty keyboard protocol for keyboard input
                                                    (settable only in configuration file)
+keySequenceSleep kss    0        0 to ...          sleep time after one step in a sequence of keys [ms]
 clipboardType    ct     windows  windows           system clipboard type (on Windows OS)
                         x11      x11 wayland wsl   system clipboard type (on Linux OS)
                                                    (settable only in configuration file)
