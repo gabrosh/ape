@@ -161,6 +161,7 @@ let specialToInputKey = Map [
 ]
 
 let symbolToInputKey = Map [
+    ' ' , InputKey.Spacebar
     '!' , InputKey.Exclamation
     '"' , InputKey.Quotation
     '#' , InputKey.Hash

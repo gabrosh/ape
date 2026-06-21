@@ -5,12 +5,14 @@ open WrappedRef
 
 let makeContextRef windowWidth windowHeight =
     WrappedRef {
-        colorScheme      = DefaultColors.lightScheme
         windowWidth      = windowWidth
         textAreaHeight   = windowHeight - 2
         statusAreaRow    = windowHeight - 2
         completionsRow   = windowHeight - 2
         promptRow        = windowHeight - 1
+
+        colorScheme      = DefaultColors.lightScheme
+        keySequenceSleep = 0
         readOnly         = false
         reloadAsLogFile  = false
         maxSavedUndos    = 25
@@ -27,12 +29,14 @@ let makeContextRef windowWidth windowHeight =
 
 let makeContextRef_wrapLines windowWidth windowHeight wrapAtWord =
     WrappedRef {
-        colorScheme      = DefaultColors.lightScheme
         windowWidth      = windowWidth
         textAreaHeight   = windowHeight - 2
         statusAreaRow    = windowHeight - 2
         completionsRow   = windowHeight - 2
         promptRow        = windowHeight - 1
+
+        colorScheme      = DefaultColors.lightScheme
+        keySequenceSleep = 0
         readOnly         = false
         reloadAsLogFile  = false
         maxSavedUndos    = 25

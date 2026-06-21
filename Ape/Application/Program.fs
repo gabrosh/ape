@@ -107,7 +107,7 @@ let applyWindowSize windowSize =
         isConsoleOK <- false
 
 /// Dispatches a single key.
-let dispatchKey isToConsole mode keyPrefix key =
+let dispatchKey mode keyPrefix key isToConsole keySequenceSleep =
     match keyPrefix, key with
     | None, key
         when isKeyPrefix key && isKeyMappingsMode mode ->
@@ -132,6 +132,9 @@ let dispatchKey isToConsole mode keyPrefix key =
         | Performed mode nextMode ->
             if isToConsole then
                 renderAreas nextMode keyPrefix areasToRender
+            if keySequenceSleep > 0 then
+                System.Threading.Thread.Sleep keySequenceSleep
+                
             handleTextAreaUndo textArea mode nextMode
             handlePromptUndo   prompt   mode nextMode
             (Continue nextMode, None)
@@ -148,7 +151,9 @@ let dispatchKey isToConsole mode keyPrefix key =
 
 /// Dispatches a key sequence recursively.
 [<TailCall>]
-let rec dispatchKeySequence mode keyPrefix keys recursionLimit recursions =
+let rec dispatchKeySequence
+    mode keyPrefix keys recursionLimit recursions isToConsole keySequenceSleep =
+
     match keys with
     | [] ->
         (Continue mode, keyPrefix)
@@ -162,6 +167,7 @@ let rec dispatchKeySequence mode keyPrefix keys recursionLimit recursions =
                 // Replace the first key in keys with keySeq mapped to it.
                 dispatchKeySequence
                     mode None (keys' @ keysRest) recursionLimit (recursions + 1)
+                    isToConsole keySequenceSleep
             else
                 userMessages.RegisterMessage (
                     formatMessage ERROR_RECURSION_LIMIT_WAS_REACHED recursionLimit
@@ -169,11 +175,12 @@ let rec dispatchKeySequence mode keyPrefix keys recursionLimit recursions =
                 (Continue mode, None)
 
         | None ->
-            match dispatchKey false mode keyPrefix key with
+            match dispatchKey mode keyPrefix key isToConsole keySequenceSleep with
             | Continue mode', keyPrefix ->
                 if not userMessages.HasErrorOrWarningMessage then
                     dispatchKeySequence
                         mode' keyPrefix keysRest recursionLimit recursions
+                        isToConsole keySequenceSleep
                 else
                     // Stop the iteration prematurely, continue application.
                     (Continue mode', keyPrefix)
@@ -188,12 +195,19 @@ let dispatchInputKey mode keyPrefix key =
 
     match getKeySequence keyMappings mode keyPrefix key with
     | Some keys' ->
-        let mainContextRef = textArea.CurrentMainContextRef
-        let recursionLimit = mainContextRef.Value.recursionLimit
+        let mainContextRef   = textArea.CurrentMainContextRef
+        let keySequenceSleep = mainContextRef.Value.keySequenceSleep
+        let recursionLimit   = mainContextRef.Value.recursionLimit
+        
+        let isToConsole = keySequenceSleep > 0
 
-        match dispatchKeySequence mode None keys' recursionLimit 1 with
+        let result =
+            dispatchKeySequence mode None keys' recursionLimit 1 isToConsole keySequenceSleep
+        
+        match result with
         | Continue mode', keyPrefix ->
-            rerender mode' keyPrefix
+            if not isToConsole then
+                rerender mode' keyPrefix
             // Continue application.
             (Continue mode', keyPrefix)
         | Exit, _ ->
@@ -201,7 +215,7 @@ let dispatchInputKey mode keyPrefix key =
             (Exit, None)
 
     | None ->
-        dispatchKey true mode keyPrefix key
+        dispatchKey mode keyPrefix key true 0
 
 let toToggleRecording keyPrefix key =
     keyPrefix = None && key = Ctrl InputKey.Q

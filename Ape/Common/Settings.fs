@@ -38,23 +38,24 @@ let parseScope (s: string) =
 type Name =
     | colorScheme      = 1
     | useKittyKeys     = 2
-    | clipboardType    = 3
-    | encoding         = 4
-    | strictEncoding   = 5
-    | fileFormat       = 6
-    | newLineAtEof     = 7
-    | readOnly         = 8
-    | reloadAsLogFile  = 9
-    | maxSavedUndos    = 10
-    | reSearchMatching = 11
-    | recursionLimit   = 12
-    | wrapLines        = 13
-    | wrapAtWord       = 14
-    | showLineNumbers  = 15
-    | tabStop          = 16
-    | tabBySpaces      = 17
-    | scrollOffset     = 18
-    | cursorBeforeEol  = 19
+    | keySequenceSleep = 3
+    | clipboardType    = 4
+    | encoding         = 5
+    | strictEncoding   = 6
+    | fileFormat       = 7
+    | newLineAtEof     = 8
+    | readOnly         = 9
+    | reloadAsLogFile  = 10
+    | maxSavedUndos    = 11
+    | reSearchMatching = 12
+    | recursionLimit   = 13
+    | wrapLines        = 14
+    | wrapAtWord       = 15
+    | showLineNumbers  = 16
+    | tabStop          = 17
+    | tabBySpaces      = 18
+    | scrollOffset     = 19
+    | cursorBeforeEol  = 20
 
 let nameToString (name: Name) =
     name.ToString ()
@@ -73,6 +74,7 @@ let parseName (s: string) =
         match s with
         | "cs"  -> Ok Name.colorScheme
         | "ukk" -> Ok Name.useKittyKeys
+        | "kss" -> Ok Name.keySequenceSleep
         | "ct"  -> Ok Name.clipboardType
         | "enc" -> Ok Name.encoding
         | "se"  -> Ok Name.strictEncoding
@@ -160,6 +162,7 @@ let specsMap =
         )
 
         Name.useKittyKeys     , Bools          ( default_ = false , isValid = all            )
+        Name.keySequenceSleep , Ints           ( default_ = 0     , isValid = isEqOrGt  0    )
         Name.strictEncoding   , Bools          ( default_ = true  , isValid = all            )
         Name.fileFormat       , FileFormats    ( default_ = FUDFF , isValid = all            )
         Name.newLineAtEof     , Bools          ( default_ = true  , isValid = all            )

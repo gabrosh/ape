@@ -11,6 +11,7 @@ type ConsoleContext = {
 
 type SettingsContext = {
     colorScheme:         ColorSchemes.Scheme
+    keySequenceSleep:    int
     readOnly:            bool
     reloadAsLogFile:     bool
     maxSavedUndos:       int
@@ -26,14 +27,14 @@ type SettingsContext = {
 }
 
 type MainContext = {
-    colorScheme:         ColorSchemes.Scheme
-
     windowWidth:         int
     textAreaHeight:      int
     statusAreaRow:       int
     completionsRow:      int
     promptRow:           int
 
+    colorScheme:         ColorSchemes.Scheme
+    keySequenceSleep:    int
     readOnly:            bool
     reloadAsLogFile:     bool
     maxSavedUndos:       int
@@ -53,13 +54,12 @@ type ExtraContext = {
 }
 
 type AreaContext = {
-    colorScheme:         ColorSchemes.Scheme
-
     linesCount:          int
     lineNumbersWidth:    int
     textWidth:           int
     areaHeight:          int
 
+    colorScheme:         ColorSchemes.Scheme
     wrapLines:           bool
     wrapAtWord:          bool
     showLineNumbers:     bool
@@ -71,12 +71,12 @@ type AreaContext = {
 }
 
 type RenderingContext = {
-    colorScheme:         ColorSchemes.Scheme
     windowWidth:         int
     statusAreaRow:       int
     completionsRow:      int
     promptRow:           int
 
+    colorScheme:         ColorSchemes.Scheme
     tabStop:             int
 }
 
@@ -99,6 +99,7 @@ let makeConsoleContext windowSize =
 let private makeSettingsContext (settings: Settings) =
     {
         colorScheme      = getValueString settings Name.colorScheme |> getColorScheme
+        keySequenceSleep = getValueInt    settings Name.keySequenceSleep
         readOnly         = getValueBool   settings Name.readOnly
         reloadAsLogFile  = getValueBool   settings Name.reloadAsLogFile
         maxSavedUndos    = getValueInt    settings Name.maxSavedUndos
@@ -120,14 +121,14 @@ let makeMainContext (consoleContext: ConsoleContext) (settings: Settings) =
     let settingsContext = makeSettingsContext settings
 
     {
-        colorScheme      = settingsContext.colorScheme
-
         windowWidth      = windowWidth
         textAreaHeight   = windowHeight - 2
         statusAreaRow    = windowHeight - 2
         completionsRow   = windowHeight - 2
         promptRow        = windowHeight - 1
 
+        colorScheme      = settingsContext.colorScheme
+        keySequenceSleep = settingsContext.keySequenceSleep
         readOnly         = settingsContext.readOnly
         reloadAsLogFile  = settingsContext.reloadAsLogFile
         maxSavedUndos    = settingsContext.maxSavedUndos
@@ -158,13 +159,12 @@ let makeTextAreaContext (mainContext: MainContext) (lines: Lines) =
     let maxScrollOffsetColumns = (textWidth  - 1) / 2
 
     {
-        colorScheme         = mainContext.colorScheme
-
         linesCount          = lines.Count
         lineNumbersWidth    = lineNumbersWidth
         textWidth           = textWidth
         areaHeight          = areaHeight
 
+        colorScheme         = mainContext.colorScheme
         wrapLines           = mainContext.wrapLines
         wrapAtWord          = mainContext.wrapAtWord
         showLineNumbers     = mainContext.showLineNumbers
@@ -183,13 +183,12 @@ let makePromptContext (mainContext: MainContext) (extraContext: ExtraContext) =
     let maxScrollOffsetColumns = (textWidth  - 1) / 2
 
     {
-        colorScheme         = mainContext.colorScheme
-
         linesCount          = 1
         lineNumbersWidth    = 0
         textWidth           = textWidth
         areaHeight          = areaHeight
 
+        colorScheme         = mainContext.colorScheme
         wrapLines           = false
         wrapAtWord          = false
         showLineNumbers     = false
@@ -202,11 +201,12 @@ let makePromptContext (mainContext: MainContext) (extraContext: ExtraContext) =
 
 let makeRenderingContext (mainContext: MainContext) =
     {
-        colorScheme         = mainContext.colorScheme
         windowWidth         = mainContext.windowWidth
         statusAreaRow       = mainContext.statusAreaRow
         completionsRow      = mainContext.completionsRow
         promptRow           = mainContext.promptRow
+
+        colorScheme         = mainContext.colorScheme
         tabStop             = mainContext.tabStop
     }
 
