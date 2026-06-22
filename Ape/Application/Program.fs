@@ -199,6 +199,7 @@ let dispatchInputKey mode keyPrefix key =
         let keySequenceSleep = mainContextRef.Value.keySequenceSleep
         let recursionLimit   = mainContextRef.Value.recursionLimit
         
+        // Render every step of the key sequence to the console ?
         let isToConsole = keySequenceSleep > 0
 
         let result =
@@ -209,6 +210,7 @@ let dispatchInputKey mode keyPrefix key =
         match result with
         | Continue mode', keyPrefix ->
             if not isToConsole then
+                // The steps of the key sequence were not rendered yet.
                 rerender mode' keyPrefix
             // Continue application.
             (Continue mode', keyPrefix)
@@ -217,7 +219,12 @@ let dispatchInputKey mode keyPrefix key =
             (Exit, None)
 
     | None ->
-        dispatchKey mode keyPrefix key true 0
+        let keySequenceSleep = 0
+        
+        // Render the single step of the key to the console.
+        let isToConsole = true
+        
+        dispatchKey mode keyPrefix key isToConsole keySequenceSleep
 
 let toToggleRecording keyPrefix key =
     keyPrefix = None && key = Ctrl InputKey.Q
