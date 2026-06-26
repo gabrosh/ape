@@ -44,15 +44,26 @@ file (for example, extended.cfg). If the terminal emulator supports this protoco
 it's used instead of the default keyboard input method.
 
 For Kitty terminal emulator to send escape sequences correctly recognizable by Ape,
-you have to put these lines into your kitty.conf file:
+you have to put lines like these into your kitty.conf file:
 
 map f1 send_text all \x1b[11~
 map f2 send_text all \x1b[12~
 map f4 send_text all \x1b[14~
 
-For Windows Terminal you have to change the escape sequence sent for F3 to:
+For Windows Terminal to send escape sequences correctly recognizable by Ape,
+you have to put lines like these into your settings.json file:
 
-\u001b[1;1R
+"actions":
+[
+    {
+        "command":
+        {
+            "action": "sendInput",
+            "input": "\u001b[1;1R"
+        },
+        "id": "User.sendInput.F3"
+    }
+]
 
 
 Text area and Prompt area commands ---------------------------------------------
