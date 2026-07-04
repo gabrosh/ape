@@ -55,7 +55,6 @@ type CommonTest () =
     // CursorLeft/Right, CursorAfterSelection ----------------------------------
 
     [<TestCase(false, 3)>]
-    [<TestCase(true , 3)>]
     member _.CursorLeft cbe startChar =
         init cbe "abc"
         commandCount CursorRight startChar
@@ -67,7 +66,6 @@ type CommonTest () =
         commandAssertCursor CursorLeft 0
 
     [<TestCase(false)>]
-    [<TestCase(true )>]
     member _.CursorRight cbe =
         init cbe "abc"
         assertCursor 0
@@ -77,7 +75,7 @@ type CommonTest () =
         commandAssertCursor CursorRight 3
         commandAssertCursor CursorRight 3
 
-    [<TestCase(true)>]
+    [<TestCase(false)>]
     member _.CursorAfterSelection cbe =
         init cbe "abc"
         assertCursor 0
@@ -89,7 +87,6 @@ type CommonTest () =
     // CursorLeft/Right... -----------------------------------------------------
 
     [<TestCase(false, 12)>]
-    [<TestCase(true , 12)>]
     member _.CursorLeftAtWordStart cbe startChar =
         //        0123456789012
         init cbe " abc d_f:-/ "
@@ -102,7 +99,7 @@ type CommonTest () =
         commandAssertCursor CursorLeftAtWordStart  0
         commandAssertCursor CursorLeftAtWordStart  0
 
-    [<TestCase(true, 14)>]
+    [<TestCase(false, 14)>]
     member _.CursorLeftAtWordEnd_OneLine cbe startChar =
         //        012345678901234
         init cbe "  abc d_f:-/  "
@@ -115,7 +112,7 @@ type CommonTest () =
         commandAssertCursor CursorLeftAtWordEnd 0
         commandAssertCursor CursorLeftAtWordEnd 0
 
-    [<TestCase(true, 14)>]
+    [<TestCase(false, 14)>]
     member _.CursorLeftAfterWordEnd_OneLine cbe startChar =
         //        012345678901234
         init cbe "  abc d_f:-/  "
@@ -129,7 +126,6 @@ type CommonTest () =
         commandAssertCursor CursorLeftAfterWordEnd 0
 
     [<TestCase(false)>]
-    [<TestCase(true )>]
     member _.CursorRightAtWordStart cbe =
         //        0123456789012
         init cbe " abc d_f:-/ "
@@ -141,7 +137,7 @@ type CommonTest () =
         commandAssertCursor CursorRightAtWordStart 12
         commandAssertCursor CursorRightAtWordStart 12
 
-    [<TestCase(true)>]
+    [<TestCase(false)>]
     member _.CursorRightAtWordEnd_OneLine cbe =
         //        012345678901234
         init cbe "  abc d_f:-/  "
@@ -153,7 +149,7 @@ type CommonTest () =
         commandAssertCursor CursorRightAtWordEnd 14
         commandAssertCursor CursorRightAtWordEnd 14
 
-    [<TestCase(true)>]
+    [<TestCase(false)>]
     member _.CursorRightBeforeWordStart_OneLine cbe =
         //        012345678901234
         init cbe "  abc d_f:-/  "
@@ -167,13 +163,13 @@ type CommonTest () =
 
     // CursorToPairChar --------------------------------------------------------
 
-    [<TestCase(true, 1 , 1 )>]
-    [<TestCase(true, 2 , 2 )>]
-    [<TestCase(true, 3 , 4 )>]
-    [<TestCase(true, 4 , 3 )>]
-    [<TestCase(true, 6 , 11)>]
-    [<TestCase(true, 11, 6 )>]
-    [<TestCase(true, 13, 13)>]
+    [<TestCase(false, 1 , 1 )>]
+    [<TestCase(false, 2 , 2 )>]
+    [<TestCase(false, 3 , 4 )>]
+    [<TestCase(false, 4 , 3 )>]
+    [<TestCase(false, 6 , 11)>]
+    [<TestCase(false, 11, 6 )>]
+    [<TestCase(false, 13, 13)>]
     member _.CursorToPairChar_OneLine cbe startChar endChar =
         //        0123456789012345
         init cbe " ) () ({()]) ( "
@@ -182,7 +178,7 @@ type CommonTest () =
 
         commandAssertCursor CursorToPairChar endChar
 
-    [<TestCase(true, 0, 0)>]
+    [<TestCase(false, 0, 0)>]
     member _.CursorToPairChar_EmptyLine cbe startChar endChar =
         //        0
         init cbe ""
@@ -191,7 +187,7 @@ type CommonTest () =
 
         commandAssertCursor CursorToPairChar endChar
 
-    [<TestCase(true, 1, 1)>]
+    [<TestCase(false, 1, 1)>]
     member _.CursorToPairChar_LineEnd cbe startChar endChar =
         //        01
         init cbe " "
@@ -222,7 +218,7 @@ type CommonTest () =
         commandAssertCursor CursorHardLineEnd endChar
 
     [<TestCase(false, 3)>]
-    [<TestCase(true , 2)>]
+    [<TestCase(true , 3)>]
     member _.CursorHardLineEnd_NonEmptyLine cbe endChar =
         init cbe "abc"
         assertCursor 0

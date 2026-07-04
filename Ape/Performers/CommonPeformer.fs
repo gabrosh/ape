@@ -216,7 +216,7 @@ type CommonPerformer (
         myChar <- 0
 
     member private this.CursorHardLineEnd () =
-        this.SetCursorPosition this.Chars.Length
+        myChar <- this.Chars.Length
 
     member private this.CursorAtEol () =
         myChar <- this.Chars.Length
@@ -226,13 +226,6 @@ type CommonPerformer (
 
     member private _.CursorAt char =
         myChar <- char
-
-    /// Sets cursor position according to char_.
-    member private this.SetCursorPosition char_ =
-        if myContext.cursorBeforeEol && char_ = this.Chars.Length then
-            myChar <- max 0 (char_ - 1)
-        else
-            myChar <- char_
 
     // CursorNextMatch, CursorPrevMatch
 

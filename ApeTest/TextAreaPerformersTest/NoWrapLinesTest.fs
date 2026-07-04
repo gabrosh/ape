@@ -149,8 +149,10 @@ type NoWrapLinesTest () =
 
     // CursorSoftLineStart/End -------------------------------------------------
 
-    [<TestCase(true, 11, 0)>]
-    [<TestCase(true, 12, 0)>]
+    [<TestCase(false, 11, 0)>]
+    [<TestCase(false, 12, 0)>]
+    [<TestCase(true , 11, 0)>]
+    [<TestCase(true , 12, 0)>]
     member _.CursorSoftLineStart_AtFirstLine cbe startChar endChar =
         init cbe [
             "0123456_8901"
@@ -161,8 +163,10 @@ type NoWrapLinesTest () =
         commandAssertCursor CursorSoftLineStart 0 endChar
         commandAssertCursor CursorSoftLineStart 0 endChar
 
-    [<TestCase(true, 11, 0)>]
-    [<TestCase(true, 12, 0)>]
+    [<TestCase(false, 11, 0)>]
+    [<TestCase(false, 12, 0)>]
+    [<TestCase(true , 11, 0)>]
+    [<TestCase(true , 12, 0)>]
     member _.CursorSoftLineStart_AtSecondLine cbe startChar endChar =
         init cbe [
             ""
@@ -176,7 +180,8 @@ type NoWrapLinesTest () =
         commandAssertCursor CursorSoftLineStart 1 endChar
         commandAssertCursor CursorSoftLineStart 1 endChar
 
-    [<TestCase(true, 0, 11)>]
+    [<TestCase(false, 0, 11)>]
+    [<TestCase(true , 0, 11)>]
     member _.CursorSoftLineEnd_AtLastLine cbe startChar endChar =
         init cbe [
             "0123456_8901"
@@ -187,7 +192,8 @@ type NoWrapLinesTest () =
         commandAssertCursor CursorSoftLineEnd 0 endChar
         commandAssertCursor CursorSoftLineEnd 0 endChar
 
-    [<TestCase(true, 0, 11)>]
+    [<TestCase(false, 0, 11)>]
+    [<TestCase(true , 0, 11)>]
     member _.CursorSoftLineEnd_AtSecondLine cbe startChar endChar =
         init cbe [
             ""
@@ -250,10 +256,14 @@ type NoWrapLinesTest () =
 
     // checking also that wanted column is applied after moving the cursor
 
-    [<TestCase(true, 8  , 8  , 8 )>]
-    [<TestCase(true, 9  , 9  , 9 )>]
-    [<TestCase(true, 10 , 9  , 10)>]
-    [<TestCase(true, 11 , 9  , 10)>]
+    [<TestCase(false, 8  , 8  , 8 )>]
+    [<TestCase(false, 9  , 9  , 9 )>]
+    [<TestCase(false, 10 , 10 , 10)>]
+    [<TestCase(false, 11 , 10 , 11)>]
+    [<TestCase(true , 8  , 8  , 8 )>]
+    [<TestCase(true , 9  , 9  , 9 )>]
+    [<TestCase(true , 10 , 9  , 10)>]
+    [<TestCase(true , 11 , 9  , 10)>]
     member _.CursorHardToLine_WithoutTab cbe startChar middleChar endChar =
         init cbe [
             "0123456_8901"

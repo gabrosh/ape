@@ -11,7 +11,7 @@ open UserMessages
 let contextRef = TestUtils.makeContextRef 80 25
 
 [<TestFixture>]
-type CommonModeTest () =
+type CommonTest () =
     let myBuffer = makeTextAreaBuffer (contextRef, UserMessages (), Registers (), "")
 
     // initialization
@@ -62,7 +62,6 @@ type CommonModeTest () =
     // CursorLeft/Right, CursorAfterSelection ----------------------------------
 
     [<TestCase(false, 1)>]
-    [<TestCase(true , 1)>]
     member _.CursorLeft cbe startChar =
         init cbe [
             "abc"
@@ -81,7 +80,6 @@ type CommonModeTest () =
         commandAssertCursor CursorLeft 0 0
 
     [<TestCase(false, 2)>]
-    [<TestCase(true , 2)>]
     member _.CursorRight cbe startChar =
         init cbe [
             "abc"
@@ -99,7 +97,7 @@ type CommonModeTest () =
         commandAssertCursor CursorRight 2 3
         commandAssertCursor CursorRight 2 3
 
-    [<TestCase(true, 2)>]
+    [<TestCase(false, 2)>]
     member _.CursorAfterSelection cbe startChar =
         init cbe [
             "abc"
@@ -120,7 +118,6 @@ type CommonModeTest () =
     // CursorLeft/Right... on one line -----------------------------------------
 
     [<TestCase(false, 14)>]
-    [<TestCase(true , 14)>]
     member _.CursorLeftAtWordStart_OneLine cbe startChar =
         //         012345678901234
         init cbe ["  abc d_f:-/  "]
@@ -133,7 +130,7 @@ type CommonModeTest () =
         commandAssertCursor CursorLeftAtWordStart 0 0
         commandAssertCursor CursorLeftAtWordStart 0 0
 
-    [<TestCase(true, 14)>]
+    [<TestCase(false, 14)>]
     member _.CursorLeftAtWordEnd_OneLine cbe startChar =
         //         012345678901234
         init cbe ["  abc d_f:-/  "]
@@ -146,7 +143,7 @@ type CommonModeTest () =
         commandAssertCursor CursorLeftAtWordEnd 0 0
         commandAssertCursor CursorLeftAtWordEnd 0 0
 
-    [<TestCase(true, 14)>]
+    [<TestCase(false, 14)>]
     member _.CursorLeftAfterWordEnd_OneLine cbe startChar =
         //         012345678901234
         init cbe ["  abc d_f:-/  "]
@@ -160,7 +157,6 @@ type CommonModeTest () =
         commandAssertCursor CursorLeftAfterWordEnd 0 0
 
     [<TestCase(false, 14)>]
-    [<TestCase(true , 14)>]
     member _.CursorRightAtWordStart_OneLine cbe endChar =
         //         012345678901234
         init cbe ["  abc d_f:-/  "]
@@ -172,7 +168,7 @@ type CommonModeTest () =
         commandAssertCursor CursorRightAtWordStart 0 endChar
         commandAssertCursor CursorRightAtWordStart 0 endChar
 
-    [<TestCase(true, 14)>]
+    [<TestCase(false, 14)>]
     member _.CursorRightAtWordEnd_OneLine cbe endChar =
         //         012345678901234
         init cbe ["  abc d_f:-/  "]
@@ -184,7 +180,7 @@ type CommonModeTest () =
         commandAssertCursor CursorRightAtWordEnd 0 endChar
         commandAssertCursor CursorRightAtWordEnd 0 endChar
 
-    [<TestCase(true, 14)>]
+    [<TestCase(false, 14)>]
     member _.CursorRightBeforeWordStart_OneLine cbe endChar =
         //         012345678901234
         init cbe ["  abc d_f:-/  "]
@@ -199,7 +195,6 @@ type CommonModeTest () =
     // CursorLeft/Right... through multiple lines ------------------------------
 
     [<TestCase(false, 7)>]
-    [<TestCase(true , 7)>]
     member _.CursorLeftAtWordStart_MultipleLines cbe startChar =
         init cbe [
             "  abc"
@@ -218,7 +213,7 @@ type CommonModeTest () =
         commandAssertCursor CursorLeftAtWordStart 0 0
         commandAssertCursor CursorLeftAtWordStart 0 0
 
-    [<TestCase(true, 7)>]
+    [<TestCase(false, 7)>]
     member _.CursorLeftAtWordEnd_MultipleLines cbe startChar =
         init cbe [
             "  abc"
@@ -237,7 +232,7 @@ type CommonModeTest () =
         commandAssertCursor CursorLeftAtWordEnd 0 0
         commandAssertCursor CursorLeftAtWordEnd 0 0
 
-    [<TestCase(true, 7)>]
+    [<TestCase(false, 7)>]
     member _.CursorLeftAfterWordEnd_MultipleLines cbe startChar =
         init cbe [
             "  abc"
@@ -257,7 +252,6 @@ type CommonModeTest () =
         commandAssertCursor CursorLeftAfterWordEnd 0 0
 
     [<TestCase(false)>]
-    [<TestCase(true )>]
     member _.CursorRightAtWordStart_MultipleLines cbe =
         init cbe [
             "  abc  "
@@ -274,7 +268,7 @@ type CommonModeTest () =
         commandAssertCursor CursorRightAtWordStart 4 5
         commandAssertCursor CursorRightAtWordStart 4 5
 
-    [<TestCase(true)>]
+    [<TestCase(false)>]
     member _.CursorRightAtWordEnd_MultipleLines cbe =
         init cbe [
             "  abc  "
@@ -291,7 +285,7 @@ type CommonModeTest () =
         commandAssertCursor CursorRightAtWordEnd 4 5
         commandAssertCursor CursorRightAtWordEnd 4 5
 
-    [<TestCase(true)>]
+    [<TestCase(false)>]
     member _.CursorRightBeforeWordStart_MultipleLines cbe =
         init cbe [
             "  abc  "
@@ -310,7 +304,7 @@ type CommonModeTest () =
 
     // CursorLeft/Right...Char on one line -------------------------------------
 
-    [<TestCase(true, 11)>]
+    [<TestCase(false, 11)>]
     member _.CursorLeftToChar_OneLine cbe startChar =
         //         012345678901
         init cbe ["  a a  aa  "]
@@ -323,7 +317,7 @@ type CommonModeTest () =
         commandAssertCursor (CursorLeftToChar 'a') 0 2
         commandAssertCursor (CursorLeftToChar 'a') 0 8
 
-    [<TestCase(true, 11)>]
+    [<TestCase(false, 11)>]
     member _.CursorLeftUntilChar_OneLine cbe startChar =
         //         012345678901
         init cbe ["  a a  aa  "]
@@ -336,7 +330,7 @@ type CommonModeTest () =
         commandAssertCursor (CursorLeftUntilChar 'a') 0 3
         commandAssertCursor (CursorLeftUntilChar 'a') 0 9
 
-    [<TestCase(true)>]
+    [<TestCase(false)>]
     member _.CursorRightToChar_OneLine cbe =
         //         012345678901
         init cbe ["  a a  aa  "]
@@ -348,7 +342,7 @@ type CommonModeTest () =
         commandAssertCursor (CursorRightToChar 'a') 0 8
         commandAssertCursor (CursorRightToChar 'a') 0 2
 
-    [<TestCase(true)>]
+    [<TestCase(false)>]
     member _.CursorRightUntilChar_OneLine cbe =
         //         012345678901
         init cbe ["  a a  aa  "]
@@ -362,7 +356,7 @@ type CommonModeTest () =
 
     // CursorLeft/Right...Char on multiple lines -------------------------------
 
-    [<TestCase(true, 5)>]
+    [<TestCase(false, 5)>]
     member _.CursorLeftToChar_MultipleLines cbe startChar =
         init cbe [
             "  a"
@@ -380,7 +374,7 @@ type CommonModeTest () =
         commandAssertCursor (CursorLeftToChar 'a') 0 2
         commandAssertCursor (CursorLeftToChar 'a') 4 2
 
-    [<TestCase(true, 5)>]
+    [<TestCase(false, 5)>]
     member _.CursorLeftUntilChar_MultipleLines cbe startChar =
         init cbe [
             "  a"
@@ -398,7 +392,7 @@ type CommonModeTest () =
         commandAssertCursor (CursorLeftUntilChar 'a') 0 3
         commandAssertCursor (CursorLeftUntilChar 'a') 4 3
 
-    [<TestCase(true)>]
+    [<TestCase(false)>]
     member _.CursorRightToChar_MultipleLines cbe =
         init cbe [
             "  a  "
@@ -414,7 +408,7 @@ type CommonModeTest () =
         commandAssertCursor (CursorRightToChar 'a') 4 2
         commandAssertCursor (CursorRightToChar 'a') 0 2
 
-    [<TestCase(true)>]
+    [<TestCase(false)>]
     member _.CursorRightUntilChar_MultipleLines cbe =
         init cbe [
             "  a  "
@@ -432,7 +426,7 @@ type CommonModeTest () =
 
     // CursorLeft/Right...Char - special cases ---------------------------------
 
-    [<TestCase(true, 0)>]
+    [<TestCase(false, 0)>]
     member _.CursorLeftRightChar_EmptyLine cbe startChar =
         init cbe [""]
         commandCount CursorRight startChar
@@ -447,7 +441,7 @@ type CommonModeTest () =
         commandAssertCursor (CursorRightUntilChar 'a') 0 startChar
         commandAssertCursor (CursorRightUntilChar 'a') 0 startChar
 
-    [<TestCase(true, 1)>]
+    [<TestCase(false, 1)>]
     member _.CursorLeftRightChar_OneCharLine cbe startChar =
         init cbe ["a"]
         commandCount CursorRight startChar
@@ -462,10 +456,10 @@ type CommonModeTest () =
         commandAssertCursor (CursorRightUntilChar 'a') 0 1
         commandAssertCursor (CursorRightUntilChar 'a') 0 1
 
-    [<TestCase(true, 0)>]
-    [<TestCase(true, 1)>]
-    [<TestCase(true, 2)>]
-    [<TestCase(true, 3)>]
+    [<TestCase(false, 0)>]
+    [<TestCase(false, 1)>]
+    [<TestCase(false, 2)>]
+    [<TestCase(false, 3)>]
     member _.CursorLeftRightChar_NotFound cbe startChar =
         init cbe [" x "]
         commandCount CursorRight startChar
@@ -482,13 +476,13 @@ type CommonModeTest () =
 
     // CursorToPairChar --------------------------------------------------------
 
-    [<TestCase(true, 1 , 1 )>]
-    [<TestCase(true, 2 , 2 )>]
-    [<TestCase(true, 3 , 4 )>]
-    [<TestCase(true, 4 , 3 )>]
-    [<TestCase(true, 6 , 11)>]
-    [<TestCase(true, 11, 6 )>]
-    [<TestCase(true, 13, 13)>]
+    [<TestCase(false, 1 , 1 )>]
+    [<TestCase(false, 2 , 2 )>]
+    [<TestCase(false, 3 , 4 )>]
+    [<TestCase(false, 4 , 3 )>]
+    [<TestCase(false, 6 , 11)>]
+    [<TestCase(false, 11, 6 )>]
+    [<TestCase(false, 13, 13)>]
     member _.CursorToPairChar_OneLine cbe startChar endChar =
         //         0123456789012345
         init cbe [" ) () ({()]) ( "]
@@ -497,13 +491,13 @@ type CommonModeTest () =
 
         commandAssertCursor CursorToPairChar 0 endChar
 
-    [<TestCase(true, 0, 1, 0, 1)>]
-    [<TestCase(true, 0, 2, 0, 2)>]
-    [<TestCase(true, 1, 0, 2, 0)>]
-    [<TestCase(true, 2, 0, 1, 0)>]
-    [<TestCase(true, 3, 0, 4, 2)>]
-    [<TestCase(true, 4, 2, 3, 0)>]
-    [<TestCase(true, 5, 1, 5, 1)>]
+    [<TestCase(false, 0, 1, 0, 1)>]
+    [<TestCase(false, 0, 2, 0, 2)>]
+    [<TestCase(false, 1, 0, 2, 0)>]
+    [<TestCase(false, 2, 0, 1, 0)>]
+    [<TestCase(false, 3, 0, 4, 2)>]
+    [<TestCase(false, 4, 2, 3, 0)>]
+    [<TestCase(false, 5, 1, 5, 1)>]
     member _.CursorToPairChar_MultipleLines cbe startLine startChar endLine endChar =
         init cbe [
             " ) "
@@ -519,7 +513,7 @@ type CommonModeTest () =
 
         commandAssertCursor CursorToPairChar endLine endChar
 
-    [<TestCase(true, 0, 0)>]
+    [<TestCase(false, 0, 0)>]
     member _.CursorToPairChar_EmptyLine cbe startChar endChar =
         //         0
         init cbe [""]
@@ -528,7 +522,7 @@ type CommonModeTest () =
 
         commandAssertCursor CursorToPairChar 0 endChar
 
-    [<TestCase(true, 1, 1)>]
+    [<TestCase(false, 1, 1)>]
     member _.CursorToPairChar_LineEnd cbe startChar endChar =
         //         01
         init cbe [" "]
@@ -537,7 +531,7 @@ type CommonModeTest () =
 
         commandAssertCursor CursorToPairChar 0 endChar
 
-    // CursorHardLineStart/End, CursorToNewLine --------------------------------
+    // CursorHardLineStart/End, CursorAtEol, CursorBeforeEol -------------------
 
     [<TestCase(false, 3)>]
     [<TestCase(true , 3)>]
@@ -578,7 +572,7 @@ type CommonModeTest () =
         commandAssertCursor CursorHardLineEnd 0 endChar
 
     [<TestCase(false, 3)>]
-    [<TestCase(true , 2)>]
+    [<TestCase(true , 3)>]
     member _.CursorHardLineEnd_AtLastLine cbe endChar =
         init cbe [
             "abc"
@@ -589,7 +583,7 @@ type CommonModeTest () =
         commandAssertCursor CursorHardLineEnd 0 endChar
 
     [<TestCase(false, 3)>]
-    [<TestCase(true , 2)>]
+    [<TestCase(true , 3)>]
     member _.CursorHardLineEnd_AtSecondLine cbe endChar =
         init cbe [
             ""
@@ -602,7 +596,8 @@ type CommonModeTest () =
         commandAssertCursor CursorHardLineEnd 1 endChar
         commandAssertCursor CursorHardLineEnd 1 endChar
 
-    [<TestCase(true, 0)>]
+    [<TestCase(false, 0)>]
+    [<TestCase(true , 0)>]
     member _.CursorAtEol_AtEmptyLine cbe endChar =
         init cbe [
             ""
@@ -612,7 +607,8 @@ type CommonModeTest () =
         commandAssertCursor CursorAtEol 0 endChar
         commandAssertCursor CursorAtEol 0 endChar
 
-    [<TestCase(true, 3)>]
+    [<TestCase(false, 3)>]
+    [<TestCase(true , 3)>]
     member _.CursorAtEol_AtLastLine cbe endChar =
         init cbe [
             "abc"
@@ -622,7 +618,8 @@ type CommonModeTest () =
         commandAssertCursor CursorAtEol 0 endChar
         commandAssertCursor CursorAtEol 0 endChar
 
-    [<TestCase(true, 3)>]
+    [<TestCase(false, 3)>]
+    [<TestCase(true , 3)>]
     member _.CursorAtEol_AtSecondLine cbe endChar =
         init cbe [
             ""
@@ -635,7 +632,8 @@ type CommonModeTest () =
         commandAssertCursor CursorAtEol 1 endChar
         commandAssertCursor CursorAtEol 1 endChar
 
-    [<TestCase(true, 0)>]
+    [<TestCase(false, 0)>]
+    [<TestCase(true , 0)>]
     member _.CursorBeforeEol_AtEmptyLine cbe endChar =
         init cbe [
             ""
@@ -645,7 +643,8 @@ type CommonModeTest () =
         commandAssertCursor CursorBeforeEol 0 endChar
         commandAssertCursor CursorBeforeEol 0 endChar
 
-    [<TestCase(true, 2)>]
+    [<TestCase(false, 2)>]
+    [<TestCase(true , 2)>]
     member _.CursorBeforeEol_AtLastLine cbe endChar =
         init cbe [
             "abc"
@@ -655,7 +654,8 @@ type CommonModeTest () =
         commandAssertCursor CursorBeforeEol 0 endChar
         commandAssertCursor CursorBeforeEol 0 endChar
 
-    [<TestCase(true, 2)>]
+    [<TestCase(false, 2)>]
+    [<TestCase(true , 2)>]
     member _.CursorBeforeEol_AtSecondLine cbe endChar =
         init cbe [
             ""

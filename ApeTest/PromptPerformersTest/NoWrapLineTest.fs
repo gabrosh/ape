@@ -54,6 +54,8 @@ type NoWrapLineTest () =
 
     // CursorHardLineStart/End -------------------------------------------------
 
+    [<TestCase(false, 11)>]
+    [<TestCase(false, 12)>]
     [<TestCase(true , 11)>]
     [<TestCase(true , 12)>]
     member _.CursorSoftLineStart cbe startChar =
@@ -64,6 +66,7 @@ type NoWrapLineTest () =
         commandAssertCursor CursorSoftLineStart 0
         commandAssertCursor CursorSoftLineStart 0
 
+    [<TestCase(false, 11)>]
     [<TestCase(true , 11)>]
     member _.CursorSoftLineEnd cbe endChar =
         init cbe "0123456_8901"
