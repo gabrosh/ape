@@ -442,7 +442,7 @@ showLineNumbers  sln    false    false true        show line numbers on the left
 tabStop          ts     4        1 to 99           count of spaces in a single tab stop
 tabBySpaces      tbs    true     false true        tab and indent by space characters
 scrollOffset     so     3        0 to 99           count of characters always displayed near the main cursor
-cursorBeforeEol  cbe    false    false true        put cursor at EOL instead of the last line character
+cursorBeforeEol  cbe    false    false true        put cursor at the last line character instead of at EOL
                                                    (applies to some of "cursor movement" commands)
 
 
