@@ -265,9 +265,8 @@ type Prompt (
 
         let isExtending, command =
             match key with
-            | OptShift    InputKey.L s -> e || s , Some (CommonCommand CursorBeforeEol)
-            | OptShiftAlt InputKey.L s -> e || s , Some (CommonCommand CursorAtEol)
-            | _                        -> F      , None
+            | OptShift InputKey.L s -> e || s , Some (CommonCommand CursorBeforeEol)
+            | _                     -> F      , None
 
         performSome command (
             fun command -> myBuffer.PerformCommand true isExtending command

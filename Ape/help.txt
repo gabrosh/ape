@@ -273,7 +273,6 @@ Normal mode - goto and view commands:
  s   gg              cursor soft file start
  s   ge              cursor soft file end
 ps   gl              cursor before end of line
-ps   g<a-l>          cursor at end of line
 
      vv              center the main cursor vertically
      vh              center the main cursor horizontally

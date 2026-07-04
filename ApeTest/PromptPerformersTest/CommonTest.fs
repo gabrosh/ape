@@ -228,24 +228,6 @@ type CommonTest () =
 
     [<TestCase(false, 0)>]
     [<TestCase(true , 0)>]
-    member _.CursorAtEol_EmptyLine cbe endChar =
-        init cbe ""
-        assertCursor 0
-
-        commandAssertCursor CursorAtEol endChar
-        commandAssertCursor CursorAtEol endChar
-
-    [<TestCase(false, 3)>]
-    [<TestCase(true , 3)>]
-    member _.CursorAtEol_NonEmptyLine cbe endChar =
-        init cbe "abc"
-        assertCursor 0
-
-        commandAssertCursor CursorAtEol endChar
-        commandAssertCursor CursorAtEol endChar
-
-    [<TestCase(false, 0)>]
-    [<TestCase(true , 0)>]
     member _.CursorBeforeEol_EmptyLine cbe endChar =
         init cbe ""
         assertCursor 0

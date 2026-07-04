@@ -75,7 +75,6 @@ type CommonPerformer (
         | CursorToPairChar           -> this.CursorToPairChar           ()
         | CursorHardLineStart        -> this.CursorHardLineStart        ()
         | CursorHardLineEnd          -> this.CursorHardLineEnd          ()
-        | CursorAtEol                -> this.CursorAtEol                ()
         | CursorBeforeEol            -> this.CursorBeforeEol            ()
         | CursorAt char              -> this.CursorAt                   char
         | CursorToNextMatch ii       -> this.CursorToNextMatch          ii
@@ -216,9 +215,6 @@ type CommonPerformer (
         myChar <- 0
 
     member private this.CursorHardLineEnd () =
-        myChar <- this.Chars.Length
-
-    member private this.CursorAtEol () =
         myChar <- this.Chars.Length
 
     member private this.CursorBeforeEol () =

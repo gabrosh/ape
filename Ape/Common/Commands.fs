@@ -21,7 +21,6 @@ module InCommands =
         | CursorRightUntilChar of char
         | CursorHardLineStart
         | CursorHardLineEnd
-        | CursorAtEol
         | CursorBeforeEol
         | CursorAt             of int
         | CursorToNextMatch    of isInitial: bool  // added CenterAfterMatch

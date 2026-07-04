@@ -229,7 +229,7 @@ type PromptBuffer (
         this.LoadCharsAux chars
         this.ResetState ()
 
-        let command = (CommonCommand CursorAtEol)
+        let command = (CommonCommand CursorHardLineEnd)
         this.PerformCommand false false command
 
         this.ResetUndoState ()

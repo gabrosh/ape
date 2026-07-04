@@ -87,7 +87,7 @@ type PromptModifying (
             delegateFun EnterAppending
         else
             // Reposition cursor and anchor to the end of line.
-            this.DelegateCommonCommand CursorAtEol
+            this.DelegateCommonCommand CursorHardLineEnd
 
     member private this.PerformInsertCommand delegateFun command =
         this.StartApplyingModifications ()
@@ -138,7 +138,7 @@ type PromptModifying (
                     this.DelegateCommonCommand CursorLeft
             else
                 // Reposition cursor and anchor to the end of line.
-                this.DelegateCommonCommand CursorAtEol
+                this.DelegateCommonCommand CursorHardLineEnd
 
                 this.PerformPasteBeforeCommandAux delegateFun register
         else

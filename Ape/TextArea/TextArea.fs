@@ -400,11 +400,10 @@ type TextArea (
 
         let isExtending, command =
             match key with
-            | OptShift    InputKey.G s -> e || s , Some (WrapLinesDepCommand CursorSoftFileStart)
-            | OptShift    InputKey.E s -> e || s , Some (WrapLinesDepCommand CursorSoftFileEnd)
-            | OptShift    InputKey.L s -> e || s , Some (CommonCommand       CursorBeforeEol)
-            | OptShiftAlt InputKey.L s -> e || s , Some (CommonCommand       CursorAtEol)
-            | _                        -> F      , None
+            | OptShift InputKey.G s -> e || s , Some (WrapLinesDepCommand CursorSoftFileStart)
+            | OptShift InputKey.E s -> e || s , Some (WrapLinesDepCommand CursorSoftFileEnd)
+            | OptShift InputKey.L s -> e || s , Some (CommonCommand       CursorBeforeEol)
+            | _                     -> F      , None
 
         performSome command (
             fun command -> myBuffer.PerformCommand true isExtending command 1
