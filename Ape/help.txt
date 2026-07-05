@@ -152,26 +152,17 @@ p    "{regName}      uppercase register prefix
 
 Normal mode - repeatable:
 
-ps   <left>          cursor left
-ps   <right>         cursor right
- s   <up>            cursor hard up
- s   <down>          cursor hard down
- s   <c-up>          cursor soft up
- s   <c-down>        cursor soft down
- s   <pgup>          scroll page up
- s   <pgdown>        scroll page down
+ps   <left>   h      cursor left
+ps   <right>  l      cursor right
+ s   <up>     k      cursor hard up
+ s   <down>   j      cursor hard down
+ s   <c-up>   <c-k>  cursor soft up
+ s   <c-down> <c-j>  cursor soft down
+ s   <pgup>   <a-k>  scroll page up
+ s   <pgdown> <a-j>  scroll page down
 
 ps   <c-left>        cursor left at word start
 ps   <c-right>       cursor right at word start
-
-ps   h               cursor left
-ps   l               cursor right
- s   k               cursor hard up
- s   j               cursor hard down
- s   <c-k>           cursor soft up
- s   <c-j>           cursor soft down
- s   <a-k>           scroll page up
- s   <a-j>           scroll page down
 
 ps   w               cursor right before word start
 ps   <a-w>           cursor left after word end
@@ -209,15 +200,13 @@ p    <a-U>           redo fast
 
 Normal mode - non-repeatable:
 
-ps   <home>          cursor hard line start
-ps   <end>           cursor hard line end
- s   <c-home>        cursor soft file start
- s   <c-end>         cursor soft file end
-
-ps   <a-h>           cursor hard line start
-ps   <a-l>           cursor hard line end
-ps   <c-h>           cursor soft line start
-ps   <c-l>           cursor soft line end
+ps   <home>   <a-h>  cursor hard line start
+ps   <end>    <a-l>  cursor hard line end
+ps            <c-h>  cursor soft line start
+ps            <c-l>  cursor soft line end
+ps            gl     cursor before end of line
+ s   <c-home> gg     cursor soft file start
+ s   <c-end>  ge     cursor soft file end
 
 ps   <c-z>           cursor to the pair character in (), [], {}, <>
 
@@ -255,7 +244,7 @@ p    <a-;>           flip selection's direction
 
 Normal mode - multiplying selection:
 
-   r +               multiply selection by count of slots in default or specified register
+  r  +               multiply selection by count of slots in default or specified register
      {count}+        multiply selection by {count}
 
 
@@ -269,10 +258,6 @@ Normal mode - named undo:
 Normal mode - goto and view commands:
 
  s   {num}g          cursor hard to line number {num}
-
- s   gg              cursor soft file start
- s   ge              cursor soft file end
-ps   gl              cursor before end of line
 
      vv              center the main cursor vertically
      vh              center the main cursor horizontally
