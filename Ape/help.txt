@@ -362,8 +362,8 @@ bufferNext     bn                                switch to the next buffer
 bufferPrev     bp                                switch to the previous buffer
 bufferFirst    bf                                switch to the first buffer
 bufferLast     bl                                switch to the last buffer
-bufferBegin    bb                                move current buffer to the beginning of the buffers list
-bufferEnd      be                                move current buffer to the end of the buffers list
+bufferAsFirst  baf                               set current buffer as the first one
+bufferAsLast   bal                               set current buffer as the last one
 set            s      [scope] name value         set setting's value (default scope is "buffer")
 unset          us     [scope] name               unset setting's value (default scope is "buffer")
 get            g      name                       display setting's value in all scopes

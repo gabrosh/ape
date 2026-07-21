@@ -33,8 +33,8 @@ let public commandsList = [
     "bufferPrev"    , "bp"  , argsMapSpec_bufferPrev       , execute_bufferPrev       , complete_none
     "bufferFirst"   , "bf"  , argsMapSpec_bufferFirst      , execute_bufferFirst      , complete_none
     "bufferLast"    , "bl"  , argsMapSpec_bufferLast       , execute_bufferLast       , complete_none
-    "bufferBegin"   , "bb"  , argsMapSpec_bufferBegin      , execute_bufferBegin      , complete_none
-    "bufferEnd"     , "be"  , argsMapSpec_bufferEnd        , execute_bufferEnd        , complete_none
+    "bufferAsFirst" , "baf" , argsMapSpec_bufferAsFirst    , execute_bufferAsFirst    , complete_none
+    "bufferAsLast"  , "bal" , argsMapSpec_bufferAsLast     , execute_bufferAsLast     , complete_none
     "set"           , "s"   , argsMapSpec_set              , execute_set              , complete_set
     "unset"         , "us"  , argsMapSpec_unset            , execute_unset            , complete_unset
     "get"           , "g"   , argsMapSpec_get              , execute_get              , complete_get

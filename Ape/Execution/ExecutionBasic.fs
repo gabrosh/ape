@@ -277,15 +277,15 @@ let execute_bufferLast context (_argsMap: ArgsMap) =
     context.textArea.ToLastBuffer ()
     false
 
-// bufferBegin, bufferEnd
+// bufferAsFirst, bufferAsLast
 
-let argsMapSpec_bufferBegin: ArgsMapSpec = (0, [| |])
-let argsMapSpec_bufferEnd:   ArgsMapSpec = (0, [| |])
+let argsMapSpec_bufferAsFirst: ArgsMapSpec = (0, [| |])
+let argsMapSpec_bufferAsLast:  ArgsMapSpec = (0, [| |])
 
-let execute_bufferBegin context (_argsMap: ArgsMap) =
-    context.textArea.BufferToBegin ()
+let execute_bufferAsFirst context (_argsMap: ArgsMap) =
+    context.textArea.SetBufferAsFirst ()
     false
 
-let execute_bufferEnd context (_argsMap: ArgsMap) =
-    context.textArea.BufferToEnd ()
+let execute_bufferAsLast context (_argsMap: ArgsMap) =
+    context.textArea.SetBufferAsLast ()
     false

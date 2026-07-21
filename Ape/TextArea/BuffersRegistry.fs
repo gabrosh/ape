@@ -166,8 +166,8 @@ type BuffersRegistry (
         else
             myUserMessages.RegisterMessage INFO_ALREADY_AT_LAST_BUFFER
 
-    /// Moves the current buffer to the beginning of the buffers list.
-    member this.BufferToBegin () =
+    /// Sets the current buffer as the first one in the buffers list.
+    member this.SetBufferAsFirst () =
         if myCurrentIndex > 0 then
             let item = myItems[myCurrentIndex]
             myItems.RemoveAt myCurrentIndex
@@ -176,8 +176,8 @@ type BuffersRegistry (
         else
             myUserMessages.RegisterMessage INFO_ALREADY_AT_FIRST_BUFFER
 
-    /// Moves the current buffer to the end of the buffers list.
-    member this.BufferToEnd () =
+    /// Sets the current buffer as the last one in the buffers list.
+    member this.SetBufferAsLast () =
         let lastIndex = myItems.Count - 1
 
         if myCurrentIndex < lastIndex then

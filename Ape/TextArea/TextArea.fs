@@ -827,11 +827,11 @@ type TextArea (
         myBuffers.ToLastBuffer ()
         applyBufferSwitch ()
 
-    member _.BufferToBegin () =
-        myBuffers.BufferToBegin ()
+    member _.SetBufferAsFirst () =
+        myBuffers.SetBufferAsFirst ()
 
-    member _.BufferToEnd () =
-        myBuffers.BufferToEnd ()
+    member _.SetBufferAsLast () =
+        myBuffers.SetBufferAsLast ()
 
     member _.IsAnyBufferChanged () =
         myBuffers.IsAnyBufferChanged ()
