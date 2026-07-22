@@ -46,10 +46,10 @@ type WrappedRef2<'T> (wrappedRef: IWrappedRef<'T>) =
     /// Unsubscribes the instance from the events from the old wrappedRef.
     /// Subscribes the instance for the events from the new wrappedRef.
     member _.WrappedRef
-        with set value =
-            if not (Object.ReferenceEquals (value, myWrappedRef)) then
+        with set wrappedRef =
+            if not (Object.ReferenceEquals (wrappedRef, myWrappedRef)) then
                 myChangedDisposable.Dispose ()
-                myWrappedRef <- value
+                myWrappedRef <- wrappedRef
                 myChangedDisposable <- myWrappedRef.Subscribe handleChanged
                 myChanged.Trigger ()
 
