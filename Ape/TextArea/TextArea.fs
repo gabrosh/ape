@@ -541,55 +541,55 @@ type TextArea (
 
     // buffer operations
 
-    member this.EditFile filePath encoding strictEncoding quite =
+    member this.EditFile filePath encoding strictEncoding quiet =
         myBuffers.AddTextAreaBuffer filePath
         applyBufferSwitch ()
         let result = this.SetBufferSettings encoding strictEncoding (Some "false")
 
         match result with
         | Ok ()   ->
-            this.LoadTextAreaBuffer (myBuffer :?> TextAreaBuffer) quite
+            this.LoadTextAreaBuffer (myBuffer :?> TextAreaBuffer) quiet
         | Error e ->
             myUserMessages.RegisterMessage (makeErrorMessage e)
 
-    member this.ViewFile filePath encoding strictEncoding quite =
+    member this.ViewFile filePath encoding strictEncoding quiet =
         myBuffers.AddTextAreaBuffer filePath
         applyBufferSwitch ()
         let result = this.SetBufferSettings encoding strictEncoding (Some "true")
 
         match result with
         | Ok ()   ->
-            this.LoadTextAreaBuffer (myBuffer :?> TextAreaBuffer) quite
+            this.LoadTextAreaBuffer (myBuffer :?> TextAreaBuffer) quiet
         | Error e ->
             myUserMessages.RegisterMessage (makeErrorMessage e)
 
-    member this.ExtractFile filePath encoding strictEncoding quite =
+    member this.ExtractFile filePath encoding strictEncoding quiet =
         myBuffers.AddTextAreaExtract filePath
         applyBufferSwitch ()
         let result = this.SetExtractSettings encoding strictEncoding
 
         match result with
         | Ok ()   ->
-            this.LoadTextAreaExtract (myBuffer :?> TextAreaExtract) quite
+            this.LoadTextAreaExtract (myBuffer :?> TextAreaExtract) quiet
         | Error e ->
             myUserMessages.RegisterMessage (makeErrorMessage e)
 
-    member private this.LoadTextAreaBuffer buffer quite =
+    member private this.LoadTextAreaBuffer buffer quiet =
         match this.LoadFileAux buffer with
         | Ok () ->
             ()
         | Error e ->
-            if not quite then
+            if not quiet then
                 myUserMessages.RegisterMessage (
                     UserMessages.makeWarningMessage e
                 )
 
-    member private this.LoadTextAreaExtract buffer quite =
+    member private this.LoadTextAreaExtract buffer quiet =
         match this.LoadFileAux buffer with
         | Ok () ->
             ()
         | Error e ->
-            if not quite then
+            if not quiet then
                 myUserMessages.RegisterMessage (
                     UserMessages.makeWarningMessage e
                 )

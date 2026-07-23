@@ -1,4 +1,4 @@
-﻿module ExecutionBasic
+module ExecutionBasic
 
 open System
 
@@ -44,8 +44,8 @@ let execute_help context (_argsMap: ArgsMap) =
 
 let argsMapSpec_quitAux: ArgsMapSpec = (0, [| |])
 
-let execute_quitAux quite context (_argsMap: ArgsMap) =
-    if not quite && context.textArea.IsAnyBufferChanged () then
+let execute_quitAux quiet context (_argsMap: ArgsMap) =
+    if not quiet && context.textArea.IsAnyBufferChanged () then
         context.textArea.ToFirstChangedBuffer ()
         context.userMessages.RegisterMessage
             WARNING_NO_WRITE_SINCE_LAST_CHANGE
@@ -63,7 +63,7 @@ let execute_quitBang = execute_quitAux true
 
 let argsMapSpec_writeAux = (0, [| "filePath" |])
 
-let private execute_writeAux quite context (argsMap: ArgsMap) =
+let private execute_writeAux quiet context (argsMap: ArgsMap) =
     let filePath = argsMap["filePath"]
 
     match filePath with
@@ -73,14 +73,14 @@ let private execute_writeAux quite context (argsMap: ArgsMap) =
             context.userMessages.RegisterMessage (
                 formatMessage WARNING_BUFFER_ALREADY_OPENED filePath
             )
-        elif not quite && FileUtils.fileExists filePath then
+        elif not quiet && FileUtils.fileExists filePath then
             context.userMessages.RegisterMessage (
                 formatMessage WARNING_FILE_ALREADY_EXISTS filePath
             )
         else
             context.textArea.WriteFileAs filePath
     | None ->
-        if   not quite
+        if   not quiet
           && not context.textArea.IsBufferChanged
         then
             context.userMessages.RegisterMessage
@@ -116,19 +116,19 @@ let execute_writeQuit context (_argsMap: ArgsMap) =
 
 let argsMapSpec_editAux = (1, [| "strictEncoding"; "encoding"; "filePath" |])
 
-let private execute_editAux quite context (argsMap: ArgsMap) =
+let private execute_editAux quiet context (argsMap: ArgsMap) =
     let strictEncoding = argsMap["strictEncoding"]
     let encoding       = argsMap["encoding"      ]
     let filePath       = argsMap["filePath"      ] |> Option.get
 
     if context.textArea.HasBufferWithBufferName filePath then
         context.textArea.ToBufferWithBufferName filePath
-        if not quite then
+        if not quiet then
             context.userMessages.RegisterMessage (
                 formatMessage WARNING_BUFFER_ALREADY_OPENED filePath
             )
     else
-        context.textArea.EditFile filePath encoding strictEncoding quite
+        context.textArea.EditFile filePath encoding strictEncoding quiet
 
     false
 
@@ -142,19 +142,19 @@ let execute_editBang = execute_editAux true
 
 let argsMapSpec_viewAux = (1, [| "strictEncoding"; "encoding"; "filePath" |])
 
-let private execute_viewAux quite context (argsMap: ArgsMap) =
+let private execute_viewAux quiet context (argsMap: ArgsMap) =
     let strictEncoding = argsMap["strictEncoding"]
     let encoding       = argsMap["encoding"      ]
     let filePath       = argsMap["filePath"      ] |> Option.get
 
     if context.textArea.HasBufferWithBufferName filePath then
         context.textArea.ToBufferWithBufferName filePath
-        if not quite then
+        if not quiet then
             context.userMessages.RegisterMessage (
                 formatMessage WARNING_BUFFER_ALREADY_OPENED filePath
             )
     else
-        context.textArea.ViewFile filePath encoding strictEncoding quite
+        context.textArea.ViewFile filePath encoding strictEncoding quiet
 
     false
 
@@ -168,19 +168,19 @@ let execute_viewBang = execute_viewAux true
 
 let argsMapSpec_extractAux = (1, [| "strictEncoding"; "encoding"; "filePath" |])
 
-let private execute_extractAux quite context (argsMap: ArgsMap) =
+let private execute_extractAux quiet context (argsMap: ArgsMap) =
     let strictEncoding = argsMap["strictEncoding"]
     let encoding       = argsMap["encoding"      ]
     let filePath       = argsMap["filePath"      ] |> Option.get
 
     if context.textArea.HasBufferWithBufferName filePath then
         context.textArea.ToBufferWithBufferName filePath
-        if not quite then
+        if not quiet then
             context.userMessages.RegisterMessage (
                 formatMessage WARNING_BUFFER_ALREADY_OPENED filePath
             )
     else
-        context.textArea.ExtractFile filePath encoding strictEncoding quite
+        context.textArea.ExtractFile filePath encoding strictEncoding quiet
 
     false
 
@@ -194,8 +194,8 @@ let execute_extractBang = execute_extractAux true
 
 let argsMapSpec_reloadAux: ArgsMapSpec = (0, [| |])
 
-let execute_reloadAux quite context (_argsMap: ArgsMap) =
-    if not quite && context.textArea.IsBufferChanged then
+let execute_reloadAux quiet context (_argsMap: ArgsMap) =
+    if not quiet && context.textArea.IsBufferChanged then
         context.userMessages.RegisterMessage
             WARNING_NO_WRITE_SINCE_LAST_CHANGE
     else
@@ -230,14 +230,14 @@ let execute_bufferName context (argsMap: ArgsMap) =
 
 let argsMapSpec_bufferDeleteAux: ArgsMapSpec = (0, [| |])
 
-let execute_bufferDeleteAux quite context (_argsMap: ArgsMap) =
+let execute_bufferDeleteAux quiet context (_argsMap: ArgsMap) =
     match context.textArea.GetFirstChildBuffer () with
     | Some childBuffer ->
         context.textArea.ToBuffer childBuffer
         context.userMessages.RegisterMessage
             WARNING_CHILD_BUFFER_STILL_OPENED
     | None       ->
-        if not quite && context.textArea.IsBufferChanged then
+        if not quiet && context.textArea.IsBufferChanged then
             context.userMessages.RegisterMessage
                 WARNING_NO_WRITE_SINCE_LAST_CHANGE
         else
