@@ -91,7 +91,9 @@ Keys recording is toggled by <c-q>, recorded keys are stored in register . .
 
 In Search, Select, Keep and Discard prompts, .NET regular expressions are used.
 Multi-line and single-line regular expressions specified by (?m) and (?s) options are
-supported with a reasonable limit as to the count of lines held in the processing buffer.
+supported with a reasonable limit as to the count of lines held in the processing
+buffer.
+
 In Search, named groups (?<name>...) and (?'name'...) are colored by distinct colors
 according to the first letter of group's name. Colors for a lowercase letter differ
 from those for the corresponding uppercase letter.
@@ -384,9 +386,9 @@ If you need to include space character in an argument, enclose the argument into
 a pair of ". In such argument, \ serves as an escape character. \" represents ",
 \\ represents \ and \t represents tab character. Other pairs are not supported.
 
-If you want to include space character in an argument without the need to escape all
-occurences of \, enclose the argument into a pair of " prefixed by @. In such argument,
-" can be represented by "".
+If you want to include space character in an argument without the need to escape
+all occurrences of \, enclose the argument into a pair of " prefixed by @. In such
+argument, " can be represented by "".
 
 Examples: "Hello, \"world\"!"
           @"Hello, ""world""!"
@@ -397,8 +399,9 @@ Settings -----------------------------------------------------------------------
 Scopes: global buffer extract
 
 "global" scope inherits the default settings, "buffer" scope inherits from "global"
-scope and "extract" scope (only for extract buffers) inherits from "buffer" scope.
-When unspecified, the command is applied on the most local scope ("buffer" or "extract").
+scope and "extract" scope for extract buffers (not for extracts) inherits from "buffer"
+scope. When unspecified, the command is applied on the most local scope ("buffer"
+or "extract").
 
 settings         abbr.  default  valid values
 
@@ -436,8 +439,9 @@ Scopes: global buffer extract
 Modes:  normal insert promptNormal promptInsert
 
 "global" scope inherits the default settings, "buffer" scope inherits from "global"
-scope and "extract" scope (only for extract buffers) inherits from "buffer" scope.
-When unspecified, the command is applied on the most local scope ("buffer" or "extract").
+scope and "extract" scope for extract buffers (not for extracts) inherits from "buffer"
+scope. When unspecified, the command is applied on the most local scope ("buffer"
+or "extract").
 
 In map and unmap commands, key can be a single key or a "key prefix and key" pair.
 Key prefix can be one of <c-b>, <c-e>, <c-B>, <c-E>, <sc-b>, <sc-e>.
