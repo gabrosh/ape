@@ -69,3 +69,6 @@ From version 0.16 up, Ape may be detected by Windows Defender as a trojan. It's 
 Press F1 in Normal mode or run :help command (or :h) for help. To get back into Normal mode from wherever you are, press Esc.
 
 Happy experimenting!
+
+## Video
+https://github.com/user-attachments/assets/fc248d63-32e9-427f-a14e-8ce4baa21f3e
