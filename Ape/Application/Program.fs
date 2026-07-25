@@ -85,9 +85,16 @@ let rerender mode keyPrefix =
 
 // main application loop
 
-type ApplicationState =
-    | Continue of Mode  // continue running in specified mode
-    | Exit              // exit the application immediately
+/// State of the iteration through a sequence of keys.
+type IterState =
+    | IterContinue of Mode  // continue iteration in specified mode
+    | IterStop     of Mode  // stop iteration in specified mode
+    | IterExit              // exit the application immediately
+
+/// State of the application.
+type AppState =
+    | AppContinue  of Mode  // continue application in specified mode
+    | AppExit               // exit the application immediately
 
 let isWindowSizeOK windowSize =
        windowSize.width  > 0
@@ -106,7 +113,7 @@ let applyWindowSize windowSize =
     else
         isConsoleOK <- false
 
-/// Dispatches a single key.
+/// Dispatches a key.
 let dispatchKey mode keyPrefix key isToConsole keySequenceSleep =
     match keyPrefix, key with
     | None, key
@@ -115,13 +122,13 @@ let dispatchKey mode keyPrefix key isToConsole keySequenceSleep =
         let keyPrefix' = Some key
         if isToConsole then
             rerender mode keyPrefix'
-        (Continue mode, keyPrefix')
+        (IterContinue mode, keyPrefix')
 
     | Some _, Key.NoModif InputKey.Escape ->
         let keyPrefix' = None
         if isToConsole then
             rerender mode keyPrefix'
-        (Continue mode, keyPrefix')
+        (IterContinue mode, keyPrefix')
 
     | None, key ->
         let result, areasToRender =
@@ -130,33 +137,51 @@ let dispatchKey mode keyPrefix key isToConsole keySequenceSleep =
 
         match result with
         | Performed mode nextMode ->
+            let returnValue =
+                if userMessages.HasErrorOrWarningMessage then
+                    (IterStop nextMode, None)
+                else
+                    (IterContinue nextMode, None)
+
             if isToConsole then
                 renderAreas nextMode keyPrefix areasToRender
             if keySequenceSleep > 0 then
-                System.Threading.Thread.Sleep keySequenceSleep
+                Threading.Thread.Sleep keySequenceSleep
                 
             handleTextAreaUndo textArea mode nextMode
             handlePromptUndo   prompt   mode nextMode
-            (Continue nextMode, None)
+            
+            returnValue
 
         | DispatchingResult.NoChange ->
-            (Continue mode, None)
+            (IterContinue mode, None)
         | DispatchingResult.Exit     ->
-            (Exit, None)
+            (IterExit, None)
         | _                          ->
             invalidOp ""
 
     | _ ->
-        (Continue mode, keyPrefix)
+        (IterContinue mode, keyPrefix)
 
-/// Dispatches a key sequence recursively.
+/// Dispatches a single key as opposed to a sequence of keys.
+let dispatchSingleKey mode keyPrefix key isToConsole keySequenceSleep =
+    let result = dispatchKey mode keyPrefix key isToConsole keySequenceSleep
+    
+    match result with
+    | IterContinue mode', keyPrefix'
+    | IterStop     mode', keyPrefix' ->
+        (AppContinue mode', keyPrefix')
+    | IterExit, keyPrefix' ->
+        (AppExit, keyPrefix')
+
+/// Dispatches a sequence of keys.
 [<TailCall>]
 let rec dispatchKeySequence
     mode keyPrefix keys recursionLimit recursions isToConsole keySequenceSleep =
 
     match keys with
     | [] ->
-        (Continue mode, keyPrefix)
+        (AppContinue mode, keyPrefix)
 
     | key :: keysRest ->
         let keyMappings = textArea.CurrentKeyMappings
@@ -172,21 +197,21 @@ let rec dispatchKeySequence
                 userMessages.RegisterMessage (
                     formatMessage ERROR_RECURSION_LIMIT_WAS_REACHED recursionLimit
                 )
-                (Continue mode, None)
+                
+                (AppContinue mode, None)
 
         | None ->
-            match dispatchKey mode keyPrefix key isToConsole keySequenceSleep with
-            | Continue mode', keyPrefix ->
-                if not userMessages.HasErrorOrWarningMessage then
-                    dispatchKeySequence
-                        mode' keyPrefix keysRest recursionLimit recursions
-                        isToConsole keySequenceSleep
-                else
-                    // Stop the iteration prematurely, continue application.
-                    (Continue mode', keyPrefix)
-            | Exit, _ ->
-                // Stop the iteration prematurely, exit application.
-                (Exit, None)
+            let result = dispatchKey mode keyPrefix key isToConsole keySequenceSleep
+            
+            match result with
+            | IterContinue mode', keyPrefix' ->
+                dispatchKeySequence
+                    mode' keyPrefix' keysRest recursionLimit recursions
+                    isToConsole keySequenceSleep
+            | IterStop mode', keyPrefix' ->
+                (AppContinue mode', keyPrefix')                
+            | IterExit, keyPrefix' ->
+                (AppExit, keyPrefix')
 
 /// If given key is mapped to some key sequence, it dispatches
 /// this key sequence, otherwise it dispatches given key itself.
@@ -204,27 +229,26 @@ let dispatchInputKey mode keyPrefix key =
 
         let result =
             dispatchKeySequence
-                mode None keys' recursionLimit 1
-                isToConsole keySequenceSleep
-        
+                mode None keys' recursionLimit 1 isToConsole keySequenceSleep
+
         match result with
-        | Continue mode', keyPrefix ->
+        | AppContinue mode', keyPrefix' ->
             if not isToConsole then
                 // The steps of the key sequence were not rendered yet.
-                rerender mode' keyPrefix
-            // Continue application.
-            (Continue mode', keyPrefix)
-        | Exit, _ ->
-            // Exit application.
-            (Exit, None)
+                rerender mode' keyPrefix'                
+        | AppExit, _keyPrefix' ->
+            ()
+            
+        result
 
     | None ->
         let keySequenceSleep = 0
         
         // Render the single step of the key to the console.
         let isToConsole = true
-        
-        dispatchKey mode keyPrefix key isToConsole keySequenceSleep
+
+        dispatchSingleKey
+            mode keyPrefix key isToConsole keySequenceSleep
 
 let toToggleRecording keyPrefix key =
     keyPrefix = None && key = Ctrl InputKey.Q
@@ -263,9 +287,9 @@ let rec mainLoop mode keyPrefix =
                 let result = dispatchInputKey mode keyPrefix key
 
                 match result with
-                | Continue mode, keyPrefix ->
-                    mainLoop mode keyPrefix
-                | Exit, _ ->
+                | AppContinue mode', keyPrefix' ->
+                    mainLoop mode' keyPrefix'
+                | AppExit, _keyPrefix' ->
                     ()
         else
             mainLoop mode keyPrefix
