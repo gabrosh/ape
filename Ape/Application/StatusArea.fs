@@ -96,13 +96,14 @@ type StatusArea (
     let myContextChangedDisposable =
         myContextRef.Subscribe handleContextChanged
 
-    /// Returns the first display row of the status line.
-    member this.GetFirstDisplayRow
-        (bufferName: string) (statusChar: char) isRecording cursorPos =
+    /// Returns the first display row of the status line for status.
+    member this.GetFirstDisplayRowForStatus
+        (statusChar: char) isRecording (bufferName: string) cursorPos =
+
+        let colorScheme = myRenderingContext.colorScheme
+        let windowWidth = myRenderingContext.windowWidth
 
         let displayRow = ResizeArray myRenderingContext.windowWidth
-
-        let statusColors = myRenderingContext.colorScheme.status
 
         let statusString: string = statusChar.ToString ()
         let isRecordingColors = this.GetIsRecordingColors isRecording
@@ -112,15 +113,29 @@ type StatusArea (
         let filePathMaxLength = myRenderingContext.windowWidth - othersLength
         let bufferNameString = this.GetBufferNameString bufferName filePathMaxLength
         
-        this.WriteTo displayRow statusString statusColors
+        this.WriteTo displayRow statusString colorScheme.status
         this.WriteTo displayRow " " isRecordingColors
-        this.WriteTo displayRow bufferNameString statusColors
-        this.WriteTo displayRow cursorString statusColors
+        this.WriteTo displayRow bufferNameString colorScheme.status
+        this.WriteTo displayRow cursorString colorScheme.status
 
-        displayRow.GetRange (0, myRenderingContext.windowWidth)
+        displayRow.GetRange (0, windowWidth)
+    
+    /// Returns the first display row of the status line for message.
+    member this.GetFirstDisplayRowForMessage message =
+        let colorScheme = myRenderingContext.colorScheme
+        let windowWidth = myRenderingContext.windowWidth
+
+        let displayRow = ResizeArray myRenderingContext.windowWidth
+
+        let messageString, messageColors =
+            UserMessages.getMessageStringAndColors colorScheme message windowWidth
+
+        this.WriteTo displayRow messageString messageColors
+
+        displayRow.GetRange (0, windowWidth)
     
     /// Returns the second display row of the status line.
-    member this.GetSecondDisplayRow mode keyPrefix message =
+    member this.GetSecondDisplayRow message mode keyPrefix =
         let colorScheme = myRenderingContext.colorScheme
         let windowWidth = myRenderingContext.windowWidth
 
@@ -157,20 +172,6 @@ type StatusArea (
         this.WriteTo displayRow keyPrefixString colorScheme.normal
         this.WriteTo displayRow stateString     colorScheme.normal
         this.WriteTo displayRow modeString      modeColors
-
-        displayRow.GetRange (0, windowWidth)
-
-    /// Returns the prompt user message display row.
-    member this.GetPromptMessageDisplayRow message =
-        let colorScheme = myRenderingContext.colorScheme
-        let windowWidth = myRenderingContext.windowWidth
-
-        let displayRow = ResizeArray windowWidth
-
-        let messageString, messageColors =
-            UserMessages.getMessageStringAndColors colorScheme message windowWidth
-
-        this.WriteTo displayRow messageString messageColors
 
         displayRow.GetRange (0, windowWidth)
 

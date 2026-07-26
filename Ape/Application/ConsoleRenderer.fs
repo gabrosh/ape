@@ -89,93 +89,110 @@ type ConsoleRenderer (
     let myContextChangedDisposable =
         myContextRef.Subscribe handleContextChanged
 
-    /// Returns areas to re-render derived only from the application state.
-    /// Areas to render after individual commands are determined by the commands.
-    member _.GetAreasToRerender mode =
+    /// Returns areas to render indicators derived only from the application state.
+    /// Areas to render after individual commands are determined by these commands.
+    member _.GetAreasToRenderIndicators mode =
         let optional =
             if isPromptMode mode then
                 if myPrompt.IsInCompletion () then
-                    toRenderText + toRenderPrompt + toRenderPromptCompletions
+                    toRenderPrompt + toRenderPromptCompletions
                 else
-                    toRenderText + toRenderPrompt
+                    toRenderPrompt
             else
                 if myTextArea.IsInCompletion () then
-                    toRenderText + toRenderTextCompletions
+                    toRenderTextCompletions
                 else
-                    toRenderText
+                    toRenderNothing
 
         toRenderStatus + optional
+
+    /// Returns areas to render all derived only from the application state.
+    /// Areas to render after individual commands are determined by these commands.
+    member _.GetAreasToRenderAll mode =
+        let optional =
+            if isPromptMode mode then
+                if myPrompt.IsInCompletion () then
+                    toRenderPrompt + toRenderPromptCompletions
+                else
+                    toRenderPrompt
+            else
+                if myTextArea.IsInCompletion () then
+                    toRenderTextCompletions
+                else
+                    toRenderNothing
+
+        toRenderText + toRenderStatus + optional
 
     /// Render content of the areas specified by areasToRender.
     member this.Render mode keyPrefix isRecording (areasToRender: Set<AreaToRender>) =
         let message = myUserMessages.RetrieveMessage ()
 
+        let toRenderStatus            = areasToRender.Contains ToRenderStatus
         let toRenderText              = areasToRender.Contains ToRenderText
         let toRenderTextCompletions   = areasToRender.Contains ToRenderTextCompletions
         let toRenderPrompt            = areasToRender.Contains ToRenderPrompt
         let toRenderPromptCompletions = areasToRender.Contains ToRenderPromptCompletions
 
-        let toRenderPromptMessage =
-            isPromptMode mode && UserMessages.isErrorMessage message
-
+        let firstStatusRowMessage, secondStatusRowMessage =
+            if isPromptMode mode then
+                (message, None)
+            else
+                (None, message)
+                
         if toRenderText then
             this.RenderText mode
 
-        if areasToRender.Contains ToRenderStatus then
-            if not toRenderTextCompletions &&
-               not toRenderPromptMessage &&
-               not toRenderPromptCompletions
-            then
-                this.RenderFirstStatusRow isRecording
-
-            if not toRenderPrompt then
-                this.RenderSecondStatusRow mode keyPrefix message
-
-        if toRenderTextCompletions then
+        if firstStatusRowMessage.IsSome then
+            this.RenderFirstStatusRowForMessage firstStatusRowMessage            
+        elif toRenderTextCompletions then
             this.RenderCompletions (myTextArea.GetCompletionsRow ())
-        elif toRenderPromptMessage then
-            this.RenderPromptMessage message
         elif toRenderPromptCompletions then
             this.RenderCompletions (myPrompt.GetCompletionsRow ())
+        elif toRenderStatus then
+            this.RenderFirstStatusRowForStatus isRecording
 
         if toRenderPrompt then
             this.RenderPrompt mode keyPrefix
-
+        elif toRenderStatus then
+            this.RenderSecondStatusRow
+                secondStatusRowMessage mode keyPrefix
+           
     /// Renders content of the text area to the console.
     member private this.RenderText _mode =
         myTextArea.AdaptDisplayPosition ()
 
         let displayRows = myTextArea.GetDisplayRows ()
+        
         this.RenderRows displayRows 0
 
-    /// Renders content of the first row of status area to the console.
-    member private this.RenderFirstStatusRow isRecording =
-        let bufferName = myTextArea.BufferName
+    /// Renders content of the first row of status area for status to the console.
+    member private this.RenderFirstStatusRowForStatus isRecording =
         let statusChar = myTextArea.StatusChar
+        let bufferName = myTextArea.BufferName
         let cursorPos  = myTextArea.GetCursorPosForStatusArea ()
 
         let displayRows = ResizeArray [
-            myStatusArea.GetFirstDisplayRow
-                bufferName statusChar isRecording cursorPos
+            myStatusArea.GetFirstDisplayRowForStatus
+                statusChar isRecording bufferName cursorPos
+        ]
+
+        this.RenderRows displayRows (myRenderingContext.statusAreaRow + 0)
+
+    /// Renders content of the first row of status area for message to the console.
+    member private this.RenderFirstStatusRowForMessage message =
+        let displayRows = ResizeArray [
+            myStatusArea.GetFirstDisplayRowForMessage message
         ]
 
         this.RenderRows displayRows (myRenderingContext.statusAreaRow + 0)
 
     /// Renders content of the second row of status area to the console.
-    member private this.RenderSecondStatusRow mode keyPrefix message =
+    member private this.RenderSecondStatusRow message mode keyPrefix =
         let displayRows = ResizeArray [
-            myStatusArea.GetSecondDisplayRow mode keyPrefix message
+            myStatusArea.GetSecondDisplayRow message mode keyPrefix
         ]
 
         this.RenderRows displayRows (myRenderingContext.statusAreaRow + 1)
-
-    /// Renders content of prompt user message to the console.
-    member private this.RenderPromptMessage message =
-        let displayRows = ResizeArray [
-            myStatusArea.GetPromptMessageDisplayRow message
-        ]
-
-        this.RenderRows displayRows (myRenderingContext.statusAreaRow + 0)
 
     /// Renders content of prompt completions to the console.
     member private this.RenderCompletions completionsRow =

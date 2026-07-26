@@ -76,11 +76,15 @@ let mutable isRecording = false
 
 // rendering
 
-let renderAreas mode keyPrefix areasToRender =
+let render mode keyPrefix areasToRender =
     renderer.Render mode keyPrefix isRecording areasToRender
 
-let rerender mode keyPrefix =
-    let areasToRender = renderer.GetAreasToRerender mode
+let renderIndicators mode keyPrefix =
+    let areasToRender = renderer.GetAreasToRenderIndicators mode
+    renderer.Render mode keyPrefix isRecording areasToRender
+
+let renderALl mode keyPrefix =
+    let areasToRender = renderer.GetAreasToRenderAll mode
     renderer.Render mode keyPrefix isRecording areasToRender
 
 // main application loop
@@ -113,6 +117,10 @@ let applyWindowSize windowSize =
     else
         isConsoleOK <- false
 
+let inline handleKeySequenceSleep keySequenceSleep =
+    if keySequenceSleep > 0 then
+        Threading.Thread.Sleep keySequenceSleep    
+
 /// Dispatches a key.
 let dispatchKey mode keyPrefix key isToConsole keySequenceSleep =
     match keyPrefix, key with
@@ -120,14 +128,20 @@ let dispatchKey mode keyPrefix key isToConsole keySequenceSleep =
         when isKeyPrefix key && isKeyMappingsMode mode ->
 
         let keyPrefix' = Some key
+
         if isToConsole then
-            rerender mode keyPrefix'
+            renderIndicators mode keyPrefix'
+        handleKeySequenceSleep keySequenceSleep
+
         (IterContinue mode, keyPrefix')
 
     | Some _, Key.NoModif InputKey.Escape ->
         let keyPrefix' = None
+
         if isToConsole then
-            rerender mode keyPrefix'
+            renderIndicators mode keyPrefix'
+        handleKeySequenceSleep keySequenceSleep
+
         (IterContinue mode, keyPrefix')
 
     | None, key ->
@@ -144,9 +158,8 @@ let dispatchKey mode keyPrefix key isToConsole keySequenceSleep =
                     (IterContinue nextMode, None)
 
             if isToConsole then
-                renderAreas nextMode keyPrefix areasToRender
-            if keySequenceSleep > 0 then
-                Threading.Thread.Sleep keySequenceSleep
+                render nextMode keyPrefix areasToRender
+            handleKeySequenceSleep keySequenceSleep
                 
             handleTextAreaUndo textArea mode nextMode
             handlePromptUndo   prompt   mode nextMode
@@ -177,7 +190,8 @@ let dispatchSingleKey mode keyPrefix key isToConsole keySequenceSleep =
 /// Dispatches a sequence of keys.
 [<TailCall>]
 let rec dispatchKeySequence
-    mode keyPrefix keys recursionLimit recursions isToConsole keySequenceSleep =
+    mode keyPrefix keys isToConsole keySequenceSleep
+    recursionLimit recursions =
 
     match keys with
     | [] ->
@@ -191,8 +205,8 @@ let rec dispatchKeySequence
             if recursions < recursionLimit then
                 // Replace the first key in keys with keySeq mapped to it.
                 dispatchKeySequence
-                    mode None (keys' @ keysRest) recursionLimit (recursions + 1)
-                    isToConsole keySequenceSleep
+                    mode None (keys' @ keysRest) isToConsole keySequenceSleep
+                    recursionLimit (recursions + 1)                  
             else
                 userMessages.RegisterMessage (
                     formatMessage ERROR_RECURSION_LIMIT_WAS_REACHED recursionLimit
@@ -206,8 +220,8 @@ let rec dispatchKeySequence
             match result with
             | IterContinue mode', keyPrefix' ->
                 dispatchKeySequence
-                    mode' keyPrefix' keysRest recursionLimit recursions
-                    isToConsole keySequenceSleep
+                    mode' keyPrefix' keysRest isToConsole keySequenceSleep
+                    recursionLimit recursions
             | IterStop mode', keyPrefix' ->
                 (AppContinue mode', keyPrefix')                
             | IterExit, keyPrefix' ->
@@ -229,13 +243,14 @@ let dispatchInputKey mode keyPrefix key =
 
         let result =
             dispatchKeySequence
-                mode None keys' recursionLimit 1 isToConsole keySequenceSleep
+                mode None keys' isToConsole keySequenceSleep
+                recursionLimit 1
 
         match result with
         | AppContinue mode', keyPrefix' ->
             if not isToConsole then
                 // The steps of the key sequence were not rendered yet.
-                rerender mode' keyPrefix'                
+                renderALl mode' keyPrefix'                
         | AppExit, _keyPrefix' ->
             ()
             
@@ -253,8 +268,8 @@ let dispatchInputKey mode keyPrefix key =
 let toToggleRecording keyPrefix key =
     keyPrefix = None && key = Ctrl InputKey.Q
 
-/// Returns true if recording was toggled.
-let checkRecording keyPrefix key =
+/// Handles recording. Returns true if recording was toggled.
+let handleRecording keyPrefix key =
     if toToggleRecording keyPrefix key then
         if isRecording then
             keysRecorder.MoveKeysToRegister (
@@ -275,13 +290,13 @@ let rec mainLoop mode keyPrefix =
     | WindowSizeChanged windowSize ->
         applyWindowSize windowSize
         if isConsoleOK then
-            rerender mode keyPrefix
+            renderALl mode keyPrefix
         mainLoop mode keyPrefix
 
     | KeyboardInputRead key ->
         if isConsoleOK then
-            if checkRecording keyPrefix key then
-                rerender mode keyPrefix
+            if handleRecording keyPrefix key then
+                renderIndicators mode keyPrefix
                 mainLoop mode keyPrefix
             else
                 let result = dispatchInputKey mode keyPrefix key
@@ -300,7 +315,7 @@ let rec mainLoop mode keyPrefix =
     | ExceptionCaught ex ->
         userMessages.RegisterException ex
         if isConsoleOK then
-            rerender mode keyPrefix
+            renderALl mode keyPrefix
         mainLoop mode keyPrefix
         
 [<TailCall>]
@@ -308,9 +323,12 @@ let rec runMainLoop () =
     let wasExceptionCaught = tryCall userMessages (
         fun () ->
             let mode = NormalMode NormalMainState
+            let keyPrefix = None
+            
             if isConsoleOK then
-                renderAreas mode None toRenderTextAndStatus
-            mainLoop mode None
+                renderALl mode keyPrefix
+                
+            mainLoop mode keyPrefix
     )
 
     if wasExceptionCaught then
