@@ -89,16 +89,16 @@ let renderALl mode keyPrefix =
 
 // main application loop
 
-/// State of the iteration through a sequence of keys.
-type IterState =
-    | IterContinue of Mode  // continue iteration in specified mode
-    | IterStop     of Mode  // stop iteration in specified mode
-    | IterExit              // exit the application immediately
+/// Result of calling dispatchKey.
+type DispatchKeyResult =
+    | DispatchKeySucceeded of nextMode: Mode  // dispatchKey succeeded
+    | DispatchKeyFailed    of nextMode: Mode  // dispatchKey failed
+    | DispatchKeyAppExit                      // exit the application immediately
 
 /// State of the application.
 type AppState =
-    | AppContinue  of Mode  // continue application in specified mode
-    | AppExit               // exit the application immediately
+    | AppContinue of nextMode: Mode  // continue the application
+    | AppExit                        // exit the application immediately
 
 let isWindowSizeOK windowSize =
        windowSize.width  > 0
@@ -121,110 +121,115 @@ let inline handleKeySequenceSleep keySequenceSleep =
     if keySequenceSleep > 0 then
         Threading.Thread.Sleep keySequenceSleep    
 
+type DispatchKeyInput = {
+    mode:             Mode
+    keyPrefix:        Key option
+    isToConsole:      bool
+    keySequenceSleep: int
+    recursionLimit:   int
+    recursions:       int
+}
+
+/// Toggles key prefix according to keyPrefix.
+let toggleKeyPrefix keyPrefix (input: DispatchKeyInput) =
+    if input.isToConsole then
+        renderIndicators input.mode keyPrefix
+    handleKeySequenceSleep input.keySequenceSleep
+
+    (DispatchKeySucceeded input.mode, keyPrefix)
+
 /// Dispatches a key.
-let dispatchKey mode keyPrefix key isToConsole keySequenceSleep =
-    match keyPrefix, key with
+let dispatchKey key (input: DispatchKeyInput) =
+    match input.keyPrefix, key with
+    // Set key prefix.
     | None, key
-        when isKeyPrefix key && isKeyMappingsMode mode ->
+        when isKeyPrefix key && isKeyMappingsMode input.mode ->
 
-        let keyPrefix' = Some key
+        toggleKeyPrefix (Some key) input
 
-        if isToConsole then
-            renderIndicators mode keyPrefix'
-        handleKeySequenceSleep keySequenceSleep
+    // Cancel key prefix.
+    | Some _keyPrefix, Key.NoModif InputKey.Escape ->
+        toggleKeyPrefix None input
 
-        (IterContinue mode, keyPrefix')
+    // Ignore unmapped key with key prefix.
+    | Some _keyPrefix, _key ->
+        (DispatchKeySucceeded input.mode, input.keyPrefix)
 
-    | Some _, Key.NoModif InputKey.Escape ->
-        let keyPrefix' = None
-
-        if isToConsole then
-            renderIndicators mode keyPrefix'
-        handleKeySequenceSleep keySequenceSleep
-
-        (IterContinue mode, keyPrefix')
-
+    // Dispatch key without key prefix.
     | None, key ->
         let result, areasToRender =
             KeyDispatching.dispatchKey
-                userMessages textArea prompt registers mode key
+                userMessages textArea prompt registers input.mode key
 
         match result with
-        | Performed mode nextMode ->
+        | Performed input.mode nextMode ->
             let returnValue =
                 if userMessages.HasErrorOrWarningMessage then
-                    (IterStop nextMode, None)
+                    (DispatchKeyFailed nextMode, None)
                 else
-                    (IterContinue nextMode, None)
+                    (DispatchKeySucceeded nextMode, None)
 
-            if isToConsole then
-                render nextMode keyPrefix areasToRender
-            handleKeySequenceSleep keySequenceSleep
+            if input.isToConsole then
+                render nextMode input.keyPrefix areasToRender
+            handleKeySequenceSleep input.keySequenceSleep
                 
-            handleTextAreaUndo textArea mode nextMode
-            handlePromptUndo   prompt   mode nextMode
+            handleTextAreaUndo textArea input.mode nextMode
+            handlePromptUndo   prompt   input.mode nextMode
             
             returnValue
 
         | DispatchingResult.NoChange ->
-            (IterContinue mode, None)
+            (DispatchKeySucceeded input.mode, None)
         | DispatchingResult.Exit     ->
-            (IterExit, None)
+            (DispatchKeyAppExit, None)
         | _                          ->
             invalidOp ""
 
-    | _ ->
-        (IterContinue mode, keyPrefix)
-
 /// Dispatches a single key as opposed to a sequence of keys.
-let dispatchSingleKey mode keyPrefix key isToConsole keySequenceSleep =
-    let result = dispatchKey mode keyPrefix key isToConsole keySequenceSleep
-    
-    match result with
-    | IterContinue mode', keyPrefix'
-    | IterStop     mode', keyPrefix' ->
+let dispatchSingleKey key (input: DispatchKeyInput) =
+    match dispatchKey key input with
+    | DispatchKeySucceeded mode', keyPrefix' ->
         (AppContinue mode', keyPrefix')
-    | IterExit, keyPrefix' ->
+    | DispatchKeyFailed mode', keyPrefix' ->
+        (AppContinue mode', keyPrefix')
+    | DispatchKeyAppExit, keyPrefix' ->
         (AppExit, keyPrefix')
 
 /// Dispatches a sequence of keys.
 [<TailCall>]
-let rec dispatchKeySequence
-    mode keyPrefix keys isToConsole keySequenceSleep
-    recursionLimit recursions =
-
+let rec dispatchKeySequence keys (input: DispatchKeyInput) =
     match keys with
     | [] ->
-        (AppContinue mode, keyPrefix)
+        (AppContinue input.mode, input.keyPrefix)
 
     | key :: keysRest ->
         let keyMappings = textArea.CurrentKeyMappings
 
-        match getKeySequence keyMappings mode keyPrefix key with
+        match getKeySequence keyMappings input.mode input.keyPrefix key with
         | Some keys' ->
-            if recursions < recursionLimit then
+            if input.recursions < input.recursionLimit then
                 // Replace the first key in keys with keySeq mapped to it.
-                dispatchKeySequence
-                    mode None (keys' @ keysRest) isToConsole keySequenceSleep
-                    recursionLimit (recursions + 1)                  
+                dispatchKeySequence (keys' @ keysRest) {
+                    input with keyPrefix  = None
+                               recursions = input.recursions + 1
+                }
             else
                 userMessages.RegisterMessage (
-                    formatMessage ERROR_RECURSION_LIMIT_WAS_REACHED recursionLimit
+                    formatMessage ERROR_RECURSION_LIMIT_WAS_REACHED input.recursionLimit
                 )
                 
-                (AppContinue mode, None)
+                (AppContinue input.mode, None)
 
         | None ->
-            let result = dispatchKey mode keyPrefix key isToConsole keySequenceSleep
-            
-            match result with
-            | IterContinue mode', keyPrefix' ->
-                dispatchKeySequence
-                    mode' keyPrefix' keysRest isToConsole keySequenceSleep
-                    recursionLimit recursions
-            | IterStop mode', keyPrefix' ->
+            match dispatchKey key input with
+            | DispatchKeySucceeded mode', keyPrefix' ->
+                dispatchKeySequence keysRest {
+                    input with mode      = mode'
+                               keyPrefix = keyPrefix'
+                }
+            | DispatchKeyFailed mode', keyPrefix' ->
                 (AppContinue mode', keyPrefix')                
-            | IterExit, keyPrefix' ->
+            | DispatchKeyAppExit, keyPrefix' ->
                 (AppExit, keyPrefix')
 
 /// If given key is mapped to some key sequence, it dispatches
@@ -242,9 +247,14 @@ let dispatchInputKey mode keyPrefix key =
         let isToConsole = keySequenceSleep > 0
 
         let result =
-            dispatchKeySequence
-                mode None keys' isToConsole keySequenceSleep
-                recursionLimit 1
+            dispatchKeySequence keys' {
+                mode             = mode
+                keyPrefix        = None
+                isToConsole      = isToConsole
+                keySequenceSleep = keySequenceSleep
+                recursionLimit   = recursionLimit
+                recursions       = 1
+            }
 
         match result with
         | AppContinue mode', keyPrefix' ->
@@ -262,8 +272,14 @@ let dispatchInputKey mode keyPrefix key =
         // Render the single step of the key to the console.
         let isToConsole = true
 
-        dispatchSingleKey
-            mode keyPrefix key isToConsole keySequenceSleep
+        dispatchSingleKey key {
+            mode             = mode
+            keyPrefix        = keyPrefix
+            isToConsole      = isToConsole
+            keySequenceSleep = keySequenceSleep
+            recursionLimit   = 0
+            recursions       = 0
+        }
 
 let toToggleRecording keyPrefix key =
     keyPrefix = None && key = Ctrl InputKey.Q
