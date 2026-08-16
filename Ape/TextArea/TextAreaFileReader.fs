@@ -21,6 +21,11 @@ type TextAreaFileReader (
     // ReloadFile mechanism
     let mutable myReloadFileParams: FileUtils.ReloadFileParams option = None
 
+    // prompt history editing mechanism
+    static member val FakeRead: string -> Lines option
+      = fun _ -> None
+        with get, set
+    
     // only for testing purposes
     member _.ReloadFileParams = myReloadFileParams
 
@@ -33,7 +38,34 @@ type TextAreaFileReader (
             this.AssureNonZeroLinesCount ()
             resetFun ()
 
+    member private this.LoadLines (lines: Lines) resetFun =
+        myLines.Clear ()
+
+        try
+            this.LoadLinesAux lines myLines
+        finally
+            this.AssureNonZeroLinesCount ()
+            resetFun ()
+
     member this.LoadFile filePath encoding strictEncoding resetFun =
+        match TextAreaFileReader.FakeRead filePath with
+        | Some lines ->
+            this.LoadLines lines resetFun
+            Ok (FileUtils.defaultFileFormat, false)
+        | _ ->
+            this.LoadRealFile filePath encoding strictEncoding resetFun
+    
+    member this.ReloadFile filePath encoding strictEncoding resetFun =
+        match TextAreaFileReader.FakeRead filePath with
+        | Some lines ->
+            this.LoadLines lines resetFun
+            Ok (FileUtils.defaultFileFormat, false)
+        | _ ->
+            this.ReloadRealFile filePath encoding strictEncoding resetFun
+    
+    // private
+
+    member private this.LoadRealFile filePath encoding strictEncoding resetFun =
         match this.OpenFileForReading filePath encoding with
         | Ok stream' ->
             use stream = stream'
@@ -58,7 +90,7 @@ type TextAreaFileReader (
         | Error e ->
             Error e
 
-    member this.ReloadFile filePath encoding strictEncoding resetFun =
+    member private this.ReloadRealFile filePath encoding strictEncoding resetFun =
         match this.OpenFileForReading filePath encoding with
         | Ok stream' ->
             use stream = stream'
@@ -88,11 +120,13 @@ type TextAreaFileReader (
         | Error e ->
             Error e
 
-    // private
-
     member private _.LoadStringsAux lines result =
         for line in lines do
             result.Add (stringToChars line)
+
+    member private _.LoadLinesAux lines result =
+        for line in lines do
+            result.Add line
 
     member private _.OpenFileForReading filePath encoding =
         try

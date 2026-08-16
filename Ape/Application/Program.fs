@@ -12,6 +12,8 @@ open KeyDispatching
 open KeysStrings
 open Registers
 open Settings
+open TextAreaFileReader
+open TextAreaFileWriter
 open UndoRedo
 open UserMessages
 open WrappedRef
@@ -69,6 +71,36 @@ let tryCall (userMessages: UserMessages) action =
         | ex ->
             userMessages.RegisterException ex
             true
+
+// prompt history editing mechanism
+
+[<Literal>]
+let RegexHistoryFileName   = "<regex_history>"
+[<Literal>]
+let CommandHistoryFileName = "<command_history>"
+
+let PromptHistoryRead filePath =
+    match filePath with
+    | RegexHistoryFileName   ->
+        Some (prompt.RegexHistory.GetAll ())
+    | CommandHistoryFileName ->
+        Some (prompt.CommandHistory.GetAll ())        
+    | _ ->
+        None
+        
+let PromptHistoryWrite filePath lines =
+    match filePath with
+    | RegexHistoryFileName   ->
+        prompt.RegexHistory.SetAll lines
+        Some ()
+    | CommandHistoryFileName ->
+        prompt.CommandHistory.SetAll lines
+        Some ()
+    | _ ->
+        None
+    
+TextAreaFileReader.FakeRead  <- PromptHistoryRead
+TextAreaFileWriter.FakeWrite <- PromptHistoryWrite
 
 // recording
 

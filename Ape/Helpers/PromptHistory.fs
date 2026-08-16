@@ -52,9 +52,35 @@ type PromptHistory () =
             Some Chars.Empty
         else
             None
+            
+    /// Gets all lines from the history.
+    member _.GetAll () =
+        Lines myLines
 
+    /// Sets all lines in the history.
+    member this.SetAll (lines: Lines) =
+        myLines.Clear ()        
+        myLines.AddRange lines
+        
+        this.RemoveDuplicatesAndEmptyLines ()
+        
+        myCurrent <- myLines.Count
+    
     member private _.RemoveDuplicates () =
         let distinct =
-            myLines |> Seq.rev |> Seq.distinct |> Seq.rev |> Seq.toList
+            myLines
+                |> Seq.rev |> Seq.distinct |> Seq.rev
+                |> Seq.toList
+                
         myLines.Clear ()
         myLines.AddRange distinct
+
+    member private _.RemoveDuplicatesAndEmptyLines () =
+        let distinctAndNonEmpty =
+            myLines
+                |> Seq.rev |> Seq.distinct |> Seq.rev
+                |> Seq.filter (fun c -> not c.IsEmpty)
+                |> Seq.toList
+            
+        myLines.Clear ()
+        myLines.AddRange distinctAndNonEmpty

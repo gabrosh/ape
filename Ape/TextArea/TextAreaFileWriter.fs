@@ -1,12 +1,26 @@
 ﻿module TextAreaFileWriter
 
+open DataTypes
+
 [<Sealed>]
 type TextAreaFileWriter () =
 
-    static member WriteFile filePath encoding fileFormat endWithNewLine lines =
-        TextAreaFileWriter.WriteFileAux filePath encoding fileFormat endWithNewLine lines
+    // prompt history editing mechanism
+    static member val FakeWrite: string -> Lines -> unit option
+      = fun _ _ -> None
+        with get, set
 
+    static member WriteFile filePath encoding fileFormat endWithNewLine lines =
+        match TextAreaFileWriter.FakeWrite filePath lines with
+        | Some () ->
+            Ok ()
+        | _ ->
+            TextAreaFileWriter.WriteRealFile filePath encoding fileFormat endWithNewLine lines
+    
     // private
+
+    static member private WriteRealFile filePath encoding fileFormat endWithNewLine lines =
+        TextAreaFileWriter.WriteFileAux filePath encoding fileFormat endWithNewLine lines
 
     static member private WriteFileAux filePath encoding fileFormat endWithNewLine lines =
         try

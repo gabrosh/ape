@@ -52,10 +52,10 @@ type Prompt (
         inMainContextRef, myExtraContextRef, inUserMessages, inRegisters
     )
 
-    let myCommandHistory = PromptHistory ()
     let myRegexHistory   = PromptHistory ()
+    let myCommandHistory = PromptHistory ()
 
-    let mutable myHistory = myCommandHistory
+    let mutable myHistory = myRegexHistory
 
     let myCommandCompletions = new CompletionItems (
         inConsoleContextRef, inUserMessages, inGetCommandCompletionsFun
@@ -72,6 +72,9 @@ type Prompt (
     member _.HasUndoLinesToRegister = myBuffer.HasUndoLinesToRegister
 
     member _.IsCurrentFromHistory   = myHistory.IsCurrentFromHistory
+
+    member _.RegexHistory           = myRegexHistory
+    member _.CommandHistory         = myCommandHistory
 
     // Insert
 
@@ -326,17 +329,21 @@ type Prompt (
 
         myHistory <-
             match promptType with
+            | SearchPrompt _
+            | ExtractPrompt
+            | SelectPrompt
+            | KeepPrompt
+            | DiscardPrompt -> myRegexHistory
             | CommandPrompt -> myCommandHistory
-            | _             -> myRegexHistory
 
         myCompletions <-
             match promptType with
-            | CommandPrompt -> Some myCommandCompletions
             | SearchPrompt _
             | ExtractPrompt
             | SelectPrompt
             | KeepPrompt
             | DiscardPrompt -> Some myIdentCompletions
+            | CommandPrompt -> Some myCommandCompletions
 
     member _.WhenLeaving toOverwrite =
         myHistory.WhenLeaving myBuffer.Line toOverwrite
