@@ -7,6 +7,18 @@ open DataTypes
 open PositionClassifier
 open Selection
 
+// virtual filePaths
+
+[<Literal>]
+let RegexHistoryFileName   = "<regex_history>"
+[<Literal>]
+let CommandHistoryFileName = "<command_history>"
+
+let VirtualFilePaths = [|
+    RegexHistoryFileName
+    CommandHistoryFileName
+|]
+
 // editor mode
 
 type FindCharState =

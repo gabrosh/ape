@@ -22,7 +22,7 @@ type TextAreaFileReader (
     let mutable myReloadFileParams: FileUtils.ReloadFileParams option = None
 
     // prompt history editing mechanism
-    static member val FakeRead: string -> Lines option
+    static member val VirtualRead: string -> Lines option
       = fun _ -> None
         with get, set
     
@@ -48,7 +48,7 @@ type TextAreaFileReader (
             resetFun ()
 
     member this.LoadFile filePath encoding strictEncoding resetFun =
-        match TextAreaFileReader.FakeRead filePath with
+        match TextAreaFileReader.VirtualRead filePath with
         | Some lines ->
             this.LoadLines lines resetFun
             Ok (FileUtils.defaultFileFormat, false)
@@ -56,7 +56,7 @@ type TextAreaFileReader (
             this.LoadRealFile filePath encoding strictEncoding resetFun
     
     member this.ReloadFile filePath encoding strictEncoding resetFun =
-        match TextAreaFileReader.FakeRead filePath with
+        match TextAreaFileReader.VirtualRead filePath with
         | Some lines ->
             this.LoadLines lines resetFun
             Ok (FileUtils.defaultFileFormat, false)

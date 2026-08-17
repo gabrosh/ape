@@ -74,11 +74,6 @@ let tryCall (userMessages: UserMessages) action =
 
 // prompt history editing mechanism
 
-[<Literal>]
-let RegexHistoryFileName   = "<regex_history>"
-[<Literal>]
-let CommandHistoryFileName = "<command_history>"
-
 let PromptHistoryRead filePath =
     match filePath with
     | RegexHistoryFileName   ->
@@ -99,8 +94,8 @@ let PromptHistoryWrite filePath lines =
     | _ ->
         None
     
-TextAreaFileReader.FakeRead  <- PromptHistoryRead
-TextAreaFileWriter.FakeWrite <- PromptHistoryWrite
+TextAreaFileReader.VirtualRead  <- PromptHistoryRead
+TextAreaFileWriter.VirtualWrite <- PromptHistoryWrite
 
 // recording
 

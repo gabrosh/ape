@@ -6,12 +6,12 @@ open DataTypes
 type TextAreaFileWriter () =
 
     // prompt history editing mechanism
-    static member val FakeWrite: string -> Lines -> unit option
+    static member val VirtualWrite: string -> Lines -> unit option
       = fun _ _ -> None
         with get, set
 
     static member WriteFile filePath encoding fileFormat endWithNewLine lines =
-        match TextAreaFileWriter.FakeWrite filePath lines with
+        match TextAreaFileWriter.VirtualWrite filePath lines with
         | Some () ->
             Ok ()
         | _ ->

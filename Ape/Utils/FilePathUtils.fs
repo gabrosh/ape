@@ -12,7 +12,7 @@ let private isCaseSensitive =
     | RuntimeOSPlatform.FreeBSD
     | RuntimeOSPlatform.OSX       -> true
 
-let private platformCaseFun =
+let private osCaseSensitivenessFun =
     if isCaseSensitive then
         id
     else
@@ -28,12 +28,12 @@ let private allTheSame (strs: string array) charIndex =
     if charIndex >= s.Length then
         false
     else
-        let c = platformCaseFun s[charIndex]
+        let c = osCaseSensitivenessFun s[charIndex]
 
         for i = 1 to strs.Length - 1 do
             let s = strs[i]
 
-            if charIndex >= s.Length || platformCaseFun s[charIndex] <> c then
+            if charIndex >= s.Length || osCaseSensitivenessFun s[charIndex] <> c then
                 result <- false
 
         result
@@ -50,9 +50,13 @@ let getCommonPrefix (strs: string array) =
 
     strs[0].Substring (0, suffixLength)
 
-/// Returns true if s1 equals s2 taking into account the platform case sensitiveness.
-let equalsWithPlatformCase (s: string) (prefix: string) =
+/// Returns true if s1 equals s2, case sensitively or not depending on the OS platform.
+let equalsWithOsCaseSensitiveness (s: string) (prefix: string) =
     if isCaseSensitive then
         String.Equals (s, prefix, StringComparison.Ordinal)
     else
         String.Equals (s, prefix, StringComparison.OrdinalIgnoreCase)
+
+/// Returns true if s1 equals s2, case sensitively.
+let equalsCaseSensitive (s: string) (prefix: string) =
+    String.Equals (s, prefix, StringComparison.Ordinal)

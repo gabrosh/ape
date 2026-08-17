@@ -34,7 +34,7 @@ let keepArgsStartingWith (argInCompl: StringInCompl) (seq: string seq) : Complet
     )
     |> Seq.map (
         fun s -> Both (
-            s, [| s |> adjustCompleted argInCompl.quoteType |]
+            s, [| s |> adjustCompletedWithSuffix argInCompl.quoteType |]
         )
     )
 
@@ -43,7 +43,7 @@ let private wrapInBoth (argInCompl: StringInCompl) (seq: string seq) =
     seq
     |> Seq.map (
         fun s -> Both (
-            s, [| s |> adjustCompleted argInCompl.quoteType |]
+            s, [| s |> adjustCompletedWithSuffix argInCompl.quoteType |]
         )
     )
 

@@ -3,6 +3,7 @@ module CompletionBasic
 open System
 
 open CommandArgs
+open Common
 open CompletionCommon
 open CompletionUtils
 open ExecutionCommon
@@ -21,12 +22,24 @@ let private transformEnumerateEntry (dirNameIsEmpty: bool) (entry: string) =
     else
         entry
 
-let private adjustFilePaths (argInCompl: StringInCompl) (filePaths: string array) =
-    filePaths |> Array.map (adjustCompleted argInCompl.quoteType)
+let private adjustFilePaths
+    (argInCompl: StringInCompl) (firstWithoutSuffix: bool) (filePaths: string array) =
+    
+    let boundary = if firstWithoutSuffix then 1 else 0
+    
+    filePaths
+    |> Seq.indexed
+    |> Seq.map (fun (i, s) ->
+        if i < boundary then
+            adjustCompletedWithoutSuffix argInCompl.quoteType s
+        else
+            adjustCompletedWithSuffix argInCompl.quoteType s           
+    )
+    |> Seq.toArray
 
 /// Returns the filePath completion taking into account all files and directories
 /// matching given pattern.
-let private getFilePathCompletions (argInCompl: StringInCompl) =
+let private getRealFilePathCompletions (argInCompl: StringInCompl) =
     let fileName = IO.Path.GetFileName argInCompl.unescaped
 
     let pattern =
@@ -55,24 +68,62 @@ let private getFilePathCompletions (argInCompl: StringInCompl) =
         if n = 0 then
             seq { ForList "#filePath" }
         elif n = 1 then
-            let completed = filePaths |> adjustFilePaths argInCompl
+            let completed = filePaths |> adjustFilePaths argInCompl false
             seq { Both ($"#filePath:{n}", completed) }
         else
             let commonPrefix = getCommonPrefix filePaths
 
-            if equalsWithPlatformCase commonPrefix argInCompl.unescaped ||
-               equalsWithPlatformCase commonPrefix filePaths[0]
+            if equalsWithOsCaseSensitiveness commonPrefix argInCompl.unescaped ||
+               equalsWithOsCaseSensitiveness commonPrefix filePaths[0]
             then
-                let completed = filePaths |> adjustFilePaths argInCompl
+                let completed = filePaths |> adjustFilePaths argInCompl false
                 seq { Both ($"#filePath:{n}", completed) }
             else
                 let filePaths = Array.append [| commonPrefix |] filePaths
-                let completed = filePaths |> adjustFilePaths argInCompl
+                let completed = filePaths |> adjustFilePaths argInCompl true
                 seq { Both ($"#filePath:+{n}", completed) }
     with
         | :? IO.IOException                         // could not find a part of the path
         | :? System.UnauthorizedAccessException ->  // access to the path is denied
             seq { ForList "#filePath" }
+
+let private getVirtualFilePathCompletions (argInCompl: StringInCompl) =
+    let virtualFilePaths = [|
+        RegexHistoryFileName
+        CommandHistoryFileName
+    |]
+    
+    let filePaths =
+        virtualFilePaths
+        |> Seq.filter (fun s -> s.StartsWith argInCompl.unescaped)
+        |> Seq.toArray
+        |> Array.sort
+    
+    let n = filePaths.Length
+            
+    if n = 0 then
+        seq { ForList "#filePath" }
+    elif n = 1 then
+        let completed = filePaths |> adjustFilePaths argInCompl false
+        seq { Both ($"#filePath:{n}", completed) }
+    else
+        let commonPrefix = getCommonPrefix filePaths
+
+        if equalsCaseSensitive commonPrefix argInCompl.unescaped ||
+           equalsCaseSensitive commonPrefix filePaths[0]
+        then
+            let completed = filePaths |> adjustFilePaths argInCompl false
+            seq { Both ($"#filePath:{n}", completed) }
+        else
+            let filePaths = Array.append [| commonPrefix |] filePaths
+            let completed = filePaths |> adjustFilePaths argInCompl true
+            seq { Both ($"#filePath:+{n}", completed) }
+   
+let private getFilePathCompletions (argInCompl: StringInCompl) =
+    if argInCompl.unescaped.StartsWith "<" then
+        getVirtualFilePathCompletions argInCompl
+    else
+        getRealFilePathCompletions argInCompl
 
 // execCfg
 

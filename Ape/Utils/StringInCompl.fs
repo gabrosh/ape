@@ -123,8 +123,30 @@ let private prefixCompleted (quoteType: QuoteType) (s: string) =
 
     prefix + s
 
+/// Adds quotation suffix to given completed string according to quoteType.
+let private suffixCompleted (quoteType: QuoteType) (s: string) =
+    let suffix =
+        match quoteType with
+        | NotQuoted ->
+            if isQuotingNeeded s then
+                "\""
+            else
+                ""
+        | Quoted
+        | AtQuoted  ->
+            "\""
+
+    s + suffix
+
+/// Escapes given completed string according to quoteType and adds quotation prefix and suffix to it.
+let adjustCompletedWithSuffix (quoteType: QuoteType) (s: string) =
+    s
+    |> escapeCompleted quoteType
+    |> prefixCompleted quoteType
+    |> suffixCompleted quoteType
+
 /// Escapes given completed string according to quoteType and adds quotation prefix to it.
-let adjustCompleted (quoteType: QuoteType) (s: string) =
+let adjustCompletedWithoutSuffix (quoteType: QuoteType) (s: string) =
     s
     |> escapeCompleted quoteType
     |> prefixCompleted quoteType
