@@ -197,18 +197,18 @@ type CommandCompletionsTest () =
         assertResult          None (myCompletions.GetNext     ())
         assertNotInCompletion ()
 
-    // #filePath - basic -------------------------------------------------------
+    // #filePath, real files - basic--------------------------------------------
 
     [<Test>]
-    member _.GetNext_filePath_1 () =
+    member _.GetNext_filePath_real_1 () =
         let _d = initForFilePath "e true utf-8 abz"
 
-        assertResult (Some (3, "abz"    )) (myCompletions.GetNext ())
+        assertResult (Some (3, "abz")) (myCompletions.GetNext ())
         assertRowStr "#filePath"
-        assertResult (None               ) (myCompletions.GetNext ())
+        assertResult (None           ) (myCompletions.GetNext ())
 
     [<Test>]
-    member _.GetNext_filePath_2 () =
+    member _.GetNext_filePath_real_2 () =
         let _d = initForFilePath "e true utf-8 "
 
         assertResult (Some (0 , "ab"           )) (myCompletions.GetNext ())
@@ -220,7 +220,7 @@ type CommandCompletionsTest () =
         assertResult (None                      ) (myCompletions.GetNext ())
 
     [<Test>]
-    member _.GetNext_filePath_3 () =
+    member _.GetNext_filePath_real_3 () =
         let _d = initForFilePath "e true utf-8 a"
 
         assertResult (Some (1 , "ab"           )) (myCompletions.GetNext ())
@@ -232,7 +232,7 @@ type CommandCompletionsTest () =
         assertResult (None                      ) (myCompletions.GetNext ())
 
     [<Test>]
-    member _.GetNext_filePath_4 () =
+    member _.GetNext_filePath_real_4 () =
         let _d = initForFilePath "e true utf-8 ab"
 
         // equalsWithPlatformCase commonPrefix argInCompl = true
@@ -244,7 +244,7 @@ type CommandCompletionsTest () =
         assertResult (None                      ) (myCompletions.GetNext ())
 
     [<Test>]
-    member _.GetNext_filePath_5 () =
+    member _.GetNext_filePath_real_5 () =
         let _d = initForFilePath "e true utf-8 abx"
 
         // filePaths.Length = 1
@@ -253,7 +253,7 @@ type CommandCompletionsTest () =
         assertResult (None               ) (myCompletions.GetNext ())
 
     [<Test>]
-    member _.GetNext_filePath_6 () =
+    member _.GetNext_filePath_real_6 () =
         let _d = initForFilePath "e true utf-8 aby"
 
         // equalsWithPlatformCase commonPrefix filePaths[0] = true
@@ -262,10 +262,10 @@ type CommandCompletionsTest () =
         assertResult (Some (6, "aby.txt")) (myCompletions.GetNext ())
         assertResult (None               ) (myCompletions.GetNext ())
 
-    // #filePath - wildCards ---------------------------------------------------
+    // #filePath, real files - wildCards ---------------------------------------
 
     [<Test>]
-    member _.GetNext_filePath_wildCards_1 () =
+    member _.GetNext_filePath_real_wildCards_1 () =
         let _d = initForFilePath "e true utf-8 a*.txt"
 
         assertResult (Some (6 , "ab"           )) (myCompletions.GetNext ())
@@ -276,7 +276,7 @@ type CommandCompletionsTest () =
         assertResult (None                      ) (myCompletions.GetNext ())
 
     [<Test>]
-    member _.GetNext_filePath_wildCards_2 () =
+    member _.GetNext_filePath_real_wildCards_2 () =
         let _d = initForFilePath "e true utf-8 ab?.txt"
 
         assertResult (Some (7, "ab"     )) (myCompletions.GetNext ())
@@ -286,7 +286,7 @@ type CommandCompletionsTest () =
         assertResult (None               ) (myCompletions.GetNext ())
 
     [<Test>]
-    member _.GetNext_filePath_wildCards_3 () =
+    member _.GetNext_filePath_real_wildCards_3 () =
         let _d = initForFilePath "e true utf-8 abx.t*"
 
         assertResult (Some (6, "abx.txt")) (myCompletions.GetNext ())
@@ -294,17 +294,17 @@ type CommandCompletionsTest () =
         assertResult (None               ) (myCompletions.GetNext ())
 
     [<Test>]
-    member _.GetNext_filePath_wildCards_4 () =
+    member _.GetNext_filePath_real_wildCards_4 () =
         let _d = initForFilePath "e true utf-8 abx.tx?"
 
         assertResult (Some (7, "abx.txt")) (myCompletions.GetNext ())
         assertRowStr "#filePath:1"
         assertResult (None               ) (myCompletions.GetNext ())
 
-    // #filePath - quoted, atQuoted --------------------------------------------
+    // #filePath, real files - quoted, atQuoted --------------------------------
 
     [<Test>]
-    member _.GetNext_filePath_quoted () =
+    member _.GetNext_filePath_real_quoted () =
         let d = initForFilePath "e true utf-8 \".\\\\"
 
         assertResult (Some (4  - d, "\".\\\\ab"        )) (myCompletions.GetNext ())
@@ -316,7 +316,7 @@ type CommandCompletionsTest () =
         assertResult (None                              ) (myCompletions.GetNext ())
 
     [<Test>]
-    member _.GetNext_filePath_atQuoted () =
+    member _.GetNext_filePath_real_atQuoted () =
         let d = initForFilePath "e true utf-8 @\".\\"
 
         assertResult (Some (4  - d, "@\".\\ab"        )) (myCompletions.GetNext ())
@@ -326,3 +326,50 @@ type CommandCompletionsTest () =
         assertResult (Some (12 - d, "@\".\\aby.tx\""  )) (myCompletions.GetNext ())
         assertResult (Some (11 - d, "@\".\\aby.txt\"" )) (myCompletions.GetNext ())
         assertResult (None                             ) (myCompletions.GetNext ())
+
+    // #filePath, virtual files - basic ----------------------------------------
+
+    [<Test>]
+    member _.GetNext_filePath_virtual_1 () =
+        let _d = initForFilePath "e true utf-8 <abz"
+
+        assertResult (Some (4, "<abz")) (myCompletions.GetNext ())
+        assertRowStr "#filePath"
+        assertResult (None            ) (myCompletions.GetNext ())
+
+    [<Test>]
+    member _.GetNext_filePath_virtual_2 () =
+        let _d = initForFilePath "e true utf-8 <"
+
+        assertResult (Some (1 , "<command_history>")) (myCompletions.GetNext ())
+        assertRowStr "#filePath:2"
+        assertResult (Some (17, "<regex_history>"  )) (myCompletions.GetNext ())
+        assertResult (None                          ) (myCompletions.GetNext ())
+
+    [<Test>]
+    member _.GetNext_filePath_virtual_3 () =
+        let _d = initForFilePath "e true utf-8 <r"
+
+        assertResult (Some (2 , "<regex_history>")) (myCompletions.GetNext ())
+        assertRowStr "#filePath:1"
+        assertResult (None                        ) (myCompletions.GetNext ())
+
+    // #filePath, virtual files - quoted, atQuoted -----------------------------
+
+    [<Test>]
+    member _.GetNext_filePath_virtual_quoted () =
+        let d = initForFilePath "e true utf-8 \"<"
+
+        assertResult (Some (2 , "\"<command_history>\"")) (myCompletions.GetNext ())
+        assertRowStr "#filePath:2"
+        assertResult (Some (19, "\"<regex_history>\""  )) (myCompletions.GetNext ())
+        assertResult (None                              ) (myCompletions.GetNext ())
+
+    [<Test>]
+    member _.GetNext_filePath_virtual_atQuoted () =
+        let d = initForFilePath "e true utf-8 @\"<"
+
+        assertResult (Some (3 , "@\"<command_history>\"")) (myCompletions.GetNext ())
+        assertRowStr "#filePath:2"
+        assertResult (Some (20, "@\"<regex_history>\""  )) (myCompletions.GetNext ())
+        assertResult (None                               ) (myCompletions.GetNext ())
