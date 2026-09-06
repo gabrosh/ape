@@ -204,6 +204,11 @@ type TextAreaBufferBase (
             myBasicDelegator.PerformOnMainSelection isExtending command count
         | WrapLinesDepCommand CenterVertically
         | WrapLinesDepCommand CenterHorizontally
+        | WrapLinesDepCommand (CenterAfterMatch _)
+        | WrapLinesDepCommand ScrollCursorTop
+        | WrapLinesDepCommand ScrollCursorBottom
+        | WrapLinesDepCommand ScrollCursorLeft
+        | WrapLinesDepCommand ScrollCursorRight
         | WrapLinesDepCommand AdaptDisplayPos    ->
             myBasicDelegator.PerformViewCommand     isExtending command count
         | WrapLinesDepCommand _                  ->

@@ -18,12 +18,12 @@ type WrappedRef<'T when 'T: equality> (value: 'T) =
 
     let myChanged = Event<unit> ()
 
-    member _.Value
-        with get ()    = myValue
-        and  set value =
-            if value <> myValue then
-                myValue <- value
-                myChanged.Trigger ()
+    member _.Value with get () =
+        myValue
+    member _.Value with set value =
+        if value <> myValue then
+            myValue <- value
+            myChanged.Trigger ()
 
     interface IWrappedRef<'T> with
         member _.Subscribe (f: unit -> unit) =
