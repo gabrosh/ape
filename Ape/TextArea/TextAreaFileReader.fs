@@ -4,6 +4,7 @@ open System
 
 open Context
 open DataTypes
+open FileUtils
 open UserMessages
 open WrappedRef
 
@@ -51,7 +52,7 @@ type TextAreaFileReader (
         match TextAreaFileReader.VirtualRead filePath with
         | Some lines ->
             this.LoadLines lines resetFun
-            Ok (FileUtils.defaultFileFormat, false)
+            Ok (FileUtils.defaultFileFormat, false, DiskFileState_Default filePath)
         | _ ->
             this.LoadRealFile filePath encoding strictEncoding resetFun
     
@@ -59,7 +60,7 @@ type TextAreaFileReader (
         match TextAreaFileReader.VirtualRead filePath with
         | Some lines ->
             this.LoadLines lines resetFun
-            Ok (FileUtils.defaultFileFormat, false)
+            Ok (FileUtils.defaultFileFormat, false, DiskFileState_Default filePath)
         | _ ->
             this.ReloadRealFile filePath encoding strictEncoding resetFun
     
@@ -82,7 +83,7 @@ type TextAreaFileReader (
 
                 myReloadFileParams <- reloadFileParams'
 
-                Ok (fileFormat, endsWithNewLine)
+                Ok (fileFormat, endsWithNewLine, getDiskFileState filePath)
             finally
                 this.AssureNonZeroLinesCount ()
                 resetFun ()
@@ -112,7 +113,7 @@ type TextAreaFileReader (
 
                 myReloadFileParams <- reloadFileParams'
 
-                Ok (fileFormat, endsWithNewLine)
+                Ok (fileFormat, endsWithNewLine, getDiskFileState filePath)
             finally
                 this.AssureNonZeroLinesCount ()
                 resetFun ()

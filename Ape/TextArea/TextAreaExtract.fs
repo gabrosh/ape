@@ -144,7 +144,11 @@ type TextAreaExtract (
                 this.ResetState Position_Zero
                 this.ResetUndoState ()
         )
-
+        |> Result.map (
+            fun (fileFormat, endsWithNewLine, _diskFileState) ->
+                (fileFormat, endsWithNewLine)
+        )
+            
     member this.Reload encoding strictEncoding warnIfNoMatchFound =
         let cursor      = this.Main.Cursor
         let cursorWC    = this.Main.CursorWC
@@ -157,6 +161,10 @@ type TextAreaExtract (
                 )
 
                 this.ResetUndoState ()
+        )
+        |> Result.map (
+            fun (fileFormat, endsWithNewLine, _diskFileState) ->
+                (fileFormat, endsWithNewLine)
         )
 
     // auxiliary
@@ -235,7 +243,8 @@ type TextAreaExtract (
         member this.LinesForCompletion     = myLinesFromFile
         member this.Selections             = this.Selections
         member this.IsReadOnly             = this.IsReadOnly
-        member this.IsBufferChanged        = false
+        member this.IsBufferChanged        = None
+        member this.IsDiskFileChanged      = None
         member this.HasUndoToRegister      = this.HasUndoToRegister
         member this.HasUndoLinesToRegister = this.HasUndoLinesToRegister
 
@@ -273,6 +282,9 @@ type TextAreaExtract (
 
         member this.WriteFile filePath encoding fileFormat endWithNewLine =
             this.WriteFile filePath encoding fileFormat endWithNewLine
+            |> Result.map (
+                fun _diskFileState -> ()
+            )
 
         member _.GetFirstChild () =
             None

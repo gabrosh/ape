@@ -93,6 +93,7 @@ type TextArea (
     member _.LinesForCompletion     = myBuffer.LinesForCompletion
     member _.IsReadOnly             = myBuffer.IsReadOnly
     member _.IsBufferChanged        = myBuffer.IsBufferChanged
+    member _.IsDiskFileChanged      = myBuffer.IsDiskFileChanged     
     member _.HasUndoToRegister      = myBuffer.HasUndoToRegister
     member _.HasUndoLinesToRegister = myBuffer.HasUndoLinesToRegister
     member _.StatusChar             = myBuffer.StatusChar

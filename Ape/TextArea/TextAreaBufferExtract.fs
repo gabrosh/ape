@@ -214,7 +214,8 @@ type TextAreaBufferExtract (
         member this.LinesForCompletion     = myParent.Lines
         member this.Selections             = this.Selections
         member this.IsReadOnly             = this.IsReadOnly
-        member this.IsBufferChanged        = false
+        member this.IsBufferChanged        = None
+        member this.IsDiskFileChanged      = None
         member this.HasUndoToRegister      = this.HasUndoToRegister
         member this.HasUndoLinesToRegister = this.HasUndoLinesToRegister
 
@@ -252,6 +253,9 @@ type TextAreaBufferExtract (
 
         member this.WriteFile filePath encoding fileFormat endWithNewLine =
             this.WriteFile filePath encoding fileFormat endWithNewLine
+            |> Result.map (
+                fun _diskFileState -> ()
+            )
 
         member _.GetFirstChild () =
             None

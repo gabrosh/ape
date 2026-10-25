@@ -99,6 +99,17 @@ let ReloadFileParams_Zero = {
     nonTranslatableBytes = false
 }
 
+type DiskFileState = {
+    name:          string
+    size:          int64
+    lastWriteTime: DateTime
+}
+let DiskFileState_Default filePath = {
+    name          = filePath
+    size          = Int64.MinValue
+    lastWriteTime = DateTime.MinValue
+}
+
 // the default values for IO.StreamReader and IO.StreamWriter
 let private readBufferSize  = 4096
 let private writeBufferSize = 4096
@@ -280,3 +291,24 @@ let isDirectory (path: string) =
     with
         | :? System.IO.FileNotFoundException ->
             false
+
+/// Returns state of the file on disk.
+let getDiskFileState (filePath: string) : DiskFileState =
+    try
+        let fileInfo = System.IO.FileInfo filePath
+        {
+            name          = fileInfo.Name
+            size          = fileInfo.Length
+            lastWriteTime = IO.File.GetLastWriteTime filePath
+        }
+    with _ ->
+        DiskFileState_Default filePath
+
+/// Returns true if the file on disk has changed since the last time it was read.
+let isDiskFileChanged (filePath: string) (lastState: DiskFileState) =
+    if lastState <> DiskFileState_Default filePath then
+        let currentState = getDiskFileState filePath
+        currentState.name = lastState.name &&
+            currentState <> lastState
+    else
+        false

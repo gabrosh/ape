@@ -20,7 +20,8 @@ type TextAreaBuffer (
     myUserMessages:  UserMessages,
     myRegisters:     Registers.Registers,
     inFilePath:      string,
-    myLinesFromFile: Lines
+    myLinesFromFile: Lines,
+    inDiskFileState: FileUtils.DiskFileState
 ) as thisCtor =
     inherit TextAreaBufferBase (
         myContextRef, myUserMessages, myRegisters, inFilePath,
@@ -34,6 +35,8 @@ type TextAreaBuffer (
         myContextRef, myUserMessages, myLinesFromFile
     )
 
+    let mutable myDiskFileState = inDiskFileState
+    
     let myMatchRanges = thisCtor.MatchRanges
 
     // registered children (extract buffers)
@@ -108,6 +111,10 @@ type TextAreaBuffer (
 
     // others
 
+    member this.IsDiskFileChanged =
+        FileUtils.isDiskFileChanged
+            this.FilePath myDiskFileState
+
     member this.LoadStrings (lines: string seq) =
         myFileReader.LoadStrings lines (
             fun () ->
@@ -120,6 +127,11 @@ type TextAreaBuffer (
             fun () ->
                 this.ResetState Position_Zero
                 this.ResetUndoState ()
+        )
+        |> Result.map (
+            fun (fileFormat, endsWithNewLine, diskFileState) ->
+                myDiskFileState <- diskFileState
+                (fileFormat, endsWithNewLine)
         )
 
     member this.Reload encoding strictEncoding warnIfNoMatchFound =
@@ -134,6 +146,11 @@ type TextAreaBuffer (
                 )
 
                 this.ResetUndoState ()
+        )
+        |> Result.map (
+            fun (fileFormat, endsWithNewLine, diskFileState) ->
+                myDiskFileState <- diskFileState
+                (fileFormat, endsWithNewLine)
         )
 
     // auxiliary
@@ -213,7 +230,8 @@ type TextAreaBuffer (
         member this.LinesForCompletion     = myLinesFromFile
         member this.Selections             = this.Selections
         member this.IsReadOnly             = this.IsReadOnly
-        member this.IsBufferChanged        = this.IsBufferChanged
+        member this.IsBufferChanged        = Some this.IsBufferChanged
+        member this.IsDiskFileChanged      = Some this.IsDiskFileChanged
         member this.HasUndoToRegister      = this.HasUndoToRegister
         member this.HasUndoLinesToRegister = this.HasUndoLinesToRegister
 
@@ -254,7 +272,12 @@ type TextAreaBuffer (
 
         member this.WriteFile filePath encoding fileFormat endWithNewLine =
             this.WriteFile filePath encoding fileFormat endWithNewLine
-
+            |> Result.map (
+                fun diskFileState ->
+                    myDiskFileState <- diskFileState
+                    ()
+            )
+            
         member _.GetFirstChild () =
             if myChildren.Count <> 0 then
                 Some myChildren[0]
@@ -278,5 +301,6 @@ let makeTextAreaBuffer (
         userMessages,
         registers,
         filePath,
-        Lines Chars.Empty
+        Lines Chars.Empty,
+        FileUtils.DiskFileState_Default filePath
     )

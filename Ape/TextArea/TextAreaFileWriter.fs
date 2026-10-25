@@ -1,6 +1,7 @@
 ﻿module TextAreaFileWriter
 
 open DataTypes
+open FileUtils
 
 [<Sealed>]
 type TextAreaFileWriter () =
@@ -13,7 +14,7 @@ type TextAreaFileWriter () =
     static member WriteFile filePath encoding fileFormat endWithNewLine lines =
         match TextAreaFileWriter.VirtualWrite filePath lines with
         | Some () ->
-            Ok ()
+            Ok (DiskFileState_Default filePath)
         | _ ->
             TextAreaFileWriter.WriteRealFile filePath encoding fileFormat endWithNewLine lines
     
@@ -27,7 +28,8 @@ type TextAreaFileWriter () =
             if FileUtils.isDirectory filePath then
                 Error "The specified path is a directory."
             else
-                Ok (FileUtils.writeFile filePath encoding fileFormat endWithNewLine lines)
+                FileUtils.writeFile filePath encoding fileFormat endWithNewLine lines
+                Ok (getDiskFileState filePath)
         with
         | :? System.ArgumentException as ex ->
             Error ex.Message

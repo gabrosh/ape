@@ -42,6 +42,8 @@ let WARNING_NO_CHANGE_SINCE_LAST_WRITE =
     WarningMessage , "No change since last write. Add ! to override."
 let WARNING_FILE_ALREADY_EXISTS =
     WarningMessage , "File already exists: '{0}'. Add ! to override."
+let WARNING_UNDERLYING_FILE_CHANGED =
+    WarningMessage , "Underlying file changed since last read/write. Add ! to override."
 
 let INFO_ONLY_ONE_BUFFER =
     InfoMessage    , "Only one buffer."

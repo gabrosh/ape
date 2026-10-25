@@ -21,7 +21,8 @@ type ITextAreaBuffer =
     abstract member LinesForCompletion:     Lines
     abstract member Selections:             Selections
     abstract member IsReadOnly:             bool
-    abstract member IsBufferChanged:        bool
+    abstract member IsBufferChanged:        bool option
+    abstract member IsDiskFileChanged:      bool option
     abstract member HasUndoToRegister:      bool
     abstract member HasUndoLinesToRegister: bool
     abstract member StatusChar:             char

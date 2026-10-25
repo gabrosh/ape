@@ -224,7 +224,7 @@ type BuffersRegistry (
 
     member private _.GetIndexOfFirstChanged () =
         myItems.FindIndex (
-            fun item -> item.buffer.IsBufferChanged
+            fun item -> item.buffer.IsBufferChanged = Some true
         )
 
     member private _.GetIndexByBufferName bufferName = 

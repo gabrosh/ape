@@ -81,7 +81,12 @@ let private execute_writeAux quiet context (argsMap: ArgsMap) =
             context.textArea.WriteFileAs filePath
     | None ->
         if   not quiet
-          && not context.textArea.IsBufferChanged
+          && context.textArea.IsDiskFileChanged = Some true
+        then
+            context.userMessages.RegisterMessage
+                WARNING_UNDERLYING_FILE_CHANGED
+        elif not quiet
+          && context.textArea.IsBufferChanged = Some false
         then
             context.userMessages.RegisterMessage
                 WARNING_NO_CHANGE_SINCE_LAST_WRITE
@@ -195,7 +200,9 @@ let execute_extractBang = execute_extractAux true
 let argsMapSpec_reloadAux: ArgsMapSpec = (0, [| |])
 
 let execute_reloadAux quiet context (_argsMap: ArgsMap) =
-    if not quiet && context.textArea.IsBufferChanged then
+    if   not quiet
+      && context.textArea.IsBufferChanged = Some true
+    then
         context.userMessages.RegisterMessage
             WARNING_NO_WRITE_SINCE_LAST_CHANGE
     else
@@ -236,8 +243,10 @@ let execute_bufferDeleteAux quiet context (_argsMap: ArgsMap) =
         context.textArea.ToBuffer childBuffer
         context.userMessages.RegisterMessage
             WARNING_CHILD_BUFFER_STILL_OPENED
-    | None       ->
-        if not quiet && context.textArea.IsBufferChanged then
+    | None ->
+        if   not quiet
+          && context.textArea.IsBufferChanged = Some true
+        then
             context.userMessages.RegisterMessage
                 WARNING_NO_WRITE_SINCE_LAST_CHANGE
         else

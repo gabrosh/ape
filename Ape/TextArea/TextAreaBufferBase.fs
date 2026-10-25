@@ -310,11 +310,11 @@ type TextAreaBufferBase (
             TextAreaFileWriter.WriteFile filePath encoding fileFormat endWithNewLine myLines
 
         match result with
-        | Ok ()   ->
+        | Ok diskFileState ->
             myUndoProvider.SetCurrentStateAsSaved ()
             myUndoProvider.RemoveOldStates myContext.maxSavedUndos
             this.IsBufferChanged <- false
-            Ok ()
+            Ok diskFileState
 
         | Error e ->
             Error e
