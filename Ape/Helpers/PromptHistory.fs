@@ -9,6 +9,8 @@ type PromptHistory () =
     let myLines = ResizeArray<Chars> ()
 
     let mutable myCurrent = 0
+    
+    let mutable myLastWriteTime = System.DateTime.MinValue 
 
     /// true if the current line comes from the history.
     member _.IsCurrentFromHistory =
@@ -17,6 +19,9 @@ type PromptHistory () =
     // only for testing purposes
     member _.Lines = myLines
 
+    // time of the last write to the history 
+    member _.LastWriteTime = myLastWriteTime
+    
     /// If toOverwrite is true, it removes current line from the history, then
     /// if line is not empty, it adds line to the history and removes history duplicates.
     /// Finally, it sets the non-existing empty line after the end of the history as
@@ -31,6 +36,7 @@ type PromptHistory () =
             this.RemoveDuplicates ()
 
         myCurrent <- myLines.Count
+        this.UpdateLastWriteTime ()
 
     /// Returns the previous line from the history.
     member _.GetPrevious () =
@@ -57,7 +63,7 @@ type PromptHistory () =
     member _.GetAll () =
         Lines myLines
 
-    /// Sets all lines in the history.
+    /// Sets all lines to the history.
     member this.SetAll (lines: Lines) =
         myLines.Clear ()        
         myLines.AddRange lines
@@ -65,6 +71,7 @@ type PromptHistory () =
         this.RemoveDuplicatesAndEmptyLines ()
         
         myCurrent <- myLines.Count
+        this.UpdateLastWriteTime ()
     
     member private _.RemoveDuplicates () =
         let distinct =
@@ -84,3 +91,7 @@ type PromptHistory () =
             
         myLines.Clear ()
         myLines.AddRange distinctAndNonEmpty
+
+    member private _.UpdateLastWriteTime () =
+        myLastWriteTime <- System.DateTime.Now
+        

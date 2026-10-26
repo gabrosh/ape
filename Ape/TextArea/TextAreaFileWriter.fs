@@ -10,13 +10,33 @@ type TextAreaFileWriter () =
     static member val VirtualWrite: string -> Lines -> unit option
       = fun _ _ -> None
         with get, set
+    static member val VirtualGetDiskFileState: string -> DiskFileState option
+      = fun _ -> None
+        with get, set
 
     static member WriteFile filePath encoding fileFormat endWithNewLine lines =
         match TextAreaFileWriter.VirtualWrite filePath lines with
         | Some () ->
-            Ok (DiskFileState_Default filePath)
+            Ok ()
         | _ ->
             TextAreaFileWriter.WriteRealFile filePath encoding fileFormat endWithNewLine lines
+
+    /// Returns state of the file on disk.
+    static member GetDiskFileState filePath =
+        match TextAreaFileWriter.VirtualGetDiskFileState filePath with
+        | Some diskFileState ->
+            diskFileState
+        | _ ->
+            getDiskFileState filePath
+
+    /// Returns true if the file on disk has changed since the last time it was read.
+    static member IsDiskFileChanged (filePath: string) (lastState: DiskFileState) =
+        if lastState <> DiskFileState_Default filePath then
+            let currentState = TextAreaFileWriter.GetDiskFileState filePath
+            currentState.name = lastState.name &&
+                currentState <> lastState
+        else
+            false
     
     // private
 
@@ -29,7 +49,7 @@ type TextAreaFileWriter () =
                 Error "The specified path is a directory."
             else
                 FileUtils.writeFile filePath encoding fileFormat endWithNewLine lines
-                Ok (getDiskFileState filePath)
+                Ok ()
         with
         | :? System.ArgumentException as ex ->
             Error ex.Message

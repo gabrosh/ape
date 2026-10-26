@@ -12,6 +12,7 @@ open Position
 open Selection
 open TextAreaBufferBase
 open TextAreaFileReader
+open TextAreaFileWriter
 open UserMessages
 open WrappedRef
 
@@ -112,8 +113,7 @@ type TextAreaBuffer (
     // others
 
     member this.IsDiskFileChanged =
-        FileUtils.isDiskFileChanged
-            this.FilePath myDiskFileState
+        TextAreaFileWriter.IsDiskFileChanged this.FilePath myDiskFileState
 
     member this.LoadStrings (lines: string seq) =
         myFileReader.LoadStrings lines (
@@ -129,8 +129,8 @@ type TextAreaBuffer (
                 this.ResetUndoState ()
         )
         |> Result.map (
-            fun (fileFormat, endsWithNewLine, diskFileState) ->
-                myDiskFileState <- diskFileState
+            fun (fileFormat, endsWithNewLine) ->
+                myDiskFileState <- TextAreaFileWriter.GetDiskFileState this.FilePath
                 (fileFormat, endsWithNewLine)
         )
 
@@ -148,8 +148,8 @@ type TextAreaBuffer (
                 this.ResetUndoState ()
         )
         |> Result.map (
-            fun (fileFormat, endsWithNewLine, diskFileState) ->
-                myDiskFileState <- diskFileState
+            fun (fileFormat, endsWithNewLine) ->
+                myDiskFileState <- TextAreaFileWriter.GetDiskFileState this.FilePath
                 (fileFormat, endsWithNewLine)
         )
 
@@ -273,8 +273,8 @@ type TextAreaBuffer (
         member this.WriteFile filePath encoding fileFormat endWithNewLine =
             this.WriteFile filePath encoding fileFormat endWithNewLine
             |> Result.map (
-                fun diskFileState ->
-                    myDiskFileState <- diskFileState
+                fun () ->
+                    myDiskFileState <- TextAreaFileWriter.GetDiskFileState this.FilePath
                     ()
             )
             

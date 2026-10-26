@@ -8,6 +8,7 @@ open ConsoleInterop_Common
 open ConsoleInterop_Specific
 open Context
 open DataTypes
+open FileUtils
 open KeyDispatching
 open KeysStrings
 open Registers
@@ -94,8 +95,27 @@ let PromptHistoryWrite filePath lines =
     | _ ->
         None
     
-TextAreaFileReader.VirtualRead  <- PromptHistoryRead
-TextAreaFileWriter.VirtualWrite <- PromptHistoryWrite
+let PromptHistoryGetDiskFileState filePath =
+    match filePath with
+    | RegexHistoryFileName   ->
+        // The mechanism is usable for regex history.
+        Some {
+            name          = filePath
+            size          = 0
+            lastWriteTime = prompt.RegexHistory.LastWriteTime
+        }
+    | CommandHistoryFileName ->
+        // The mechanism is unusable for command history as "write" command
+        // is added to command history before getting its LastWriteTime.
+        Some (
+            DiskFileState_Default filePath
+        )
+    | _ ->
+        None
+    
+TextAreaFileReader.VirtualRead             <- PromptHistoryRead
+TextAreaFileWriter.VirtualWrite            <- PromptHistoryWrite
+TextAreaFileWriter.VirtualGetDiskFileState <- PromptHistoryGetDiskFileState
 
 // recording
 

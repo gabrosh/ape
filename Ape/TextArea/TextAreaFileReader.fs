@@ -52,7 +52,7 @@ type TextAreaFileReader (
         match TextAreaFileReader.VirtualRead filePath with
         | Some lines ->
             this.LoadLines lines resetFun
-            Ok (FileUtils.defaultFileFormat, false, DiskFileState_Default filePath)
+            Ok (FileUtils.defaultFileFormat, false)
         | _ ->
             this.LoadRealFile filePath encoding strictEncoding resetFun
     
@@ -60,7 +60,7 @@ type TextAreaFileReader (
         match TextAreaFileReader.VirtualRead filePath with
         | Some lines ->
             this.LoadLines lines resetFun
-            Ok (FileUtils.defaultFileFormat, false, DiskFileState_Default filePath)
+            Ok (FileUtils.defaultFileFormat, false)
         | _ ->
             this.ReloadRealFile filePath encoding strictEncoding resetFun
     
@@ -83,7 +83,7 @@ type TextAreaFileReader (
 
                 myReloadFileParams <- reloadFileParams'
 
-                Ok (fileFormat, endsWithNewLine, getDiskFileState filePath)
+                Ok (fileFormat, endsWithNewLine)
             finally
                 this.AssureNonZeroLinesCount ()
                 resetFun ()
@@ -113,7 +113,7 @@ type TextAreaFileReader (
 
                 myReloadFileParams <- reloadFileParams'
 
-                Ok (fileFormat, endsWithNewLine, getDiskFileState filePath)
+                Ok (fileFormat, endsWithNewLine)
             finally
                 this.AssureNonZeroLinesCount ()
                 resetFun ()

@@ -144,10 +144,6 @@ type TextAreaExtract (
                 this.ResetState Position_Zero
                 this.ResetUndoState ()
         )
-        |> Result.map (
-            fun (fileFormat, endsWithNewLine, _diskFileState) ->
-                (fileFormat, endsWithNewLine)
-        )
             
     member this.Reload encoding strictEncoding warnIfNoMatchFound =
         let cursor      = this.Main.Cursor
@@ -161,10 +157,6 @@ type TextAreaExtract (
                 )
 
                 this.ResetUndoState ()
-        )
-        |> Result.map (
-            fun (fileFormat, endsWithNewLine, _diskFileState) ->
-                (fileFormat, endsWithNewLine)
         )
 
     // auxiliary
