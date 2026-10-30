@@ -2,20 +2,17 @@
 
 open DataTypes
 open FileUtils
+open IVirtualFile
 
 [<Sealed>]
 type TextAreaFileWriter () =
 
     // prompt history editing mechanism
-    static member val VirtualWrite: string -> Lines -> unit option
-      = fun _ _ -> None
-        with get, set
-    static member val VirtualGetDiskFileState: string -> DiskFileState option
-      = fun _ -> None
+    static member val VirtualFile: IVirtualFile = DefaultVirtualFile()
         with get, set
 
     static member WriteFile filePath encoding fileFormat endWithNewLine lines =
-        match TextAreaFileWriter.VirtualWrite filePath lines with
+        match TextAreaFileWriter.VirtualFile.Write filePath lines with
         | Some () ->
             Ok ()
         | _ ->
@@ -23,7 +20,7 @@ type TextAreaFileWriter () =
 
     /// Returns state of the file on disk.
     static member GetDiskFileState filePath =
-        match TextAreaFileWriter.VirtualGetDiskFileState filePath with
+        match TextAreaFileWriter.VirtualFile.GetDiskFileState filePath with
         | Some diskFileState ->
             diskFileState
         | _ ->

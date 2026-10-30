@@ -96,9 +96,10 @@
     <Compile Include="TextArea\TextAreaTextRanges.fs" />
     <Compile Include="TextArea\TextAreaSelections.fs" />
     <Compile Include="TextArea\TextAreaUndoRedo.fs" />
-    <Compile Include="TextArea\ITextAreaBuffer.fs" />
+    <Compile Include="TextArea\IVirtualFile.fs" />
     <Compile Include="TextArea\TextAreaFileReader.fs" />
     <Compile Include="TextArea\TextAreaFileWriter.fs" />
+    <Compile Include="TextArea\ITextAreaBuffer.fs" />
     <Compile Include="TextArea\TextAreaBufferBase.fs" />
     <Compile Include="TextArea\TextAreaBuffer.fs" />
     <Compile Include="TextArea\TextAreaExtract.fs" />
@@ -133,6 +134,7 @@
     <Compile Include="Application\CommandCompletion.fs" />
     <Compile Include="Application\IdentCompletion.fs" />
     <Compile Include="Application\PromptExecution.fs" />
+    <Compile Include="Application\PromptHistoryVirtualFile.fs" />
     <Compile Include="Application\KeyDispatching.fs" />
     <Compile Include="Application\ConsoleRenderer.fs" />
     <Compile Include="Application\AppOptions.fs" />

@@ -8,9 +8,9 @@ open ConsoleInterop_Common
 open ConsoleInterop_Specific
 open Context
 open DataTypes
-open FileUtils
 open KeyDispatching
 open KeysStrings
+open PromptHistoryVirtualFile
 open Registers
 open Settings
 open TextAreaFileReader
@@ -75,47 +75,10 @@ let tryCall (userMessages: UserMessages) action =
 
 // prompt history editing mechanism
 
-let PromptHistoryRead filePath =
-    match filePath with
-    | RegexHistoryFileName   ->
-        Some (prompt.RegexHistory.GetAll ())
-    | CommandHistoryFileName ->
-        Some (prompt.CommandHistory.GetAll ())        
-    | _ ->
-        None
-        
-let PromptHistoryWrite filePath lines =
-    match filePath with
-    | RegexHistoryFileName   ->
-        prompt.RegexHistory.SetAll lines
-        Some ()
-    | CommandHistoryFileName ->
-        prompt.CommandHistory.SetAll lines
-        Some ()
-    | _ ->
-        None
-    
-let PromptHistoryGetDiskFileState filePath =
-    match filePath with
-    | RegexHistoryFileName   ->
-        // The mechanism is usable for regex history.
-        Some {
-            name          = filePath
-            size          = 0
-            lastWriteTime = prompt.RegexHistory.LastWriteTime
-        }
-    | CommandHistoryFileName ->
-        // The mechanism is unusable for command history as "write" command
-        // is added to command history before getting its LastWriteTime.
-        Some (
-            DiskFileState_Default filePath
-        )
-    | _ ->
-        None
-    
-TextAreaFileReader.VirtualRead             <- PromptHistoryRead
-TextAreaFileWriter.VirtualWrite            <- PromptHistoryWrite
-TextAreaFileWriter.VirtualGetDiskFileState <- PromptHistoryGetDiskFileState
+let promptHistoryVirtualFile = PromptHistoryVirtualFile prompt
+
+TextAreaFileReader.VirtualFile <- promptHistoryVirtualFile
+TextAreaFileWriter.VirtualFile <- promptHistoryVirtualFile
 
 // recording
 

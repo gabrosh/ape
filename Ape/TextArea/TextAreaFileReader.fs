@@ -5,6 +5,7 @@ open System
 open Context
 open DataTypes
 open FileUtils
+open IVirtualFile
 open UserMessages
 open WrappedRef
 
@@ -23,8 +24,7 @@ type TextAreaFileReader (
     let mutable myReloadFileParams: FileUtils.ReloadFileParams option = None
 
     // prompt history editing mechanism
-    static member val VirtualRead: string -> Lines option
-      = fun _ -> None
+    static member val VirtualFile: IVirtualFile = DefaultVirtualFile()
         with get, set
     
     // only for testing purposes
@@ -49,7 +49,7 @@ type TextAreaFileReader (
             resetFun ()
 
     member this.LoadFile filePath encoding strictEncoding resetFun =
-        match TextAreaFileReader.VirtualRead filePath with
+        match TextAreaFileReader.VirtualFile.Read filePath with
         | Some lines ->
             this.LoadLines lines resetFun
             Ok (FileUtils.defaultFileFormat, false)
@@ -57,7 +57,7 @@ type TextAreaFileReader (
             this.LoadRealFile filePath encoding strictEncoding resetFun
     
     member this.ReloadFile filePath encoding strictEncoding resetFun =
-        match TextAreaFileReader.VirtualRead filePath with
+        match TextAreaFileReader.VirtualFile.Read filePath with
         | Some lines ->
             this.LoadLines lines resetFun
             Ok (FileUtils.defaultFileFormat, false)
