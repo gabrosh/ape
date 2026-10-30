@@ -394,6 +394,13 @@ Examples: "Hello, \"world\"!"
           @"Hello, ""world""!"
 
 
+Virtual files ------------------------------------------------------------------
+
+There are two virtual files, which can be used for editing and writing prompt
+histories, named "<regex_history>" (for regex prompts) and "<command_history>"
+(for command prompt).
+
+
 Settings -----------------------------------------------------------------------
 
 Scopes: global buffer extract
