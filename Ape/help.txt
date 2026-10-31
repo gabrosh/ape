@@ -336,7 +336,9 @@ quit!          q!                                quit the application, suppressi
                                                  (no change since last write)
 write          w      [filePath]                 write current buffer's content
 write!         w!     [filePath]                 write current buffer's content, suppressing warnings
-                                                 (no change since last write, file already opened)
+                                                 (no change since last write,
+                                                  underlying file changed since last read/write,
+                                                  file already opened)
 writeQuit      wq                                write all changed files and quit the application
 edit           e      [[strictEncoding] encoding] filePath
                                                  open file for editing
