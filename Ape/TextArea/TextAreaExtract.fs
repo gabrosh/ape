@@ -81,7 +81,7 @@ type TextAreaExtract (
         let lineCurrent = this.Selections.Main.Cursor.line
 
         let lineOrig =
-            if myMatchRanges.IsClearedExtract then
+            if myMatchRanges.AreAllClearedExtract then
                 lineCurrent
             else
                 myMatchRanges.LineExtractToLine lineCurrent
@@ -89,7 +89,7 @@ type TextAreaExtract (
         action ()
 
         let lineNew =
-            if myMatchRanges.IsClearedExtract then
+            if myMatchRanges.AreAllClearedExtract then
                 lineOrig
             else
                 myMatchRanges.LineToLineExtract lineOrig
@@ -119,7 +119,7 @@ type TextAreaExtract (
     // Undo/Redo
 
     member this.UndoCorruptedState () =
-        myMatchRanges.ClearSearch ()
+        myMatchRanges.ClearSearchAll ()
         myMatchRanges.ClearExtract ()
 
         let cursorNew = Position_Zero
@@ -132,7 +132,7 @@ type TextAreaExtract (
     member this.LoadStrings (lines: string seq) =
         myFileReader.LoadStrings lines (
             fun () ->
-                myMatchRanges.UpdateAfterReload ()
+                myMatchRanges.UpdateAfterChange ()
                 this.ResetState Position_Zero
                 this.ResetUndoState ()
         )
@@ -140,22 +140,19 @@ type TextAreaExtract (
     member this.LoadFile encoding strictEncoding =
         myFileReader.LoadFile this.FilePath encoding strictEncoding (
             fun () ->
-                myMatchRanges.UpdateAfterReload ()
+                myMatchRanges.UpdateAfterChange ()
                 this.ResetState Position_Zero
                 this.ResetUndoState ()
         )
             
-    member this.Reload encoding strictEncoding warnIfNoMatchFound =
+    member this.Reload encoding strictEncoding =
         let cursor      = this.Main.Cursor
         let cursorWC    = this.Main.CursorWC
         let displayLine = this.DisplayPos.line
 
         myFileReader.ReloadFile this.FilePath encoding strictEncoding (
             fun () ->
-                myMatchRanges.RunWithSetWarnIfNoMatchFound warnIfNoMatchFound (
-                    fun () -> this.ResetStateAfterReload cursor cursorWC displayLine
-                )
-
+                this.ResetStateAfterReload cursor cursorWC displayLine
                 this.ResetUndoState ()
         )
 
@@ -185,7 +182,7 @@ type TextAreaExtract (
         // Remember any message from failed reload.
         let userMessage = myUserMessages.RetrieveMessage ()
 
-        myMatchRanges.UpdateAfterReload ()
+        myMatchRanges.UpdateAfterChange ()
 
         match userMessage with
         | Some userMessage ->
@@ -239,9 +236,10 @@ type TextAreaExtract (
         member this.IsDiskFileChanged      = None
         member this.HasUndoToRegister      = this.HasUndoToRegister
         member this.HasUndoLinesToRegister = this.HasUndoLinesToRegister
-
+        member this.IsSndSearch            = myMatchRanges.IsSndSearch
+            
         member this.StatusChar =
-            if myMatchRanges.IsClearedExtract then 'o' else '.'
+            if myMatchRanges.AreAllClearedExtract then 'O' else '.'
                         
         // commands
 
@@ -260,6 +258,7 @@ type TextAreaExtract (
 
         member this.ReSearchMatching ()    = this.ReSearchMatching ()
         member this.ClearSearchMatching () = this.ClearSearchMatching ()
+        member this.ToggleSndSearch ()     = myMatchRanges.ToggleSndSearch ()
 
         // Undo/Redo
 
@@ -269,8 +268,8 @@ type TextAreaExtract (
 
         // others
 
-        member this.Reload encoding strictEncoding warnIfNoMatchFound =
-            this.Reload encoding strictEncoding warnIfNoMatchFound
+        member this.Reload encoding strictEncoding =
+            this.Reload encoding strictEncoding
 
         member this.WriteFile filePath encoding fileFormat endWithNewLine =
             this.WriteFile filePath encoding fileFormat endWithNewLine

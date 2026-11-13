@@ -196,6 +196,9 @@ let private dispatchNormalMain
 
         | NoModif     InputKey.Apostrophe   -> NextMode (selectRegister 0 false)
         | NoModif     InputKey.Quotation    -> NextMode (selectRegister 0 true )
+        
+        | NoModif     InputKey.Z            -> textArea.ToggleSndSearch ()
+                                               NextMode (NormalMode NormalMainState)
 
         | _ when textArea.PK_NormalMain key 1
                                             -> areasToRender <- toRenderTextAndStatus

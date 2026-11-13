@@ -79,7 +79,7 @@ type TextAreaBufferExtract (
         let lineCurrent = this.Selections.Main.Cursor.line
 
         let lineOrig =
-            if myMatchRanges.IsClearedExtract then
+            if myMatchRanges.AreAllClearedExtract then
                 lineCurrent
             else
                 myMatchRanges.LineExtractToLine lineCurrent
@@ -87,7 +87,7 @@ type TextAreaBufferExtract (
         action ()
 
         let lineNew =
-            if myMatchRanges.IsClearedExtract then
+            if myMatchRanges.AreAllClearedExtract then
                 lineOrig
             else
                 myMatchRanges.LineToLineExtract lineOrig
@@ -117,7 +117,7 @@ type TextAreaBufferExtract (
     // Undo/Redo
 
     member this.UndoCorruptedState () =
-        myMatchRanges.ClearSearch ()
+        myMatchRanges.ClearSearchAll ()
         myMatchRanges.ClearExtract ()
 
         let cursorNew = Position_Zero
@@ -127,15 +127,12 @@ type TextAreaBufferExtract (
 
     // others
 
-    member this.Reload warnIfNoMatchFound =
+    member this.Reload () =
         let cursor      = this.Main.Cursor
         let cursorWC    = this.Main.CursorWC
         let displayLine = this.DisplayPos.line
 
-        myMatchRanges.RunWithSetWarnIfNoMatchFound warnIfNoMatchFound (
-            fun () -> this.ResetStateAfterReload cursor cursorWC displayLine
-        )
-
+        this.ResetStateAfterReload cursor cursorWC displayLine
         this.ResetUndoState ()
 
     // auxiliary
@@ -164,7 +161,7 @@ type TextAreaBufferExtract (
         // Remember any message from failed reload.
         let userMessage = myUserMessages.RetrieveMessage ()
 
-        myMatchRanges.UpdateAfterReload ()
+        myMatchRanges.UpdateAfterChange ()
 
         match userMessage with
         | Some userMessage ->
@@ -218,9 +215,10 @@ type TextAreaBufferExtract (
         member this.IsDiskFileChanged      = None
         member this.HasUndoToRegister      = this.HasUndoToRegister
         member this.HasUndoLinesToRegister = this.HasUndoLinesToRegister
-
+        member this.IsSndSearch            = myMatchRanges.IsSndSearch
+        
         member this.StatusChar =
-            if myMatchRanges.IsClearedExtract then 'o' else '.'
+            if myMatchRanges.AreAllClearedExtract then 'O' else '.'
             
         // commands
 
@@ -239,6 +237,7 @@ type TextAreaBufferExtract (
 
         member this.ReSearchMatching ()    = this.ReSearchMatching ()
         member this.ClearSearchMatching () = this.ClearSearchMatching ()
+        member this.ToggleSndSearch ()     = myMatchRanges.ToggleSndSearch ()
 
         // Undo/Redo
 
@@ -248,7 +247,7 @@ type TextAreaBufferExtract (
 
         // others
 
-        member this.Reload _encoding _strictEncoding _warnIfNoMatchFound =
+        member this.Reload _encoding _strictEncoding =
             invalidOp "not implemented"
 
         member this.WriteFile filePath encoding fileFormat endWithNewLine =

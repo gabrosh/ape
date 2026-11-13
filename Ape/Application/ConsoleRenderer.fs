@@ -167,13 +167,14 @@ type ConsoleRenderer (
 
     /// Renders content of the first row of status area for status to the console.
     member private this.RenderFirstStatusRowForStatus isRecording =
-        let statusChar = myTextArea.StatusChar
-        let bufferName = myTextArea.BufferName
-        let cursorPos  = myTextArea.GetCursorPosForStatusArea ()
+        let statusChar  = myTextArea.StatusChar
+        let bufferName  = myTextArea.BufferName
+        let cursorPos   = myTextArea.GetCursorPosForStatusArea ()
+        let isSndSearch = myTextArea.IsSndSearch
 
         let displayRows = ResizeArray [
             myStatusArea.GetFirstDisplayRowForStatus
-                statusChar isRecording bufferName cursorPos
+                statusChar isRecording bufferName cursorPos isSndSearch
         ]
 
         this.RenderRows displayRows (myRenderingContext.statusAreaRow + 0)

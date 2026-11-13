@@ -1,4 +1,4 @@
-Ape 0.25 - modal text editor
+Ape 0.26 - modal text editor
 
 
 Key specifications -------------------------------------------------------------
@@ -284,6 +284,11 @@ Normal mode - enter Prompt Insert mode:
 
      S               enter "keep selections" prompt
      <a-S>           enter "discard selections" prompt
+
+
+Normal mode - primary and secondary prompts:
+
+     z               toggle between primary and secondary "search" and "extract" prompts
 
 
 Prompt area commands -----------------------------------------------------------

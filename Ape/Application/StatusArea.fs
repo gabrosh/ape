@@ -98,7 +98,7 @@ type StatusArea (
 
     /// Returns the first display row of the status line for status.
     member this.GetFirstDisplayRowForStatus
-        (statusChar: char) isRecording (bufferName: string) cursorPos =
+        (statusChar: char) isRecording (bufferName: string) cursorPos isSndSearch =
 
         let colorScheme = myRenderingContext.colorScheme
         let windowWidth = myRenderingContext.windowWidth
@@ -106,14 +106,17 @@ type StatusArea (
         let displayRow = ResizeArray myRenderingContext.windowWidth
 
         let statusString: string = statusChar.ToString ()
+        let isSndSearchString, isSndSearchColors : string * ColorSchemes.CharColors =
+            this.GetIsSndSearchStringAndColors isSndSearch
         let isRecordingColors = this.GetIsRecordingColors isRecording
         let cursorString: string = this.GetCursorString cursorPos
         
-        let othersLength = statusString.Length + 1 + cursorString.Length
+        let othersLength = statusString.Length + isSndSearchString.Length + 1 + cursorString.Length
         let filePathMaxLength = myRenderingContext.windowWidth - othersLength
         let bufferNameString = this.GetBufferNameString bufferName filePathMaxLength
         
         this.WriteTo displayRow statusString colorScheme.status
+        this.WriteTo displayRow isSndSearchString isSndSearchColors
         this.WriteTo displayRow " " isRecordingColors
         this.WriteTo displayRow bufferNameString colorScheme.status
         this.WriteTo displayRow cursorString colorScheme.status
@@ -183,6 +186,21 @@ type StatusArea (
         else
             myRenderingContext.colorScheme.status
 
+    member private _.GetIsSndSearchStringAndColors isSndSearch =
+       if isSndSearch then
+           ("2", myRenderingContext.colorScheme.mainCursor)
+       else
+           (" ", myRenderingContext.colorScheme.status)
+
+    member private _.GetBufferNameString (bufferName: string) fillLength =
+        if bufferName.Length <= fillLength then
+            bufferName.PadRight fillLength
+        elif fillLength > 2 then
+            let s = Utils.endSubstring bufferName (fillLength - 2)
+            ".." + s
+        else
+            ".."
+
     member private _.GetCursorString (cursorPos: CursorPosForStatusArea) =
         let cp = {
             cursorPos with
@@ -211,17 +229,8 @@ type StatusArea (
                     "  "
                 else
                     "   "
-
+                    
         s1 + s2 + s3
-
-    member private _.GetBufferNameString (bufferName: string) fillLength =
-        if bufferName.Length <= fillLength then
-            bufferName.PadRight fillLength
-        elif fillLength > 2 then
-            let s = Utils.endSubstring bufferName (fillLength - 2)
-            ".." + s
-        else
-            ".."
 
     member private _.WriteTo displayRow s colors =
         for c in s do

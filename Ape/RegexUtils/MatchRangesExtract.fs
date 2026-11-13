@@ -4,13 +4,48 @@ open System.Collections.Generic
 
 open BinarySearch
 open DataTypes
-open IMatchRanges
 open LineMatchClassifier
 open MatchRanges
 open Position
 open RegexUtils
 open TextRanges
 open UserMessages
+
+type ExtractState = {
+    mutable lastRegex: string option
+    mutable isCleared: bool
+    mutable isSearchInExtract: bool
+}
+
+type ExtractStates = {
+    states: ExtractState array
+    parent: SearchStates
+}
+with
+    member this.Item
+        with get index       = this.states[index]
+        and  set index value = this.states[index] <- value
+
+    member this.ActiveState = this.states[this.parent.activeStateInd]
+          
+    member this.AreAllCleared =
+        this.states[0].isCleared && this.states[1].isCleared
+
+let ExtractStates_Default parent = {
+    states = [|
+        {
+            lastRegex = None
+            isCleared = true
+            isSearchInExtract = false
+        }
+        {
+            lastRegex = None
+            isCleared = true
+            isSearchInExtract = false
+        }
+    |]
+    parent = parent
+}
 
 /// MatchRangesExtract adds the "extract" functionality to MatchRanges.
 
@@ -25,21 +60,15 @@ let private lineToExtractLine (lineExtractToLine: ResizeArray<int>) line =
 type MatchRangesExtract (
     myUserMessages: UserMessages,
     myLines:        Lines,
-    inLastRegex:    string option,
-    inIsCleared:    bool,
-    inTextRanges:   Dictionary<string, TextRanges>,
-    myLinesExtract: Lines
+    myLinesExtract: Lines,
+    inSearchStates: SearchStates
 ) as thisCtor =
-    inherit MatchRanges (
-        myUserMessages, myLines, inLastRegex, inIsCleared, inTextRanges
-    )
+    inherit MatchRanges (myUserMessages, myLines, inSearchStates)
+
+    let myExtractStates = ExtractStates_Default inSearchStates
 
     /// Translates index in myLinesExtract to index in myLines.
     let myLineExtractToLine = ResizeArray<int> ()
-
-    let mutable myLastRegexExtract  = None
-    let mutable myIsClearedExtract  = true
-    let mutable myIsSearchInExtract = false
 
     do
         thisCtor.Update ()
@@ -48,45 +77,61 @@ type MatchRangesExtract (
         inUserMessages: UserMessages, inLines: Lines, inLinesExtract: Lines
     ) =
         MatchRangesExtract (
-            inUserMessages, inLines,
-            None, true, makeTextRangesGroups (),
-            inLinesExtract
+            inUserMessages, inLines, inLinesExtract,
+            SearchStates_Default ()
         )
 
     new (
         inUserMessages: UserMessages, inLines: Lines, inLinesExtract: Lines,
         inMatchRanges: MatchRanges
     ) =
-        MatchRangesExtract(
-            inUserMessages, inLines,
-            inMatchRanges.LastRegex, inMatchRanges.IsCleared, inMatchRanges.TextRanges,
-            inLinesExtract
+        MatchRangesExtract (
+            inUserMessages, inLines, inLinesExtract,
+            inMatchRanges.SearchStates.Clone ()
         )
 
     // public properties
 
-    member _.LastRegexExtract = myLastRegexExtract
-    member _.IsClearedExtract = myIsClearedExtract
+    member _.AreAllClearedExtract = myExtractStates.AreAllCleared
 
     // virtual
 
     override this.Search (regex: string) =
         match tryMakeRegexObject regex with
         | Ok regexObject ->
-            myIsSearchInExtract <- true
+            myExtractStates.ActiveState.isSearchInExtract <- true
 
-            this.SearchNormal myLinesExtract regex regexObject
-
+            this.SearchNormal this.SearchStates.ActiveState myLinesExtract regex regexObject
         | Error e ->
             myUserMessages.RegisterMessage (makeErrorMessage e)
 
-    override this.ReSearch () =
-        myIsSearchInExtract <- true
-
-        this.ReSearchNormal myLinesExtract
-
     override this.ClearSearch () =
-        this.ClearSearchNormal ()
+        myExtractStates.ActiveState.isSearchInExtract <- true
+
+        this.ClearSearchNormal this.SearchStates.ActiveState
+    
+    override this.ReSearch () =
+        myExtractStates.ActiveState.isSearchInExtract <- true
+
+        this.ReSearchNormal this.SearchStates.ActiveState myLinesExtract
+    
+    override this.UpdateAfterChange () =
+        if not this.AreAllClearedExtract then
+            this.HandleSearchBeforeUpdate (this.GetStates 0)
+            this.HandleSearchBeforeUpdate (this.GetStates 1)
+
+            this.Update ()
+            
+            this.HandleSearchAfterUpdate (this.GetStates 0)
+            this.HandleSearchAfterUpdate (this.GetStates 1)
+        else
+            this.ClearSearchAux this.SearchStates[0]
+            this.ClearSearchAux this.SearchStates[1]
+
+            this.Update ()
+
+            this.SearchAuxIfNotCleared this.SearchStates[0] myLinesExtract
+            this.SearchAuxIfNotCleared this.SearchStates[1] myLinesExtract
 
     // extract
 
@@ -94,77 +139,96 @@ type MatchRangesExtract (
     member this.Extract (regex: string) =
         match tryMakeRegexObject regex with
         | Ok regexObject ->
-            myLastRegexExtract  <- Some regex
-            myIsClearedExtract  <- false
-            myIsSearchInExtract <- false
+            this.SearchStates.ActiveState.lastRegex <- Some regex
+            this.SearchStates.ActiveState.isCleared <- false
 
-            this.SearchNormal myLines regex regexObject
+            this.SearchAuxForExtract
+                (this.GetStates this.SearchStates.activeStateInd) myLines
+                regex regexObject                
+            this.SearchAuxIfNotClearedForExtract
+                (this.GetStates this.SearchStates.inactiveStateInd) myLines
+            
             this.Update ()
-
         | Error e ->
             myUserMessages.RegisterMessage (makeErrorMessage e)
-
+            
     /// Extracts lines from myLines according to the regex used in the last call to Search or Extract.
     member this.ReExtract () =
-        match this.LastRegex with
-        | Some regex ->
-            myLastRegexExtract  <- Some regex
-            myIsClearedExtract  <- false
-            myIsSearchInExtract <- false
+        if not this.AreAllClearedSearch then
+            this.SearchAuxIfNotClearedForExtract (this.GetStates 0) myLines
+            this.SearchAuxIfNotClearedForExtract (this.GetStates 1) myLines
 
-            this.SearchNormal myLines regex (makeRegexObject regex)
             this.Update ()
+        else
+            myUserMessages.RegisterMessage ERROR_NOTHING_TO_SEARCH_FOR            
 
-        | None ->
-            myUserMessages.RegisterMessage ERROR_NOTHING_TO_SEARCH_FOR
-
-    /// Clears the extract and searches for the regex used in the last call to Search or Extract.
+    /// Clears the extract and searches for the regex used in the last calls to Search or Extract.
     member this.ClearExtract () =
-        myIsClearedExtract <- true
+        myExtractStates[0].isCleared <- true
+        myExtractStates[1].isCleared <- true
 
-        this.ClearSearchAux ()
+        this.ClearSearchAux this.SearchStates[0]
+        this.ClearSearchAux this.SearchStates[1]
+
         this.Update ()
 
-        if not this.IsCleared then
-            match this.LastRegex with
-            | Some regex ->
-                this.SearchAux myLinesExtract regex (makeRegexObject regex)
-
-            | None ->
-                // (not IsCleared) => (LastRegex <> None)
-                invalidOp "Broken invariant"
-
-    /// Updates the extract after reloading the file, according to the previous state.
-    member this.UpdateAfterReload () =
-        if not this.IsClearedExtract then
-            match this.LastRegexExtract with
-            | Some regex ->
-                this.SearchAux myLines regex (makeRegexObject regex)
-                this.Update ()
-
-                if not this.IsCleared then
-                    if myIsSearchInExtract then
-                        this.ReSearch ()
-                else
-                    this.ClearSearchAux ()
-
-            | None ->
-                // (not IsClearedExtract) => (LastRegexExtract <> None)
-                invalidOp "Broken invariant"
-        else
-            this.ClearSearchAux ()
-            this.Update ()
-
-            if not this.IsCleared then
-                this.ReSearch ()
+        this.SearchAuxIfNotCleared this.SearchStates[0] myLinesExtract
+        this.SearchAuxIfNotCleared this.SearchStates[1] myLinesExtract
 
     // auxiliary
 
+    member private this.GetStates statInd =
+        this.SearchStates[statInd], myExtractStates[statInd]
+            
+    member private this.SearchAuxIfNotClearedForExtract (searchState, extractState) lines =
+        if not searchState.isCleared then
+            // (not isCleared) => (lastRegex <> None)
+            let regex = searchState.lastRegex |> Option.get
+            let regexObject = makeRegexObject regex
+
+            extractState.lastRegex <- Some regex
+            extractState.isCleared <- false
+            extractState.isSearchInExtract <- false
+
+            this.SearchAux searchState lines regex regexObject
+            
+    member private this.SearchAuxForExtract (searchState, extractState) lines regex regexObject =
+        extractState.lastRegex <- Some regex
+        extractState.isCleared <- false
+        extractState.isSearchInExtract <- false
+
+        this.SearchAux searchState lines regex regexObject
+            
+    member private this.HandleSearchBeforeUpdate (searchState, extractState) =
+        if not extractState.isCleared then
+            // (not isCleared) => (lastRegex <> None)
+            let regex = extractState.lastRegex |> Option.get
+
+            this.SearchAux searchState myLines regex (makeRegexObject regex)
+        else
+            this.ClearSearchAux searchState
+    
+    member private this.HandleSearchAfterUpdate (searchState, extractState) =
+        if extractState.isSearchInExtract then
+            if not searchState.isCleared then
+                // (not isCleared) => (lastRegex <> None)
+                let regex = searchState.lastRegex |> Option.get
+
+                this.SearchAux searchState myLinesExtract regex (makeRegexObject regex)
+            else
+                this.ClearSearchAux searchState
+                        
     member private this.Update () =
-        if not this.IsClearedExtract && this.GetMainGroupCount () <> 0 then
+        if not this.AreAllClearedExtract && (
+            this.GetMainGroupCountAux this.SearchStates[0] <> 0 ||
+            this.GetMainGroupCountAux this.SearchStates[1] <> 0
+        ) then
             this.UpdateForSomeMatches ()
 
-            this.TextRanges <- this.GetTextRangesExtract ()
+            this.SearchStates[0].textRanges <-
+                this.GetTextRangesForExtract this.SearchStates[0].textRanges
+            this.SearchStates[1].textRanges <-
+                this.GetTextRangesForExtract this.SearchStates[1].textRanges
         else
             this.UpdateForNoMatches ()
 
@@ -176,7 +240,7 @@ type MatchRangesExtract (
 
         let classifier = LineMatchClassifier matchRanges
 
-        for line, chars in this.SearchedLines |> Seq.indexed do
+        for line, chars in myLines |> Seq.indexed do
             let lineClass = classifier.Classify line
             match lineClass with
             | LineMatch _ ->
@@ -189,13 +253,13 @@ type MatchRangesExtract (
         myLinesExtract.Clear ()
         myLineExtractToLine.Clear ()
 
-        myLinesExtract.AddLines this.SearchedLines
+        myLinesExtract.AddLines myLines
 
-    /// Returns TextRanges corresponding to myLinesExtract.
-    member private this.GetTextRangesExtract () =
+    /// Gets TextRanges corresponding to myLinesExtract.
+    member private this.GetTextRangesForExtract textRanges =
         let result = Dictionary<string, TextRanges> ()
 
-        for item in this.TextRanges do
+        for item in textRanges do
             let name, textRanges = item.Key, item.Value
             let newTextRanges = TextRanges textRanges.Count
             result[name] <- newTextRanges
@@ -228,13 +292,3 @@ type MatchRangesExtract (
             lineToExtractLine myLineExtractToLine line
         else
             line
-
-    // IMatchRanges
-
-    interface IMatchRanges with
-
-        member this.GetInIntervalFromAllGroups startLine endLine =
-            this.GetInIntervalFromAllGroups startLine endLine
-
-        member this.GetMainGroupCount ()   = this.GetMainGroupCount ()
-        member this.GetAllFromMainGroup () = this.GetAllFromMainGroup ()

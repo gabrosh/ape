@@ -92,10 +92,9 @@ type TextAreaBuffer (
 
     override this.ReSearchOrClearMatching () =
         if this.Context.reSearchMatching then
-            if not myMatchRanges.IsCleared then
-                myMatchRanges.ReSearch ()
+            myMatchRanges.UpdateAfterChange ()
         else
-            myMatchRanges.ClearSearch ()
+            myMatchRanges.ClearSearchAll ()
 
     // Undo/Redo
 
@@ -105,7 +104,7 @@ type TextAreaBuffer (
         this.HasUndoToRegister      <- false
         this.HasUndoLinesToRegister <- false
 
-        this.ClearSearchMatching ()
+        myMatchRanges.ClearSearchAll ()
 
         this.Dispatcher.ApplyChangedLinesCountIfNeeded ()
         this.Dispatcher.DisplayRenderer.ResetLinesCache ()
@@ -134,17 +133,14 @@ type TextAreaBuffer (
                 (fileFormat, endsWithNewLine)
         )
 
-    member this.Reload encoding strictEncoding warnIfNoMatchFound =
+    member this.Reload encoding strictEncoding =
         let cursor      = this.Main.Cursor
         let cursorWC    = this.Main.CursorWC
         let displayLine = this.DisplayPos.line
 
         myFileReader.ReloadFile this.FilePath encoding strictEncoding (
             fun () ->
-                myMatchRanges.RunWithSetWarnIfNoMatchFound warnIfNoMatchFound (
-                    fun () -> this.ResetStateAfterReload cursor cursorWC displayLine
-                )
-
+                this.ResetStateAfterReload cursor cursorWC displayLine
                 this.ResetUndoState ()
         )
         |> Result.map (
@@ -165,7 +161,7 @@ type TextAreaBuffer (
 
         this.SelsRegisters.Clear ()
 
-        myMatchRanges.ClearSearch ()
+        myMatchRanges.ClearSearchAll ()
 
         this.DisplayPos <- DisplayPos_Zero
 
@@ -180,7 +176,7 @@ type TextAreaBuffer (
         // Remember any message from failed reload.
         let userMessage = myUserMessages.RetrieveMessage ()
 
-        myMatchRanges.UpdateAfterReload ()
+        myMatchRanges.UpdateAfterChange ()
 
         match userMessage with
         | Some userMessage ->
@@ -234,13 +230,14 @@ type TextAreaBuffer (
         member this.IsDiskFileChanged      = Some this.IsDiskFileChanged
         member this.HasUndoToRegister      = this.HasUndoToRegister
         member this.HasUndoLinesToRegister = this.HasUndoLinesToRegister
+        member this.IsSndSearch            = myMatchRanges.IsSndSearch
 
         member this.StatusChar =
             if this.IsReadOnly then
                 if this.IsBufferChanged then '+' else '-'
             else
                 if this.IsBufferChanged then '*' else ' '
-            
+        
         // commands
 
         member this.PerformCommand isNormalMode isExtending command count =
@@ -257,7 +254,8 @@ type TextAreaBuffer (
             this.SearchMatching regex isForward isExtending
 
         member this.ReSearchMatching ()    = this.ReSearchMatching ()
-        member this.ClearSearchMatching () = this.ClearSearchMatching ()
+        member this.ClearSearchMatching () = this.ClearSearchMatching ()        
+        member this.ToggleSndSearch ()     = myMatchRanges.ToggleSndSearch ()
 
         // Undo/Redo
 
@@ -267,8 +265,8 @@ type TextAreaBuffer (
 
         // others
 
-        member this.Reload encoding strictEncoding warnIfNoMatchFound =
-            this.Reload encoding strictEncoding warnIfNoMatchFound
+        member this.Reload encoding strictEncoding =
+            this.Reload encoding strictEncoding
 
         member this.WriteFile filePath encoding fileFormat endWithNewLine =
             this.WriteFile filePath encoding fileFormat endWithNewLine

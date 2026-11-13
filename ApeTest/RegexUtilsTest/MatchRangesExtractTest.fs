@@ -37,115 +37,113 @@ type MatchRangesExtractTest () =
         Assert.AreEqual (expected', actual)
 
     let assertTextRanges (matchRanges: MatchRanges) (expected: TextRange seq) =
-        let actual = matchRanges.GetAllFromMainGroup ()
+        let actual =
+            matchRanges.GetAllFromAllGroups ()
+            |> Seq.map snd
+            |> Seq.collect id            
+
         Assert.AreEqual (expected, actual)
 
-    // CreateExtract, Search, ClearSearch, ReSearch ----------------------------
-
-    [<Test>]
-    member _.CreateExtract_Search_ClearSearch_ReSearch () =
-        let lines =
-            [|"abc"; "def"; "abc"|]
-            |> Seq.map stringToChars
-            |> Lines
-
-        let linesExtract = Lines []
-
-        let matchRangesExtract = MatchRangesExtract (myUserMessages, lines, linesExtract)
-
-        matchRangesExtract.Search "abc"
-
-        assertLines linesExtract [|
-            "abc"; "def"; "abc"
-        |]
-        assertTextRanges matchRangesExtract [|
-            textRange (0, 0) (0, 2)
-            textRange (2, 0) (2, 2)
-        |]
-
-        matchRangesExtract.ClearSearch ()
-
-        assertLines linesExtract [|
-            "abc"; "def"; "abc"
-        |]
-        assertTextRanges matchRangesExtract [|
-        |]
-
-        matchRangesExtract.ReSearch ()
-
-        assertLines linesExtract [|
-            "abc"; "def"; "abc"
-        |]
-        assertTextRanges matchRangesExtract [|
-            textRange (0, 0) (0, 2)
-            textRange (2, 0) (2, 2)
-        |]
-
-    // CreateExtract, Extract --------------------------------------------------
+    // two ways to create an extract -------------------------------------------
 
     [<Test>]
     member _.CreateExtract_Extract () =
         let lines =
-            [|"abc"; "def"; "abc"|]
+            [|"abc"; "def"; "abcdef"|]
             |> Seq.map stringToChars
             |> Lines
 
         let linesExtract = Lines []
-
         let matchRangesExtract = MatchRangesExtract (myUserMessages, lines, linesExtract)
 
         matchRangesExtract.Extract "abc"
-
         assertLines linesExtract [|
-            "abc"; "abc"
+            "abc"; "abcdef"
         |]
         assertTextRanges matchRangesExtract [|
             textRange (0, 0) (0, 2)
             textRange (1, 0) (1, 2)
         |]
 
-    // Search, CreateExtract, ReExtract ----------------------------------------
-
     [<Test>]
-    member _.Search_CreateExtract () =
+    member _.Search_CreateExtract_ReExtract () =
         let lines =
-            [|"abc"; "def"; "abc"|]
+            [|"abc"; "def"; "abcdef"|]
             |> Seq.map stringToChars
             |> Lines
 
-        let linesExtract = Lines []
-
-        let matchRanges = MatchRanges (myUserMessages, lines)
-
+        let matchRanges = MatchRanges (myUserMessages, lines)        
         matchRanges.Search "abc"
-
+        
+        let linesExtract = Lines []
         let matchRangesExtract = MatchRangesExtract (myUserMessages, lines, linesExtract, matchRanges)
 
         matchRangesExtract.ReExtract ()
-
         assertLines linesExtract [|
-            "abc"; "abc"
+            "abc"; "abcdef"
         |]
         assertTextRanges matchRangesExtract [|
             textRange (0, 0) (0, 2)
             textRange (1, 0) (1, 2)
         |]
-
-    // CreateExtract, Extract, ... ---------------------------------------------
+        
+    // Search memorizes regex for ReSearch -------------------------------------
 
     [<Test>]
-    member _.CreateExtract_Extract_ClearSearch_ReSearch () =
+    member _.ReSearch_after_Search_ClearSearch () =
         let lines =
-            [|"abc"; "def"; "abc"|]
+            [|"abc"; "abc"; "abc"|]
             |> Seq.map stringToChars
             |> Lines
 
         let linesExtract = Lines []
-
         let matchRangesExtract = MatchRangesExtract (myUserMessages, lines, linesExtract)
+        assertLines linesExtract [|
+            "abc"; "abc"; "abc"
+        |]
+        assertTextRanges matchRangesExtract [| |]
 
-        matchRangesExtract.Extract "abc"
+        matchRangesExtract.Search @"(?m)(?<=abc\n)abc"
+        assertLines linesExtract [|
+            "abc"; "abc"; "abc"
+        |]
+        assertTextRanges matchRangesExtract [|
+            textRange (1, 0) (1, 2)
+            textRange (2, 0) (2, 2)
+        |]
 
+        matchRangesExtract.ClearSearch ()
+        assertLines linesExtract [|
+            "abc"; "abc"; "abc"
+        |]
+        assertTextRanges matchRangesExtract [| |]
+
+        matchRangesExtract.ReSearch ()
+        assertLines linesExtract [|
+            "abc"; "abc"; "abc"
+        |]
+        assertTextRanges matchRangesExtract [|
+            textRange (1, 0) (1, 2)
+            textRange (2, 0) (2, 2)
+        |]
+
+    // Extract memorizes regex for ReSearch ------------------------------------
+
+    [<Test>]
+    member _.ReSearch_after_Extract_ClearSearch () =
+        let lines =
+            [|"abc"; "abc"; "abc"|]
+            |> Seq.map stringToChars
+            |> Lines
+
+        let linesExtract = Lines []
+        let matchRangesExtract = MatchRangesExtract (myUserMessages, lines, linesExtract)
+        assertLines linesExtract [|
+            "abc"; "abc"; "abc"
+        |]
+        assertTextRanges matchRangesExtract [| |]
+
+        matchRangesExtract.Extract @"(?m)(?<=abc\n)abc"
         assertLines linesExtract [|
             "abc"; "abc"
         |]
@@ -155,36 +153,58 @@ type MatchRangesExtractTest () =
         |]
 
         matchRangesExtract.ClearSearch ()
-
         assertLines linesExtract [|
             "abc"; "abc"
         |]
-        assertTextRanges matchRangesExtract [|
-        |]
+        assertTextRanges matchRangesExtract [| |]
 
         matchRangesExtract.ReSearch ()
-
         assertLines linesExtract [|
             "abc"; "abc"
         |]
         assertTextRanges matchRangesExtract [|
-            textRange (0, 0) (0, 2)
             textRange (1, 0) (1, 2)
         |]
 
+    // ReSearch without Search or Extract doesn't search -----------------------
+    
     [<Test>]
-    member _.CreateExtract_Extract_Search_ReExtract () =
+    member _.ReSearch_without_Search_or_Extract () =
+        let lines =
+            [|"abc"; "abc"; "abc"|]
+            |> Seq.map stringToChars
+            |> Lines
+
+        let linesExtract = Lines []
+        let matchRangesExtract = MatchRangesExtract (myUserMessages, lines, linesExtract)
+        assertLines linesExtract [|
+            "abc"; "abc"; "abc"
+        |]
+        assertTextRanges matchRangesExtract [| |]
+
+        matchRangesExtract.ReSearch ()
+        assertLines linesExtract [|
+            "abc"; "abc"; "abc"
+        |]
+        assertTextRanges matchRangesExtract [| |]
+
+    // Search sets regex for ClearExtract and ReExtract ------------------------
+
+    [<Test>]
+    member _.ClearExtract_ReExtract_after_Search () =
         let lines =
             [|"abc"; "def"; "abcdef"|]
             |> Seq.map stringToChars
             |> Lines
 
         let linesExtract = Lines []
-
         let matchRangesExtract = MatchRangesExtract (myUserMessages, lines, linesExtract)
+        assertLines linesExtract [|
+            "abc"; "def"; "abcdef"
+        |]
+        assertTextRanges matchRangesExtract [| |]
 
         matchRangesExtract.Extract "abc"
-
         assertLines linesExtract [|
             "abc"; "abcdef"
         |]
@@ -194,47 +214,6 @@ type MatchRangesExtractTest () =
         |]
 
         matchRangesExtract.Search "def"
-
-        assertLines linesExtract [|
-            "abc"; "abcdef"
-        |]
-        assertTextRanges matchRangesExtract [|
-            textRange (1, 3) (1, 5)
-        |]
-
-        matchRangesExtract.ReExtract ()
-
-        assertLines linesExtract [|
-            "def"; "abcdef"
-        |]
-        assertTextRanges matchRangesExtract [|
-            textRange (0, 0) (0, 2)
-            textRange (1, 3) (1, 5)
-        |]
-
-    [<Test>]
-    member _.CreateExtract_Extract_Search_ClearExtract () =
-        let lines =
-            [|"abc"; "def"; "abcdef"|]
-            |> Seq.map stringToChars
-            |> Lines
-
-        let linesExtract = Lines []
-
-        let matchRangesExtract = MatchRangesExtract (myUserMessages, lines, linesExtract)
-
-        matchRangesExtract.Extract "abc"
-
-        assertLines linesExtract [|
-            "abc"; "abcdef"
-        |]
-        assertTextRanges matchRangesExtract [|
-            textRange (0, 0) (0, 2)
-            textRange (1, 0) (1, 2)
-        |]
-
-        matchRangesExtract.Search "def"
-
         assertLines linesExtract [|
             "abc"; "abcdef"
         |]
@@ -243,7 +222,6 @@ type MatchRangesExtractTest () =
         |]
 
         matchRangesExtract.ClearExtract ()
-
         assertLines linesExtract [|
             "abc"; "def"; "abcdef"
         |]
@@ -252,46 +230,334 @@ type MatchRangesExtractTest () =
             textRange (2, 3) (2, 5)
         |]
 
-    // UpdateAfterReload -------------------------------------------------------
+        matchRangesExtract.ReExtract ()
+        assertLines linesExtract [|
+            "def"; "abcdef"
+        |]
+        assertTextRanges matchRangesExtract [|
+            textRange (0, 0) (0, 2)
+            textRange (1, 3) (1, 5)
+        |]
+
+    // Extract sets regex for ClearExtract and ReExtract -----------------------
 
     [<Test>]
-    member _.CreateExtract_UpdateAfterReload () =
+    member _.ClearExtract_ReExtract_after_Extract () =
+        let lines =
+            [|"abc"; "def"; "abcdef"|]
+            |> Seq.map stringToChars
+            |> Lines
+
+        let linesExtract = Lines []
+        let matchRangesExtract = MatchRangesExtract (myUserMessages, lines, linesExtract)
+        assertLines linesExtract [|
+            "abc"; "def"; "abcdef"
+        |]
+        assertTextRanges matchRangesExtract [| |]
+
+        matchRangesExtract.Search "abc"
+        assertLines linesExtract [|
+            "abc"; "def"; "abcdef"
+        |]
+        assertTextRanges matchRangesExtract [|
+            textRange (0, 0) (0, 2)
+            textRange (2, 0) (2, 2)
+        |]
+
+        matchRangesExtract.Extract "def"
+        assertLines linesExtract [|
+            "def"; "abcdef"
+        |]
+        assertTextRanges matchRangesExtract [|
+            textRange (0, 0) (0, 2)
+            textRange (1, 3) (1, 5)
+        |]
+
+        matchRangesExtract.ClearExtract ()
+        assertLines linesExtract [|
+            "abc"; "def"; "abcdef"
+        |]
+        assertTextRanges matchRangesExtract [|
+            textRange (1, 0) (1, 2)
+            textRange (2, 3) (2, 5)
+        |]
+
+        matchRangesExtract.ReExtract ()
+        assertLines linesExtract [|
+            "def"; "abcdef"
+        |]
+        assertTextRanges matchRangesExtract [|
+            textRange (0, 0) (0, 2)
+            textRange (1, 3) (1, 5)
+        |]
+
+    // ClearExtract after Search and ClearSearch doesn't search ----------------
+    
+    [<Test>]
+    member _.ClearExtract_after_Search_ClearSearch () =
+        let lines =
+            [|"abc"; "def"; "abcdef"|]
+            |> Seq.map stringToChars
+            |> Lines
+
+        let linesExtract = Lines []
+        let matchRangesExtract = MatchRangesExtract (myUserMessages, lines, linesExtract)
+        assertLines linesExtract [|
+            "abc"; "def"; "abcdef"
+        |]
+        assertTextRanges matchRangesExtract [| |]
+
+        matchRangesExtract.Search "abc"
+        assertLines linesExtract [|
+            "abc"; "def"; "abcdef"
+        |]
+        assertTextRanges matchRangesExtract [|
+            textRange (0, 0) (0, 2)
+            textRange (2, 0) (2, 2)
+        |]
+
+        matchRangesExtract.ClearSearch ()
+        assertLines linesExtract [|
+            "abc"; "def"; "abcdef"
+        |]
+        assertTextRanges matchRangesExtract [| |]
+
+        matchRangesExtract.ClearExtract ()
+        assertLines linesExtract [|
+            "abc"; "def"; "abcdef"
+        |]
+        assertTextRanges matchRangesExtract [| |]
+
+    // ReExtract after Search and ClearSearch doesn't search -------------------
+    
+    [<Test>]
+    member _.ReExtract_after_Search_ClearSearch () =
+        let lines =
+            [|"abc"; "def"; "abcdef"|]
+            |> Seq.map stringToChars
+            |> Lines
+
+        let linesExtract = Lines []
+        let matchRangesExtract = MatchRangesExtract (myUserMessages, lines, linesExtract)
+        assertLines linesExtract [|
+            "abc"; "def"; "abcdef"
+        |]
+        assertTextRanges matchRangesExtract [| |]
+
+        matchRangesExtract.Search "abc"
+        assertLines linesExtract [|
+            "abc"; "def"; "abcdef"
+        |]
+        assertTextRanges matchRangesExtract [|
+            textRange (0, 0) (0, 2)
+            textRange (2, 0) (2, 2)
+        |]
+
+        matchRangesExtract.ClearSearch ()
+        assertLines linesExtract [|
+            "abc"; "def"; "abcdef"
+        |]
+        assertTextRanges matchRangesExtract [| |]
+
+        matchRangesExtract.ReExtract ()
+        assertLines linesExtract [|
+            "abc"; "def"; "abcdef"
+        |]
+        assertTextRanges matchRangesExtract [| |]
+
+    // ClearExtract after Extract and ClearSearch doesn't search ---------------
+    
+    [<Test>]
+    member _.ClearExtract_after_Extract_ClearSearch () =
+        let lines =
+            [|"abc"; "def"; "abcdef"|]
+            |> Seq.map stringToChars
+            |> Lines
+
+        let linesExtract = Lines []
+        let matchRangesExtract = MatchRangesExtract (myUserMessages, lines, linesExtract)
+        assertLines linesExtract [|
+            "abc"; "def"; "abcdef"
+        |]
+        assertTextRanges matchRangesExtract [| |]
+
+        matchRangesExtract.Extract "abc"
+        assertLines linesExtract [|
+            "abc"; "abcdef"
+        |]
+        assertTextRanges matchRangesExtract [|
+            textRange (0, 0) (0, 2)
+            textRange (1, 0) (1, 2)
+        |]
+
+        matchRangesExtract.ClearSearch ()
+        assertLines linesExtract [|
+            "abc"; "abcdef"
+        |]
+        assertTextRanges matchRangesExtract [| |]
+
+        matchRangesExtract.ClearExtract ()
+        assertLines linesExtract [|
+            "abc"; "def"; "abcdef"
+        |]
+        assertTextRanges matchRangesExtract [| |]
+
+    // ReExtract after Extract and ClearSearch doesn't search ------------------
+    
+    [<Test>]
+    member _.ReExtract_after_Extract_ClearSearch () =
+        let lines =
+            [|"abc"; "def"; "abcdef"|]
+            |> Seq.map stringToChars
+            |> Lines
+
+        let linesExtract = Lines []
+        let matchRangesExtract = MatchRangesExtract (myUserMessages, lines, linesExtract)
+        assertLines linesExtract [|
+            "abc"; "def"; "abcdef"
+        |]
+        assertTextRanges matchRangesExtract [| |]
+
+        matchRangesExtract.Extract "abc"
+        assertLines linesExtract [|
+            "abc"; "abcdef"
+        |]
+        assertTextRanges matchRangesExtract [|
+            textRange (0, 0) (0, 2)
+            textRange (1, 0) (1, 2)
+        |]
+
+        matchRangesExtract.ClearSearch ()
+        assertLines linesExtract [|
+            "abc"; "abcdef"
+        |]
+        assertTextRanges matchRangesExtract [| |]
+
+        matchRangesExtract.ReExtract ()
+        assertLines linesExtract [|
+            "abc"; "abcdef"
+        |]
+        assertTextRanges matchRangesExtract [| |]
+
+    // Secondary search --------------------------------------------------------
+    
+    [<Test>]
+    member _.Secondary_Search () =
+        let lines =
+            [|"abc"; "def"; "abcdef"|]
+            |> Seq.map stringToChars
+            |> Lines
+
+        let linesExtract = Lines []
+        let matchRangesExtract = MatchRangesExtract (myUserMessages, lines, linesExtract)
+        assertLines linesExtract [|
+            "abc"; "def"; "abcdef"
+        |]
+        assertTextRanges matchRangesExtract [| |]
+        
+        matchRangesExtract.Extract "abc"
+        assertLines linesExtract [|
+            "abc"; "abcdef"
+        |]
+        assertTextRanges matchRangesExtract [|
+            textRange (0, 0) (0, 2)
+            textRange (1, 0) (1, 2)
+        |]
+        
+        matchRangesExtract.ToggleSndSearch ()
+        
+        matchRangesExtract.Extract "def"
+        assertLines linesExtract [|
+            "abc"; "def"; "abcdef"
+        |]
+        assertTextRanges matchRangesExtract [|
+            textRange (0, 0) (0, 2)
+            textRange (2, 0) (2, 2)
+            textRange (1, 0) (1, 2)
+            textRange (2, 3) (2, 5)
+        |]
+                       
+        matchRangesExtract.ToggleSndSearch ()
+
+        matchRangesExtract.ClearSearch ()
+        assertLines linesExtract [|
+            "abc"; "def"; "abcdef"
+        |]
+        assertTextRanges matchRangesExtract [|
+            textRange (1, 0) (1, 2)
+            textRange (2, 3) (2, 5)
+        |]
+
+        matchRangesExtract.ToggleSndSearch ()
+
+        matchRangesExtract.ClearSearch ()
+        assertLines linesExtract [|
+            "abc"; "def"; "abcdef"
+        |]
+        assertTextRanges matchRangesExtract [|
+        |]
+
+    // UpdateAfterChange -------------------------------------------------------
+
+    [<Test>]
+    member _.UpdateAfterChange_without_Search_or_Extract () =
         let lines =
             [|"abc"; "abc"; "abc"|]
             |> Seq.map stringToChars
             |> Lines
 
         let linesExtract = Lines []
+        let matchRangesExtract = MatchRangesExtract (myUserMessages, lines, linesExtract)
+        assertLines linesExtract [|
+            "abc"; "abc"; "abc"
+        |]
+        assertTextRanges matchRangesExtract [| |]
 
+        matchRangesExtract.UpdateAfterChange ()
+        assertLines linesExtract [|
+            "abc"; "abc"; "abc"
+        |]
+        assertTextRanges matchRangesExtract [| |]
+
+    [<Test>]
+    member _.UpdateAfterChange_after_Search () =
+        let lines =
+            [|"abc"; "abc"; "abc"|]
+            |> Seq.map stringToChars
+            |> Lines
+
+        let linesExtract = Lines []
         let matchRangesExtract = MatchRangesExtract (myUserMessages, lines, linesExtract)
 
+        matchRangesExtract.Search @"(?m)(?<=abc\n)abc"
         assertLines linesExtract [|
             "abc"; "abc"; "abc"
         |]
         assertTextRanges matchRangesExtract [|
+            textRange (1, 0) (1, 2)
+            textRange (2, 0) (2, 2)
         |]
 
-        matchRangesExtract.UpdateAfterReload ()
-
+        matchRangesExtract.UpdateAfterChange ()
         assertLines linesExtract [|
             "abc"; "abc"; "abc"
         |]
         assertTextRanges matchRangesExtract [|
+            textRange (1, 0) (1, 2)
+            textRange (2, 0) (2, 2)
         |]
 
     [<Test>]
-    member _.CreateExtract_Extract_UpdateAfterReload () =
+    member _.UpdateAfterChange_after_Extract () =
         let lines =
             [|"abc"; "abc"; "abc"|]
             |> Seq.map stringToChars
             |> Lines
 
         let linesExtract = Lines []
-
         let matchRangesExtract = MatchRangesExtract (myUserMessages, lines, linesExtract)
 
         matchRangesExtract.Extract @"(?m)(?<=abc\n)abc"
-
         assertLines linesExtract [|
             "abc"; "abc"
         |]
@@ -300,8 +566,7 @@ type MatchRangesExtractTest () =
             textRange (1, 0) (1, 2)
         |]
 
-        matchRangesExtract.UpdateAfterReload ()
-
+        matchRangesExtract.UpdateAfterChange ()
         assertLines linesExtract [|
             "abc"; "abc"
         |]
@@ -311,18 +576,16 @@ type MatchRangesExtractTest () =
         |]
 
     [<Test>]
-    member _.CreateExtract_Extract_ReSearch_UpdateAfterReload () =
+    member _.UpdateAfterChange_after_Extract_Search () =
         let lines =
             [|"abc"; "abc"; "abc"|]
             |> Seq.map stringToChars
             |> Lines
 
         let linesExtract = Lines []
-
         let matchRangesExtract = MatchRangesExtract (myUserMessages, lines, linesExtract)
 
         matchRangesExtract.Extract @"(?m)(?<=abc\n)abc"
-
         assertLines linesExtract [|
             "abc"; "abc"
         |]
@@ -331,8 +594,7 @@ type MatchRangesExtractTest () =
             textRange (1, 0) (1, 2)
         |]
 
-        matchRangesExtract.ReSearch ()
-
+        matchRangesExtract.Search @"(?m)(?<=abc\n)abc"
         assertLines linesExtract [|
             "abc"; "abc"
         |]
@@ -340,8 +602,7 @@ type MatchRangesExtractTest () =
             textRange (1, 0) (1, 2)
         |]
 
-        matchRangesExtract.UpdateAfterReload ()
-
+        matchRangesExtract.UpdateAfterChange ()
         assertLines linesExtract [|
             "abc"; "abc"
         |]

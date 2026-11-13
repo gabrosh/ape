@@ -112,7 +112,6 @@ let private compareLastTo last (a: TextRange) =
 
 /// Returns text ranges in interval <startLine, endLine>.
 let getFromInterval (textRanges: TextRanges) startLine endLine : TextRanges =
-
     let compareFun = compareLastTo { line = startLine; char = IntType.MinValue }
     let r1 = findFirstGreaterInSortedArray compareFun textRanges
 

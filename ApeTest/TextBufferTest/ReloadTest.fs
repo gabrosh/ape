@@ -110,7 +110,7 @@ type ReloadTest () =
 
         writeChars (fileContent1 + fileContent2)
 
-        let fileFormat, endsWithNewLine = myBuffer.Reload "utf-8" true true |> resultGet
+        let fileFormat, endsWithNewLine = myBuffer.Reload "utf-8" true |> resultGet
 
         assertLines  [|"a"; "b"|]
         assertFormat expFileFormat2 fileFormat
@@ -134,7 +134,7 @@ type ReloadTest () =
 
         writeChars (fileContent1 + fileContent2)
 
-        let fileFormat, endsWithNewLine = myBuffer.Reload "utf-8" true true |> resultGet
+        let fileFormat, endsWithNewLine = myBuffer.Reload "utf-8" true |> resultGet
 
         assertLines  [|"a"; ""; "b"|]
         assertFormat expFileFormat2 fileFormat
@@ -159,7 +159,7 @@ type ReloadTest () =
 
         writeCharsLatin1 (fileContent1 + fileContent2)
 
-        let _fileFormat, _endsWithNewLine = myBuffer.Reload "utf-8" true true |> resultGet
+        let _fileFormat, _endsWithNewLine = myBuffer.Reload "utf-8" true |> resultGet
 
         assertLines [| expLine1 + expLine2 |]
         assertNonTranslatableByes expNonTrans2

@@ -97,12 +97,16 @@ type TextArea (
     member _.HasUndoToRegister      = myBuffer.HasUndoToRegister
     member _.HasUndoLinesToRegister = myBuffer.HasUndoLinesToRegister
     member _.StatusChar             = myBuffer.StatusChar
+    member _.IsSndSearch            = myBuffer.IsSndSearch
 
     member _.GetFirstChildBuffer () = myBuffer.GetFirstChild ()
 
     member _.ApplySettings () =
         myBuffers.UpdateCurrentMainContext ()
 
+    member _.ToggleSndSearch () =
+        myBuffer.ToggleSndSearch ()
+    
     // Insert
 
     member _.PK_Insert key =
@@ -654,7 +658,7 @@ type TextArea (
             invalidOp ""
 
     member private this.ReloadBufferOrExtract (buffer: ITextAreaBuffer) =
-        match this.ReloadBufferOrExtractAux buffer true with
+        match this.ReloadBufferOrExtractAux buffer with
         | Ok ()   ->
             ()
         | Error e ->
@@ -663,15 +667,15 @@ type TextArea (
             )
 
     member private _.ReloadBufferExtract (buffer: TextAreaBufferExtract) =
-        buffer.Reload true
+        buffer.Reload ()
 
-    member private _.ReloadBufferOrExtractAux (buffer: ITextAreaBuffer) warnIfNoMatchFound =
+    member private _.ReloadBufferOrExtractAux (buffer: ITextAreaBuffer) =
         let settings = myBuffers.GetBufferSettings buffer
 
         let encoding       = getValueString settings Name.encoding
         let strictEncoding = getValueBool   settings Name.strictEncoding
 
-        match buffer.Reload encoding strictEncoding warnIfNoMatchFound with
+        match buffer.Reload encoding strictEncoding with
         | Ok (fileFormat, endsWithNewLine) ->
             let newLineAtEof = if isSingleEmptyLine buffer.Lines then true else endsWithNewLine
 

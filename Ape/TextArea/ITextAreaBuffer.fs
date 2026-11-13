@@ -25,7 +25,8 @@ type ITextAreaBuffer =
     abstract member IsDiskFileChanged:      bool option
     abstract member HasUndoToRegister:      bool
     abstract member HasUndoLinesToRegister: bool
-    abstract member StatusChar:             char
+    abstract member IsSndSearch:            bool
+    abstract member StatusChar:             char    
 
     // commands
 
@@ -55,6 +56,9 @@ type ITextAreaBuffer =
     abstract member ClearSearchMatching:
         unit -> unit
 
+    abstract member ToggleSndSearch:
+        unit -> unit
+    
     // Undo/Redo
 
     abstract member RegisterUndo:
@@ -70,7 +74,7 @@ type ITextAreaBuffer =
     // others
 
     abstract member Reload:
-        encoding: string -> strictEncoding: bool -> warnIfNoMatchFound: bool
+        encoding: string -> strictEncoding: bool
      -> Result<FileUtils.FileFormat * bool, string>
 
     abstract member WriteFile:
