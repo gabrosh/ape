@@ -25,6 +25,8 @@ module InCommands =
         | CursorAt             of int
         | CursorToNextMatch    of isInitial: bool  // added CenterAfterMatch
         | CursorToPrevMatch    of isInitial: bool  // added CenterAfterMatch
+        | CursorToFirstMatch
+        | CursorToLastMatch
         | CursorToPairChar
         | ClearInfoMessage
         | AssertNonWhiteSpace

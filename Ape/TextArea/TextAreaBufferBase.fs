@@ -196,6 +196,20 @@ type TextAreaBufferBase (
 
             myBasicDelegator.PerformMatchCommand isExtending command' count false
 
+        | CommonCommand CursorToFirstMatch ->
+            let isInitial = false
+            let _isInitial' = this.ReSearchIfNeeded isInitial 
+            let command' = CommonCommand CursorToFirstMatch
+
+            myBasicDelegator.PerformMatchCommand isExtending command' count false
+
+        | CommonCommand CursorToLastMatch ->
+            let isInitial = false
+            let _isInitial' = this.ReSearchIfNeeded isInitial
+            let command' = CommonCommand CursorToLastMatch
+
+            myBasicDelegator.PerformMatchCommand isExtending command' count true
+
         | CommonCommand _ ->
             myBasicDelegator.PerformOnAllSelections isExtending command count
 

@@ -79,6 +79,8 @@ type CommonPerformer (
         | CursorAt char              -> this.CursorAt                   char
         | CursorToNextMatch ii       -> this.CursorToNextMatch          ii
         | CursorToPrevMatch ii       -> this.CursorToPrevMatch          ii
+        | CursorToFirstMatch         -> this.CursorToFirstMatch         ()
+        | CursorToLastMatch          -> this.CursorToLastMatch          ()
         | ClearInfoMessage           -> this.ClearInfoMessage           ()
         | AssertNonWhiteSpace        -> this.AssertNonWhiteSpace        ()
 
@@ -115,10 +117,13 @@ type CommonPerformer (
             | CursorLeftToChar  x
             | CursorRightToChar x    -> x <> c
             | _ -> true
-        | CursorToNextMatch _   | CursorToPrevMatch _    ->
+        | CursorToNextMatch _   | CursorToPrevMatch _
+        | CursorToFirstMatch    | CursorToLastMatch      ->
             match prevCommand with
             | CursorToNextMatch _
-            | CursorToPrevMatch _    -> false
+            | CursorToPrevMatch _
+            | CursorToFirstMatch 
+            | CursorToLastMatch      -> false
             | _ -> true
         | _ ->
             command <> prevCommand
@@ -223,17 +228,17 @@ type CommonPerformer (
     member private _.CursorAt char =
         myChar <- char
 
-    // CursorNextMatch, CursorPrevMatch
+    // CursorToNextMatch, CursorToPrevMatch, CursorToFirstMatch, CursorToLastMatch
 
     member private _.CursorToNextMatch isInitial =
-        if myMatchRanges.GetMainGroupCount () <> 0 then
+        let matchRanges = myMatchRanges.GetAllFromMainGroup ()
+
+        if matchRanges.Count <> 0 then
             let compareFun = compareFirstTo { line = myLine; char = myChar }
 
             let f = if isInitial || myIsFirstCall
                     then findFirstEqOrGtInSortedArray
                     else findFirstGreaterInSortedArray
-
-            let matchRanges = myMatchRanges.GetAllFromMainGroup ()
 
             match f compareFun matchRanges with
             | Some m ->
@@ -247,14 +252,14 @@ type CommonPerformer (
                 myUserMessages.RegisterMessage WARNING_SEARCH_HIT_BOTTOM_CONT_AT_TOP
 
     member private _.CursorToPrevMatch isInitial =
-        if myMatchRanges.GetMainGroupCount () <> 0 then
+        let matchRanges = myMatchRanges.GetAllFromMainGroup ()
+
+        if matchRanges.Count <> 0 then
             let compareFun = compareFirstTo { line = myLine; char = myChar }
 
             let f = if isInitial || myIsFirstCall 
                     then findLastEqOrLtInSortedArray
                     else findLastLowerInSortedArray
-
-            let matchRanges = myMatchRanges.GetAllFromMainGroup ()
 
             match f compareFun matchRanges with
             | Some m ->
@@ -267,6 +272,22 @@ type CommonPerformer (
                 myChar <- first.char
                 myUserMessages.RegisterMessage WARNING_SEARCH_HIT_TOP_CONT_AT_BOTTOM
 
+    member private _.CursorToFirstMatch () =
+        let matchRanges = myMatchRanges.GetAllFromMainGroup ()
+
+        if matchRanges.Count <> 0 then
+            let first = matchRanges[0].first
+            myLine <- first.line
+            myChar <- first.char
+    
+    member private _.CursorToLastMatch () =
+        let matchRanges = myMatchRanges.GetAllFromMainGroup ()
+
+        if matchRanges.Count <> 0 then
+            let first = matchRanges[matchRanges.Count - 1].first
+            myLine <- first.line
+            myChar <- first.char
+    
     // Clear..., Assert...
 
     member private _.ClearInfoMessage () =
