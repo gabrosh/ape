@@ -209,6 +209,8 @@ ps            <c-l>  cursor soft line end
 ps            gl     cursor before end of line
  s   <c-home> gg     cursor soft file start
  s   <c-end>  ge     cursor soft file end
+ s   gn              cursor to first match
+ s   g<a-n>          cursor to last match
 
 ps   <c-z>           cursor to the pair character in (), [], {}, <>
 
