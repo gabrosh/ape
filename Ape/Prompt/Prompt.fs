@@ -260,7 +260,21 @@ type Prompt (
             fun command -> myBuffer.PerformCommand false false command
         )
 
-    // NormalGoTo
+    // NormalFindChar, NormalFillWithChar, NormalGoTo
+
+    member _.PK_NormalFindChar c isExtending state =
+        let command =
+            match state with
+            | LeftToCharState     -> CommonCommand (CursorLeftToChar     c)
+            | LeftUntilCharState  -> CommonCommand (CursorLeftUntilChar  c)
+            | RightToCharState    -> CommonCommand (CursorRightToChar    c)
+            | RightUntilCharState -> CommonCommand (CursorRightUntilChar c)
+
+        myBuffer.PerformCommand true isExtending command
+
+    member _.PK_NormalFillWithChar c =
+        let command = TextRangesCommand (FillWithChar c)
+        myBuffer.PerformCommand true false command
 
     member _.PK_NormalGoTo key isExtending =
         let F = false

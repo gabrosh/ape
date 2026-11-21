@@ -46,7 +46,7 @@ let darkScheme = {
     statusNormalMode   = { fg = indBlack    ; bg = indDarkCyan   }
     statusIsRecording  = { fg = indWhite    ; bg = indDarkRed    }
     promptModePrefix   = { fg = indDarkCyan ; bg = indBlack      }
-    promptInsertPaste  = { fg = indBlack    ; bg = indGray       }
+    promptSpecial      = { fg = indBlack    ; bg = indGray       }
     promptRegister     = { fg = indBlack    ; bg = indGreen      }
     completion         = { fg = indBlack    ; bg = indWhite      }
     activeCompletion   = { fg = indBlack    ; bg = indCyan       }
@@ -81,7 +81,7 @@ let lightScheme = {
     statusNormalMode   = { fg = indBlack    ; bg = indDarkCyan   }
     statusIsRecording  = { fg = indWhite    ; bg = indDarkRed    }
     promptModePrefix   = { fg = indBlue     ; bg = indWhite      }
-    promptInsertPaste  = { fg = indBlack    ; bg = indGray       }
+    promptSpecial      = { fg = indBlack    ; bg = indGray       }
     promptRegister     = { fg = indBlack    ; bg = indGreen      }
     completion         = { fg = indGray     ; bg = indBlack      }
     activeCompletion   = { fg = indWhite    ; bg = indDarkBlue   }
@@ -135,7 +135,7 @@ let rgbDarkScheme = {
     statusNormalMode   = { fg = rgbBlack    ; bg = rgbDarkCyan   }
     statusIsRecording  = { fg = rgbWhite    ; bg = rgbDarkRed    }
     promptModePrefix   = { fg = rgbDarkCyan ; bg = rgbBlack      }
-    promptInsertPaste  = { fg = rgbBlack    ; bg = rgbGray       }
+    promptSpecial      = { fg = rgbBlack    ; bg = rgbGray       }
     promptRegister     = { fg = rgbBlack    ; bg = rgbGreen      }
     completion         = { fg = rgbBlack    ; bg = rgbWhite      }
     activeCompletion   = { fg = rgbBlack    ; bg = rgbCyan       }
@@ -170,7 +170,7 @@ let rgbLightScheme = {
     statusNormalMode   = { fg = rgbBlack    ; bg = rgbDarkCyan   }
     statusIsRecording  = { fg = rgbWhite    ; bg = rgbDarkRed    }
     promptModePrefix   = { fg = rgbBlue     ; bg = rgbWhite      }
-    promptInsertPaste  = { fg = rgbBlack    ; bg = rgbGray       }
+    promptSpecial      = { fg = rgbBlack    ; bg = rgbGray       }
     promptRegister     = { fg = rgbBlack    ; bg = rgbGreen      }
     completion         = { fg = rgbGray     ; bg = rgbBlack      }
     activeCompletion   = { fg = rgbWhite    ; bg = rgbDarkBlue   }

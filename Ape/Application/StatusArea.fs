@@ -59,10 +59,8 @@ let private getStateString mode =
     | NormalMode (FindCharState (count , isExtending, state))
         -> $"%d{count} %s{getFindCharStateString isExtending state} "
 
-    | NormalMode (FillWithCharState 0)
+    | NormalMode FillWithCharState
         -> "r "
-    | NormalMode (FillWithCharState count)
-        -> $"%d{count} r "
 
     | NormalMode (GoToState isExtending)
         -> if isExtending then "G " else "g "

@@ -16,6 +16,13 @@ let private getPromptPrefixAndChar promptType =
     | KeepPrompt                  -> ("keep"   , ':' )
     | DiscardPrompt               -> ("discard", ':' )
 
+let private getPromptFindCharStateChar state isExtending =
+    match state with
+    | LeftToCharState     -> if isExtending then 'F' else 'f'
+    | LeftUntilCharState  -> if isExtending then 'T' else 't'
+    | RightToCharState    -> if isExtending then 'F' else 'f'
+    | RightUntilCharState -> if isExtending then 'T' else 't'
+
 /// Returns count of chars displayed at the beginning of the prompt line.
 let getPromptModeLength promptType =
     let prefix, _c = getPromptPrefixAndChar promptType
@@ -38,7 +45,7 @@ let getPromptModeDisplayChars colorScheme mode (keyPrefix: Key option) =
      -> if keyPrefix.IsSome then
             let p, _ = getPromptPrefixAndChar promptType
             let c = keyPrefix |> Option.get |> keyPrefixToChar |> Option.get
-            makeDisplayChars p c colorScheme colorScheme.promptInsertPaste
+            makeDisplayChars p c colorScheme colorScheme.promptSpecial
         else
             let p, c = getPromptPrefixAndChar promptType
             makeDisplayChars p c colorScheme colorScheme.promptModePrefix
@@ -46,7 +53,7 @@ let getPromptModeDisplayChars colorScheme mode (keyPrefix: Key option) =
     | PromptInsertMode (promptType, PromptInsertPasteState isUpper)
      -> let p, _ = getPromptPrefixAndChar promptType
         let c = if isUpper then 'R' else 'r'
-        makeDisplayChars p c colorScheme colorScheme.promptInsertPaste
+        makeDisplayChars p c colorScheme colorScheme.promptSpecial
 
     | PromptNormalMode (promptType, PromptNormalMainState)
         when keyPrefix.IsSome
@@ -72,6 +79,16 @@ let getPromptModeDisplayChars colorScheme mode (keyPrefix: Key option) =
     | PromptNormalMode (promptType, PromptRegisterState (SelectedRegisterState (_isUpper, c)))
      -> let p, _ = getPromptPrefixAndChar promptType
         makeDisplayChars p c colorScheme colorScheme.promptRegister
+
+    | PromptNormalMode (promptType, PromptFindCharState (isExtending, state))
+     -> let p, _ = getPromptPrefixAndChar promptType
+        let c = getPromptFindCharStateChar state isExtending
+        makeDisplayChars p c colorScheme colorScheme.statusNormalMode
+
+    | PromptNormalMode (promptType, PromptFillWithCharState)
+     -> let p, _ = getPromptPrefixAndChar promptType
+        let c = 'r'
+        makeDisplayChars p c colorScheme colorScheme.statusNormalMode
 
     | PromptNormalMode (promptType, PromptGoToState isExtending)
      -> let p, _ = getPromptPrefixAndChar promptType

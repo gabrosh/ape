@@ -65,7 +65,7 @@ type Scheme = {
     statusNormalMode:   CharColors
     statusIsRecording:  CharColors
     promptModePrefix:   CharColors
-    promptInsertPaste:  CharColors
+    promptSpecial:      CharColors
     promptRegister:     CharColors
     completion:         CharColors
     activeCompletion:   CharColors

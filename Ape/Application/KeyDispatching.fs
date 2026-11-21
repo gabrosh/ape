@@ -132,7 +132,7 @@ let private selectedRegister count isUpper c =
     NormalMode (RegisterState (count, SelectedRegisterState (isUpper, c)))
 
 let private findChar count isExtending state =
-    NormalMode (FindCharState (count, isExtending , state))
+    NormalMode (FindCharState (count, isExtending, state))
 
 let private enterPrompt (prompt: Prompt) promptType =
     prompt.WhenEntering promptType
@@ -144,6 +144,9 @@ let private promptSelectRegister promptType isUpper =
 let private promptSelectedRegister promptType isUpper c =
     PromptNormalMode (promptType, PromptRegisterState (SelectedRegisterState (isUpper, c)))
 
+let private promptFindChar promptType isExtending state =
+    PromptNormalMode (promptType, PromptFindCharState (isExtending, state))
+
 // key dispatching in various editor modes
 
 let private dispatchNormalMain
@@ -151,6 +154,7 @@ let private dispatchNormalMain
     (textArea: TextArea) (prompt: Prompt)
     key =
 
+    // State indicators are in Status, a message can be in Status.
     let mutable areasToRender = toRenderStatus
 
     let result =
@@ -192,7 +196,7 @@ let private dispatchNormalMain
         | OptShift    InputKey.F s          -> NextMode (findChar 0 s RightToCharState   )
         | OptShift    InputKey.T s          -> NextMode (findChar 0 s RightUntilCharState)
 
-        | NoModif     InputKey.R            -> NextMode (NormalMode (FillWithCharState 0))
+        | NoModif     InputKey.R            -> NextMode (NormalMode FillWithCharState)
 
         | NoModif     InputKey.Apostrophe   -> NextMode (selectRegister 0 false)
         | NoModif     InputKey.Quotation    -> NextMode (selectRegister 0 true )
@@ -239,7 +243,7 @@ let private dispatchNormalCount (textArea: TextArea) key count =
         | NoModif     InputKey.Quotation    -> NextMode (selectRegister count true )
 
         | NoModif     InputKey.R
-            when count <= 1                 -> NextMode (NormalMode (FillWithCharState count))
+            when count <= 1                 -> NextMode (NormalMode FillWithCharState)
 
         | _ when textArea.PK_NormalCount key count
                                             -> areasToRender <- toRenderTextAndStatus
@@ -410,15 +414,16 @@ let private dispatchPromptNormalMain
     (textArea: TextArea) (prompt: Prompt) (registers: Registers)
     promptType key =
 
-    let mutable areasToRender = toRenderPrompt
+    // State indicators are in Prompt, a message can be in Status.
+    let mutable areasToRender = toRenderPromptAndStatus
 
     let result =
         match key with
-        | OptShift InputKey.Escape s        -> areasToRender <- toRenderStatus
+        | OptShift    InputKey.Escape s     -> areasToRender <- toRenderStatus
                                                prompt.WhenLeaving s
                                                NextMode (NormalMode NormalMainState)
 
-        | OptShift InputKey.Enter s         -> areasToRender <- toRenderTextAndStatus
+        | OptShift    InputKey.Enter s      -> areasToRender <- toRenderTextAndStatus
                                                let promptLine = charsToString prompt.Line
                                                let isCurrentFromHistory = prompt.IsCurrentFromHistory
                                                prompt.WhenLeaving s
@@ -427,10 +432,20 @@ let private dispatchPromptNormalMain
                                                                  promptLine isCurrentFromHistory s
                                                if toExit then Exit else NextMode (NormalMode NormalMainState)
 
-        | OptShift InputKey.G s             -> NextMode (PromptNormalMode (promptType, PromptGoToState s))
+        | OptShift    InputKey.G s          -> NextMode (PromptNormalMode (promptType, PromptGoToState s))
 
-        | NoModif  InputKey.Apostrophe      -> NextMode (promptSelectRegister promptType false)
-        | NoModif  InputKey.Quotation       -> NextMode (promptSelectRegister promptType true )
+        | OptShiftAlt InputKey.F s          -> NextMode (promptFindChar promptType s LeftToCharState    )
+        | OptShiftAlt InputKey.T s          -> NextMode (promptFindChar promptType s LeftUntilCharState )
+        | OptShift    InputKey.F s          -> NextMode (promptFindChar promptType s RightToCharState   )
+        | OptShift    InputKey.T s          -> NextMode (promptFindChar promptType s RightUntilCharState)
+
+        | NoModif     InputKey.R            -> NextMode (PromptNormalMode (promptType, PromptFillWithCharState))
+
+        | NoModif     InputKey.Apostrophe   -> NextMode (promptSelectRegister promptType false)
+        | NoModif     InputKey.Quotation    -> NextMode (promptSelectRegister promptType true )
+
+        | NoModif     InputKey.Z            -> textArea.ToggleSndSearch ()
+                                               KeepMode
 
         | _ when prompt.PK_NormalMain key   -> KeepMode
         | _ when prompt.PK_History key      -> KeepMode
@@ -470,6 +485,37 @@ let private dispatchPromptNormalRegister (prompt: Prompt) promptType key state =
                                             -> NextMode (PromptInsertMode (promptType, PromptInsertMainState))
 
             | _                             -> areasToRender <- toRenderNothing
+                                               NoChange
+
+    (result, areasToRender)
+
+let private dispatchPromptNormalFindChar (prompt: Prompt) promptType key isExtending state =
+    let mutable areasToRender = toRenderPrompt
+
+    let result =
+        match key with
+        | NoModif InputKey.Escape           -> NextMode (PromptNormalMode (promptType, PromptNormalMainState))
+
+        | CanBeInserted c                   -> prompt.PK_NormalFindChar
+                                                   c isExtending state
+                                               NextMode (PromptNormalMode (promptType, PromptNormalMainState))
+
+        | _                                 -> areasToRender <- toRenderNothing
+                                               NoChange
+
+    (result, areasToRender)
+
+let private dispatchPromptNormalFillWithChar (prompt: Prompt) promptType key =
+    let mutable areasToRender = toRenderPrompt
+
+    let result =
+        match key with
+        | NoModif InputKey.Escape           -> NextMode (PromptNormalMode (promptType, PromptNormalMainState))
+
+        | CanBeInserted c                   -> prompt.PK_NormalFillWithChar c
+                                               NextMode (PromptNormalMode (promptType, PromptNormalMainState))
+
+        | _                                 -> areasToRender <- toRenderNothing
                                                NoChange
 
     (result, areasToRender)
@@ -558,43 +604,49 @@ let private dispatchPromptInsertPaste (prompt: Prompt) promptType key isUpper =
 let dispatchKey userMessages textArea prompt registers mode key =
     match mode with
     | NormalMode NormalMainState
-        -> dispatchNormalMain           userMessages textArea prompt key
+        -> dispatchNormalMain               userMessages textArea prompt key
 
     | NormalMode (CountState count)
-        -> dispatchNormalCount          textArea key count
-
-    | NormalMode (FindCharState (count, isExtending, state))
-        -> dispatchNormalFindChar       textArea key count isExtending state
-
-    | NormalMode (FillWithCharState _count)
-        -> dispatchNormalFillWithChar   textArea key
+        -> dispatchNormalCount              textArea key count
 
     | NormalMode (RegisterState (count, state))
-        -> dispatchNormalRegister       textArea key count state
+        -> dispatchNormalRegister           textArea key count state
+
+    | NormalMode (FindCharState (count, isExtending, state))
+        -> dispatchNormalFindChar           textArea key count isExtending state
+
+    | NormalMode FillWithCharState
+        -> dispatchNormalFillWithChar       textArea key
 
     | NormalMode (GoToState isExtending)
-        -> dispatchNormalGoTo           textArea key isExtending
+        -> dispatchNormalGoTo               textArea key isExtending
 
     | NormalMode ViewState
-        -> dispatchNormalView           textArea key
+        -> dispatchNormalView               textArea key
 
     | InsertMode InsertMainState
-        -> dispatchInsertMain           textArea key
+        -> dispatchInsertMain               textArea key
 
     | InsertMode (InsertPasteState isUpper)
-        -> dispatchInsertPaste          textArea key isUpper
+        -> dispatchInsertPaste              textArea key isUpper
 
     | PromptNormalMode (promptType, PromptNormalMainState)
-        -> dispatchPromptNormalMain     userMessages textArea prompt registers promptType key
+        -> dispatchPromptNormalMain         userMessages textArea prompt registers promptType key
 
     | PromptNormalMode (promptType, PromptRegisterState state)
-        -> dispatchPromptNormalRegister prompt promptType key state
+        -> dispatchPromptNormalRegister     prompt promptType key state
+
+    | PromptNormalMode (promptType, PromptFindCharState (isExtending, state))
+        -> dispatchPromptNormalFindChar     prompt promptType key isExtending state
+
+    | PromptNormalMode (promptType, PromptFillWithCharState)
+        -> dispatchPromptNormalFillWithChar prompt promptType key
 
     | PromptNormalMode (promptType, PromptGoToState isExtending)
-        -> dispatchPromptNormalGoTo     prompt promptType key isExtending
-
+        -> dispatchPromptNormalGoTo         prompt promptType key isExtending
+    
     | PromptInsertMode (promptType, PromptInsertMainState)
-        -> dispatchPromptInsertMain     userMessages textArea prompt registers promptType key
-
+        -> dispatchPromptInsertMain         userMessages textArea prompt registers promptType key
+    
     | PromptInsertMode (promptType, PromptInsertPasteState isUpper)
-        -> dispatchPromptInsertPaste    prompt promptType key isUpper
+        -> dispatchPromptInsertPaste        prompt promptType key isUpper

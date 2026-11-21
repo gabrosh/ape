@@ -75,6 +75,8 @@ let WARNING_MATCH_LINES_COUNT_LIMIT_EXCEEDED =
 
 let ERROR_NOTHING_TO_SEARCH_FOR =
     ErrorMessage   , "Nothing to search for."
+let ERROR_NOTHING_TO_EXTRACT =
+    ErrorMessage   , "Nothing to extract."
 let WARNING_NO_MATCH_FOUND =
     WarningMessage , "No match found."
 let INFO_NO_SELECTIONS_DISCARDED =
@@ -82,14 +84,14 @@ let INFO_NO_SELECTIONS_DISCARDED =
 let WARNING_ALL_SELECTIONS_DISCARDED =
     WarningMessage , "All selections discarded."
 
-let WARNING_SEARCH_STOPPED_AT_BOTTOM =
-    WarningMessage , "Search stopped at bottom."
-let WARNING_SEARCH_STOPPED_AT_TOP =
-    WarningMessage , "Search stopped at top."
-let WARNING_SEARCH_HIT_BOTTOM_CONT_AT_TOP =
-    WarningMessage , "Search hit bottom, continuing at top."
-let WARNING_SEARCH_HIT_TOP_CONT_AT_BOTTOM =
-    WarningMessage , "Search hit top, continuing at bottom."
+let WARNING_SEARCH_STOPPED_AT_END =
+    WarningMessage , "Search stopped at the end."
+let WARNING_SEARCH_STOPPED_AT_BEGINNING =
+    WarningMessage , "Search stopped at the beginning."
+let WARNING_SEARCH_HIT_END_CONT_AT_BEGINNING =
+    WarningMessage , "Search hit the end, continuing at the beginning."
+let WARNING_SEARCH_HIT_BEGINNING_CONT_AT_END =
+    WarningMessage , "Search hit the beginning, continuing at the end."
 
 let ERROR_OP_INVALID_ON_EXTRACT_BUFFER =
     ErrorMessage   , "Operation invalid on an extract buffer."

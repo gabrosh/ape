@@ -31,13 +31,13 @@ type RegisterState =
     | ToSelectRegisterState of upper: bool
     | SelectedRegisterState of upper: bool * c: char
 
-// count = 0 for RegisterState and FindCharState indicates no count.
+// count = 0 for RegisterState indicates no count.
 type NormalModeState =
     | NormalMainState
     | CountState        of count: int
     | RegisterState     of count: int * RegisterState
     | FindCharState     of count: int * isExtending: bool * FindCharState
-    | FillWithCharState of count: int
+    | FillWithCharState
     | GoToState         of isExtending: bool
     | ViewState
 
@@ -55,8 +55,10 @@ type PromptType =
 
 type PromptNormalModeState =
     | PromptNormalMainState
-    | PromptRegisterState of RegisterState
-    | PromptGoToState     of isExtending: bool
+    | PromptRegisterState     of RegisterState
+    | PromptFindCharState     of isExtending: bool * FindCharState
+    | PromptFillWithCharState
+    | PromptGoToState         of isExtending: bool
 
 type PromptInsertModeState =
     | PromptInsertMainState

@@ -249,7 +249,7 @@ type CommonPerformer (
                 let first = matchRanges[0].first
                 myLine <- first.line
                 myChar <- first.char
-                myUserMessages.RegisterMessage WARNING_SEARCH_HIT_BOTTOM_CONT_AT_TOP
+                myUserMessages.RegisterMessage WARNING_SEARCH_HIT_END_CONT_AT_BEGINNING
 
     member private _.CursorToPrevMatch isInitial =
         let matchRanges = myMatchRanges.GetAllFromMainGroup ()
@@ -270,7 +270,7 @@ type CommonPerformer (
                 let first = matchRanges[matchRanges.Count - 1].first
                 myLine <- first.line
                 myChar <- first.char
-                myUserMessages.RegisterMessage WARNING_SEARCH_HIT_TOP_CONT_AT_BOTTOM
+                myUserMessages.RegisterMessage WARNING_SEARCH_HIT_BEGINNING_CONT_AT_END
 
     member private _.CursorToFirstMatch () =
         let matchRanges = myMatchRanges.GetAllFromMainGroup ()
@@ -435,7 +435,7 @@ type CommonPerformer (
             let line = oldLine - 1
             Some (line, myLines[line].Length)
         else
-            myUserMessages.RegisterMessage WARNING_SEARCH_STOPPED_AT_TOP
+            myUserMessages.RegisterMessage WARNING_SEARCH_STOPPED_AT_BEGINNING
             None
 
     member private _.GetNextPositionWithStop oldLine oldChar =
@@ -444,7 +444,7 @@ type CommonPerformer (
         elif oldLine < myLines.Count - 1 then
             Some (oldLine + 1, 0)
         else
-            myUserMessages.RegisterMessage WARNING_SEARCH_STOPPED_AT_BOTTOM
+            myUserMessages.RegisterMessage WARNING_SEARCH_STOPPED_AT_END
             None
 
     member private _.GetPrevPositionCycling origin line char_ =
@@ -455,7 +455,7 @@ type CommonPerformer (
                 let line = line - 1
                 (line, myLines[line].Length)
             else
-                myUserMessages.RegisterMessage WARNING_SEARCH_HIT_TOP_CONT_AT_BOTTOM
+                myUserMessages.RegisterMessage WARNING_SEARCH_HIT_BEGINNING_CONT_AT_END
                 let line = myLines.Count - 1
                 (line, myLines[line].Length)
 
@@ -471,7 +471,7 @@ type CommonPerformer (
             elif line < myLines.Count - 1 then
                 (line + 1, 0)
             else
-                myUserMessages.RegisterMessage WARNING_SEARCH_HIT_BOTTOM_CONT_AT_TOP
+                myUserMessages.RegisterMessage WARNING_SEARCH_HIT_END_CONT_AT_BEGINNING
                 (0, 0)
 
         if newPosition <> origin then

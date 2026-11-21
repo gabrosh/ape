@@ -140,8 +140,8 @@ p    <bsp>           delete previous character
 p    <c-r>{regName}  paste register {regName} before cursor
 p    <c-R>{regName}  paste uppercase register {regName} before cursor
 
-     <c-n>           switch to next completion
-     <c-p>           switch to previous completion
+p    <c-n>           switch to next completion
+p    <c-p>           switch to previous completion
 
 Normal mode prefixes:
 
@@ -173,10 +173,10 @@ ps   <a-b>           cursor left at word start
 ps   e               cursor right at word end
 ps   <a-e>           cursor left at word end
 
- s   f{char}         cursor right to {char}
- s   t{char}         cursor right until {char}
- s   <a-f>{char}     cursor left to {char}
- s   <a-t>{char}     cursor left until {char}
+ps   f{char}         cursor right to {char}
+ps   t{char}         cursor right until {char}
+ps   <a-f>{char}     cursor left to {char}
+ps   <a-t>{char}     cursor left until {char}
 
  s   n               cursor to next match
  s   <a-n>           cursor to previous match
@@ -221,7 +221,7 @@ p r  y               yank
 p r  R               replace
      ^               align selections
 
-     r{char}         fill with {char}
+p    r{char}         fill with {char}
 
 p    ~               to uppercase
 p    <a-~>           invert case
@@ -290,7 +290,7 @@ Normal mode - enter Prompt Insert mode:
 
 Normal mode - primary and secondary prompts:
 
-     z               toggle between primary and secondary "search" and "extract" prompts
+p    z               toggle between primary and secondary "search" and "extract" prompts
 
 
 Prompt area commands -----------------------------------------------------------

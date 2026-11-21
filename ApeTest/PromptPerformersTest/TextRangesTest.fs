@@ -74,6 +74,23 @@ type TextRangesTest () =
     member _.OneTimeTearDown () =
       (myBuffer :> IDisposable).Dispose ()
 
+   // FillWithChar ------------------------------------------------------------
+
+    [<TestCase( "cd", "cX", [|0; 1; 0; 1|] )>]
+    [<TestCase( "cd", "XX", [|0; 0; 0; 2|] )>]
+    [<TestCase( "cd", "XX", [|0; 0; 0; 3|] )>]
+    member _.FillWithChar start end_ chars =
+        let anchorLine, anchorChar, cursorLine, cursorChar =
+            toTuple4 chars
+
+        init start
+            anchorLine anchorChar cursorLine cursorChar
+            
+        command (FillWithChar 'X')
+        
+        assertLineSelection end_
+            anchorLine anchorChar cursorLine cursorChar
+        
     // ToUppercase, InvertCase -------------------------------------------------
 
     [<TestCase( "Ab=", "AB=", [|0; 0; 0; 2|] )>]

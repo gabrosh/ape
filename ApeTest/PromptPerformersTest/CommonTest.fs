@@ -161,6 +161,108 @@ type CommonTest () =
         commandAssertCursor CursorRightBeforeWordStart 14
         commandAssertCursor CursorRightBeforeWordStart 14
 
+    // CursorLeft/Right...Char -------------------------------------------------
+
+    [<TestCase(false, 11)>]
+    member _.CursorLeftToChar cbe startChar =
+        //        012345678901
+        init cbe "  a a  aa  "
+        commandCount CursorRight startChar
+        assertCursor startChar
+
+        commandAssertCursor (CursorLeftToChar 'a') 8
+        commandAssertCursor (CursorLeftToChar 'a') 7
+        commandAssertCursor (CursorLeftToChar 'a') 4
+        commandAssertCursor (CursorLeftToChar 'a') 2
+        commandAssertCursor (CursorLeftToChar 'a') 8
+
+    [<TestCase(false, 11)>]
+    member _.CursorLeftUntilChar cbe startChar =
+        //        012345678901
+        init cbe "  a a  aa  "
+        commandCount CursorRight startChar
+        assertCursor startChar
+
+        commandAssertCursor (CursorLeftUntilChar 'a') 9
+        commandAssertCursor (CursorLeftUntilChar 'a') 8
+        commandAssertCursor (CursorLeftUntilChar 'a') 5
+        commandAssertCursor (CursorLeftUntilChar 'a') 3
+        commandAssertCursor (CursorLeftUntilChar 'a') 9
+
+    [<TestCase(false)>]
+    member _.CursorRightToChar cbe =
+        //        012345678901
+        init cbe "  a a  aa  "
+        assertCursor 0
+
+        commandAssertCursor (CursorRightToChar 'a') 2
+        commandAssertCursor (CursorRightToChar 'a') 4
+        commandAssertCursor (CursorRightToChar 'a') 7
+        commandAssertCursor (CursorRightToChar 'a') 8
+        commandAssertCursor (CursorRightToChar 'a') 2
+
+    [<TestCase(false)>]
+    member _.CursorRightUntilChar cbe =
+        //        012345678901
+        init cbe "  a a  aa  "
+        assertCursor 0
+
+        commandAssertCursor (CursorRightUntilChar 'a') 1
+        commandAssertCursor (CursorRightUntilChar 'a') 3
+        commandAssertCursor (CursorRightUntilChar 'a') 6
+        commandAssertCursor (CursorRightUntilChar 'a') 7
+        commandAssertCursor (CursorRightUntilChar 'a') 1
+
+    // CursorLeft/Right...Char - special cases ---------------------------------
+
+    [<TestCase(false, 0)>]
+    member _.CursorLeftRightChar_EmptyLine cbe startChar =
+        init cbe ""
+        commandCount CursorRight startChar
+        assertCursor 0
+
+        commandAssertCursor (CursorLeftToChar     'a') startChar
+        commandAssertCursor (CursorLeftToChar     'a') startChar
+        commandAssertCursor (CursorLeftUntilChar  'a') startChar
+        commandAssertCursor (CursorLeftUntilChar  'a') startChar
+        commandAssertCursor (CursorRightToChar    'a') startChar
+        commandAssertCursor (CursorRightToChar    'a') startChar
+        commandAssertCursor (CursorRightUntilChar 'a') startChar
+        commandAssertCursor (CursorRightUntilChar 'a') startChar
+
+    [<TestCase(false, 1)>]
+    member _.CursorLeftRightChar_OneCharLine cbe startChar =
+        init cbe "a"
+        commandCount CursorRight startChar
+        assertCursor startChar
+
+        commandAssertCursor (CursorLeftToChar     'a') 0
+        commandAssertCursor (CursorLeftToChar     'a') 0
+        commandAssertCursor (CursorLeftUntilChar  'a') 1
+        commandAssertCursor (CursorLeftUntilChar  'a') 1
+        commandAssertCursor (CursorRightToChar    'a') 0
+        commandAssertCursor (CursorRightToChar    'a') 0
+        commandAssertCursor (CursorRightUntilChar 'a') 1
+        commandAssertCursor (CursorRightUntilChar 'a') 1
+
+    [<TestCase(false, 0)>]
+    [<TestCase(false, 1)>]
+    [<TestCase(false, 2)>]
+    [<TestCase(false, 3)>]
+    member _.CursorLeftRightChar_NotFound cbe startChar =
+        init cbe " x "
+        commandCount CursorRight startChar
+        assertCursor startChar
+
+        commandAssertCursor (CursorLeftToChar     'a') startChar
+        commandAssertCursor (CursorLeftToChar     'a') startChar
+        commandAssertCursor (CursorLeftUntilChar  'a') startChar
+        commandAssertCursor (CursorLeftUntilChar  'a') startChar
+        commandAssertCursor (CursorRightToChar    'a') startChar
+        commandAssertCursor (CursorRightToChar    'a') startChar
+        commandAssertCursor (CursorRightUntilChar 'a') startChar
+        commandAssertCursor (CursorRightUntilChar 'a') startChar
+
     // CursorToPairChar --------------------------------------------------------
 
     [<TestCase(false, 1 , 1 )>]

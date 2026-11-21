@@ -160,7 +160,7 @@ type MatchRangesExtract (
 
             this.Update ()
         else
-            myUserMessages.RegisterMessage ERROR_NOTHING_TO_SEARCH_FOR            
+            myUserMessages.RegisterMessage ERROR_NOTHING_TO_EXTRACT            
 
     /// Clears the extract and searches for the regex used in the last calls to Search or Extract.
     member this.ClearExtract () =
