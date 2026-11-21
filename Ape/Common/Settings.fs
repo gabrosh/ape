@@ -161,7 +161,7 @@ let specsMap =
             isValid  = isInSet FileUtils.encodingsSet
         )
 
-        Name.useKittyKeys     , Bools          ( default_ = false , isValid = all            )
+        Name.useKittyKeys     , Bools          ( default_ = true  , isValid = all            )
         Name.keySequenceSleep , Ints           ( default_ = 0     , isValid = isEqOrGt  0    )
         Name.strictEncoding   , Bools          ( default_ = true  , isValid = all            )
         Name.fileFormat       , FileFormats    ( default_ = FUDFF , isValid = all            )

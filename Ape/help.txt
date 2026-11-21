@@ -39,9 +39,11 @@ Support for Kitty Keyboard Protocol --------------------------------------------
 
 The usage of Kitty Keyboard Protocol (supported by Kitty and several other terminal
 emulators on Linux and also by Windows Terminal version 1.25 or higher on Windows)
-can be turned on by putting line "set global useKittyKeys true" into the configuration
-file (for example, extended.cfg). If the terminal emulator supports this protocol,
-it's used instead of the default keyboard input method.
+is turned on by default. If the terminal emulator supports this protocol, it's used
+instead of the default keyboard input method.
+
+You can turned off the default setting by putting line "set global useKittyKeys false"
+into the configuration file (for example, extended.cfg).
 
 For Kitty terminal emulator to send escape sequences correctly recognizable by Ape,
 you have to put lines like these into your kitty.conf file:
@@ -423,7 +425,7 @@ settings         abbr.  default  valid values
 
 colorScheme      cs     rgbDark  dark light        color scheme
                                  rgbDark rgbLight
-useKittyKeys     ukk    false    false true        use Kitty keyboard protocol for keyboard input
+useKittyKeys     ukk    true     false true        use Kitty keyboard protocol for keyboard input
                                                    (settable only in configuration file)
 keySequenceSleep kss    0        0 to ...          sleep time after one step in a sequence of keys [ms]
 clipboardType    ct     windows  windows           system clipboard type (on Windows OS)
