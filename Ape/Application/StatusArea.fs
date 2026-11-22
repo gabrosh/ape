@@ -136,7 +136,7 @@ type StatusArea (
         displayRow.GetRange (0, windowWidth)
     
     /// Returns the second display row of the status line.
-    member this.GetSecondDisplayRow message mode keyPrefix =
+    member this.GetSecondDisplayRow mode keyPrefix message =
         let colorScheme = myRenderingContext.colorScheme
         let windowWidth = myRenderingContext.windowWidth
 

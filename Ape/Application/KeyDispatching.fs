@@ -154,7 +154,7 @@ let private dispatchNormalMain
     (textArea: TextArea) (prompt: Prompt)
     key =
 
-    // State indicators are in Status, a message can be in Status.
+    // State indicators are in Status, a message to clear may be in Status.
     let mutable areasToRender = toRenderStatus
 
     let result =
@@ -414,7 +414,7 @@ let private dispatchPromptNormalMain
     (textArea: TextArea) (prompt: Prompt) (registers: Registers)
     promptType key =
 
-    // State indicators are in Prompt, a message can be in Status.
+    // State indicators are in Prompt, a message to clear may be in Status.
     let mutable areasToRender = toRenderPromptAndStatus
 
     let result =
@@ -444,14 +444,19 @@ let private dispatchPromptNormalMain
         | NoModif     InputKey.Apostrophe   -> NextMode (promptSelectRegister promptType false)
         | NoModif     InputKey.Quotation    -> NextMode (promptSelectRegister promptType true )
 
-        | NoModif     InputKey.Z            -> textArea.ToggleSndSearch ()
+        | NoModif     InputKey.Z            -> areasToRender <- toRenderStatus
+                                               textArea.ToggleSndSearch ()
                                                KeepMode
 
-        | _ when prompt.PK_NormalMain key   -> KeepMode
-        | _ when prompt.PK_History key      -> KeepMode
+        | _ when prompt.PK_NormalMain key   -> areasToRender <- toRenderPromptAndStatus
+                                               KeepMode
+                                               
+        | _ when prompt.PK_History key      -> areasToRender <- toRenderPromptAndStatus
+                                               KeepMode
 
         | _ when prompt.PK_NormalMain_BeforeInsert key
-                                            -> NextMode (PromptInsertMode (promptType, PromptInsertMainState))
+                                            -> areasToRender <- toRenderPromptAndStatus
+                                               NextMode (PromptInsertMode (promptType, PromptInsertMainState))
 
         | _                                 -> areasToRender <- toRenderNothing
                                                NoChange

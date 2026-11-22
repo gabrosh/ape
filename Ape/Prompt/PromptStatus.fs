@@ -16,12 +16,18 @@ let private getPromptPrefixAndChar promptType =
     | KeepPrompt                  -> ("keep"   , ':' )
     | DiscardPrompt               -> ("discard", ':' )
 
-let private getPromptFindCharStateChar state isExtending =
+let private getPromptFindCharStateCharAndColors
+    state isExtending (colorScheme: ColorSchemes.Scheme) =
+    
     match state with
-    | LeftToCharState     -> if isExtending then 'F' else 'f'
-    | LeftUntilCharState  -> if isExtending then 'T' else 't'
-    | RightToCharState    -> if isExtending then 'F' else 'f'
-    | RightUntilCharState -> if isExtending then 'T' else 't'
+    | LeftToCharState     ->
+        ((if isExtending then 'F' else 'f'), colorScheme.promptModePrefix)
+    | LeftUntilCharState  ->
+        ((if isExtending then 'T' else 't'), colorScheme.promptModePrefix)
+    | RightToCharState    ->
+        ((if isExtending then 'F' else 'f'), colorScheme.statusNormalMode)
+    | RightUntilCharState ->
+        ((if isExtending then 'T' else 't'), colorScheme.statusNormalMode)
 
 /// Returns count of chars displayed at the beginning of the prompt line.
 let getPromptModeLength promptType =
@@ -82,8 +88,8 @@ let getPromptModeDisplayChars colorScheme mode (keyPrefix: Key option) =
 
     | PromptNormalMode (promptType, PromptFindCharState (isExtending, state))
      -> let p, _ = getPromptPrefixAndChar promptType
-        let c = getPromptFindCharStateChar state isExtending
-        makeDisplayChars p c colorScheme colorScheme.statusNormalMode
+        let c, colors = getPromptFindCharStateCharAndColors state isExtending colorScheme
+        makeDisplayChars p c colorScheme colors
 
     | PromptNormalMode (promptType, PromptFillWithCharState)
      -> let p, _ = getPromptPrefixAndChar promptType

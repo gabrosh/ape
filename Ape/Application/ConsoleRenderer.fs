@@ -133,29 +133,27 @@ type ConsoleRenderer (
         let toRenderPrompt            = areasToRender.Contains ToRenderPrompt
         let toRenderPromptCompletions = areasToRender.Contains ToRenderPromptCompletions
 
-        let firstStatusRowMessage, secondStatusRowMessage =
-            if isPromptMode mode then
-                (message, None)
-            else
-                (None, message)
-                
-        if toRenderText then
-            this.RenderText mode
+        if isPromptMode mode then
+            if message.IsSome then
+                this.RenderFirstStatusRowForMessage message            
+            elif toRenderPromptCompletions then
+                this.RenderCompletions (myPrompt.GetCompletionsRow ())
+            elif toRenderStatus then
+                this.RenderFirstStatusRowForStatus isRecording
 
-        if firstStatusRowMessage.IsSome then
-            this.RenderFirstStatusRowForMessage firstStatusRowMessage            
-        elif toRenderTextCompletions then
-            this.RenderCompletions (myTextArea.GetCompletionsRow ())
-        elif toRenderPromptCompletions then
-            this.RenderCompletions (myPrompt.GetCompletionsRow ())
-        elif toRenderStatus then
-            this.RenderFirstStatusRowForStatus isRecording
+            if toRenderPrompt then
+                this.RenderPrompt mode keyPrefix
+        else
+            if toRenderText then
+                this.RenderText mode
 
-        if toRenderPrompt then
-            this.RenderPrompt mode keyPrefix
-        elif toRenderStatus then
-            this.RenderSecondStatusRow
-                secondStatusRowMessage mode keyPrefix
+            if toRenderTextCompletions then
+                this.RenderCompletions (myTextArea.GetCompletionsRow ())
+            elif toRenderStatus then
+                this.RenderFirstStatusRowForStatus isRecording            
+
+            if message.IsSome || toRenderStatus then
+                this.RenderSecondStatusRow mode keyPrefix message
            
     /// Renders content of the text area to the console.
     member private this.RenderText _mode =
@@ -188,9 +186,9 @@ type ConsoleRenderer (
         this.RenderRows displayRows (myRenderingContext.statusAreaRow + 0)
 
     /// Renders content of the second row of status area to the console.
-    member private this.RenderSecondStatusRow message mode keyPrefix =
+    member private this.RenderSecondStatusRow mode keyPrefix message =
         let displayRows = ResizeArray [
-            myStatusArea.GetSecondDisplayRow message mode keyPrefix
+            myStatusArea.GetSecondDisplayRow mode keyPrefix message
         ]
 
         this.RenderRows displayRows (myRenderingContext.statusAreaRow + 1)
