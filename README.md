@@ -72,4 +72,4 @@ Press F1 in Normal mode or run :help command (or :h) for help. To get back into 
 Happy experimenting!
 
 ## Video
-https://github.com/user-attachments/assets/c14deab0-9a2f-4416-a840-095c3ad6a288
+https://github.com/user-attachments/assets/ce16eda6-1671-4303-beb8-b1655207c667
